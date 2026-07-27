@@ -1639,7 +1639,6 @@ function DateZmanimCard({
           {/* ── [Location Map removed — now in More → Sacred Tools] ── */}
           <div style={{ display: "none" }}>
             <div>
-            <div>
               <iframe
                 key={mapSrc}
                 title={
