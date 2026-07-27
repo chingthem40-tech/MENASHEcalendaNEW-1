@@ -1,6 +1,8 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, lazy, Suspense } from "react";
 import { GOLD, GOLD_GRAD } from "../lib/theme";
 import { useLanguage } from "../context/LanguageContext";
+
+const ChatModal = lazy(() => import("../modals/ChatModal"));
 
 export interface Book {
   id: number;
@@ -48,6 +50,7 @@ const SiddurPage = memo(function SiddurPage({ onReadBook, onAdmin, refreshKey, i
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     fetchBooks();
@@ -156,6 +159,52 @@ const SiddurPage = memo(function SiddurPage({ onReadBook, onAdmin, refreshKey, i
           <div style={{ fontSize: 18, fontWeight: 800, color: "white", marginBottom: 6 }}>Siddur Library</div>
           <div style={{ fontSize: 13, color: "#94a3b8" }}>Sacred texts, prayers & community publications for Bnei Menashe</div>
         </div>
+
+        {/* Ask Rav Menashe — AI Torah companion */}
+        <button
+          onClick={() => setShowChat(true)}
+          style={{
+            width: "100%", marginBottom: 14,
+            padding: "14px 16px",
+            background: "linear-gradient(135deg, rgba(10,14,30,0.95) 0%, rgba(15,24,41,0.98) 100%)",
+            border: "1px solid rgba(212,175,55,0.35)",
+            borderRadius: 14, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 14, textAlign: "left",
+            boxShadow: "0 2px 16px rgba(212,175,55,0.08)",
+            transition: "border-color 0.15s, box-shadow 0.15s",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(212,175,55,0.6)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(212,175,55,0.16)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(212,175,55,0.35)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 16px rgba(212,175,55,0.08)";
+          }}
+        >
+          <img
+            src="/rav-menashe-ai.png"
+            alt="Rav Menashe AI"
+            style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid rgba(212,175,55,0.45)" }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#D4AF37", marginBottom: 2 }}>
+              Ask Rav Menashe
+            </div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>
+              Have a question about a prayer or text? Ask your AI Torah companion.
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.7 }}>
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+
+        {showChat && (
+          <Suspense fallback={null}>
+            <ChatModal onClose={() => setShowChat(false)} />
+          </Suspense>
+        )}
 
         {/* Premium upsell banner — shown only to non-premium users when premium books exist */}
         {!isPremium && premiumBookCount > 0 && (

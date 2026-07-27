@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo, memo } from "react";
+import { useState, useEffect, useMemo, memo, lazy, Suspense } from "react";
+
+const ChatModal = lazy(() => import("../modals/ChatModal"));
 import { useUser } from "@clerk/react";
 import {
   fetchPublicProfile,
@@ -193,6 +195,7 @@ const JourneyPage = memo(function JourneyPage({
   const [goalMins, setGoalMins] = useState(0);
   const [loading, setLoading] = useState(true);
   const [bookmarkCount] = useState(() => countSiddurBookmarks());
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!isLoaded || !user) { setLoading(false); return; }
@@ -627,17 +630,35 @@ const JourneyPage = memo(function JourneyPage({
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px" }}>
-            <span style={{ fontSize: 22 }}>🤖</span>
-            <div style={{ flex: 1 }}>
+          <button
+            type="button"
+            onClick={() => setShowChat(true)}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              width: "100%", padding: "14px 16px",
+              background: "none", border: "none", cursor: "pointer", textAlign: "left",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "var(--elevated)")}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "none")}
+          >
+            <img
+              src="/rav-menashe-ai.png"
+              alt="Rav Menashe AI"
+              style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(212,175,55,0.4)" }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>
-                Sacred Wisdom Conversations
+                Sacred Wisdom — Ask Rav Menashe
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                Available in the Community tab
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>
+                Torah questions, Jewish law & spiritual guidance
               </div>
             </div>
-          </div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 16, height: 16, color: "var(--text-muted)", flexShrink: 0 }}>
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
       </Section>
 
@@ -742,6 +763,54 @@ const JourneyPage = memo(function JourneyPage({
           )}
         </div>
       </Section>
+
+      {/* ── ⑥b Sacred Wisdom ───────────────────────────────────────────── */}
+      <Section title="Sacred Wisdom">
+        <button
+          type="button"
+          onClick={() => setShowChat(true)}
+          style={{
+            width: "100%", padding: "18px 20px",
+            background: "linear-gradient(135deg, rgba(10,14,30,0.95) 0%, rgba(15,24,41,0.98) 100%)",
+            border: "1px solid rgba(212,175,55,0.35)",
+            borderRadius: 16, cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 16, textAlign: "left",
+            boxShadow: "0 2px 16px rgba(212,175,55,0.08)",
+            transition: "border-color 0.15s, box-shadow 0.15s",
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(212,175,55,0.6)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(212,175,55,0.16)";
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(212,175,55,0.35)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 16px rgba(212,175,55,0.08)";
+          }}
+        >
+          <img
+            src="/rav-menashe-ai.png"
+            alt="Rav Menashe AI"
+            style={{ width: 52, height: 52, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid rgba(212,175,55,0.45)" }}
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#D4AF37", marginBottom: 4 }}>
+              Ask Rav Menashe
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.5 }}>
+              Your AI Torah companion — ask about halacha, parasha, Jewish history & spiritual guidance.
+            </div>
+          </div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2.5" style={{ width: 18, height: 18, flexShrink: 0, opacity: 0.7 }}>
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </Section>
+
+      {showChat && (
+        <Suspense fallback={null}>
+          <ChatModal onClose={() => setShowChat(false)} />
+        </Suspense>
+      )}
 
       {/* ── ⑦ Account Shortcuts ─────────────────────────────────────────── */}
       <Section title={t.journeyAccount}>
