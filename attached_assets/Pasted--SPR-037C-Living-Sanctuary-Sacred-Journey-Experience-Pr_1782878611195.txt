@@ -1,0 +1,416 @@
+# SPR-037C — Living Sanctuary: Sacred Journey Experience
+
+## Priority
+
+🟢 Final Creative Sprint before Version 1.0
+
+This sprint transforms the Memorial Sanctuary from a beautiful 3D scene into a meaningful journey of remembrance.
+
+No new backend.
+
+No database changes.
+
+No APIs.
+
+No authentication changes.
+
+No navigation changes.
+
+No new pages.
+
+Only improve the existing SanctuaryWorld experience.
+
+---
+
+# Mission
+
+Today the Sanctuary is a beautiful environment.
+
+After this sprint, it should become a place that visitors naturally explore.
+
+The visitor should feel like they are walking through a sacred pilgrimage, not simply wandering inside a 3D scene.
+
+---
+
+# Design Philosophy
+
+Every destination must have a purpose.
+
+Visitors should never ask:
+
+"Where should I go?"
+
+Instead, the environment itself should guide them naturally.
+
+No arrows.
+
+No floating UI.
+
+No excessive effects.
+
+The landscape becomes the guide.
+
+---
+
+# Journey Flow
+
+Entrance Gate
+
+↓
+
+Welcome Plaza
+
+↓
+
+Candle Garden
+
+↓
+
+Flower Bridge
+
+↓
+
+Reflection Pool
+
+↓
+
+Prayer Pavilion
+
+↓
+
+Tree of Remembrance
+
+↓
+
+Family Memorial Grove
+
+↓
+
+Waterfall Garden
+
+↓
+
+Central Sanctuary
+
+↓
+
+Sunset Point
+
+↓
+
+Exit
+
+Each destination should feel distinct while remaining part of one continuous world.
+
+---
+
+# Phase 1 — Meaningful Destinations
+
+Create small destination areas using existing scene assets and low-poly geometry.
+
+Examples:
+
+• Candle Garden
+• Reflection Garden
+• Waterfall Overlook
+• Prayer Corner
+• Olive Grove
+• Sunset Terrace
+
+Each destination should naturally invite the visitor to pause.
+
+---
+
+# Phase 2 — Candle Places
+
+Instead of random candles throughout the world:
+
+Design beautiful candle places.
+
+Examples:
+
+Stone alcoves
+
+Memorial benches
+
+Garden shrines
+
+Flower circles
+
+Prayer stones
+
+Waterfront candle platforms
+
+Each candle place should feel peaceful and intentional.
+
+---
+
+# Phase 3 — Path Design
+
+Refine the pathway.
+
+The path should:
+
+naturally curve
+
+cross small bridges
+
+pass gardens
+
+follow streams
+
+climb gentle terraces
+
+reveal landmarks gradually
+
+Avoid long straight corridors.
+
+Avoid empty spaces.
+
+The journey should continuously reward exploration.
+
+---
+
+# Phase 4 — Landmark Hierarchy
+
+Each major landmark should have its own identity.
+
+Examples:
+
+Entrance Gate
+
+Tree of Remembrance
+
+Prayer Pavilion
+
+Reflection Pool
+
+Waterfall Garden
+
+Sunset Point
+
+Visitors should instantly recognize where they are.
+
+---
+
+# Phase 5 — Environmental Storytelling
+
+Without adding dialogue, tell a story using the environment.
+
+Examples:
+
+Old carved memorial stones
+
+Hebrew inscriptions
+
+Olive trees
+
+Ancient walls
+
+Stone lanterns
+
+Quiet benches
+
+Small flower gardens
+
+Memorial plaques
+
+Everything should reinforce remembrance.
+
+---
+
+# Phase 6 — Human Scale
+
+Review the scale of every area.
+
+Visitors should never feel tiny.
+
+Visitors should never feel gigantic.
+
+Everything should feel built for people.
+
+Check:
+
+Path width
+
+Bench height
+
+Shrine size
+
+Tree spacing
+
+Bridge width
+
+Gate proportions
+
+Camera perspective
+
+---
+
+# Phase 7 — Scenic Composition
+
+Every 15–20 metres, create a beautiful view.
+
+Examples:
+
+Bridge looking toward waterfall
+
+Tree framed by candles
+
+Sunlight through branches
+
+Reflection pool view
+
+Prayer pavilion silhouette
+
+Sunset overlook
+
+The Sanctuary should naturally encourage visitors to stop and admire the surroundings.
+
+---
+
+# Phase 8 — Flow
+
+There should be no confusing movement.
+
+Visitors should always feel gently guided.
+
+No invisible walls.
+
+No dead ends.
+
+No awkward empty spaces.
+
+No blocked routes.
+
+Movement should feel effortless.
+
+---
+
+# Phase 9 — Performance
+
+Maintain existing performance targets.
+
+Desktop
+
+≈60 FPS
+
+Android
+
+40–60 FPS
+
+Reuse existing assets wherever possible.
+
+Use InstancedMesh when repeating decorative elements.
+
+Avoid increasing draw calls unnecessarily.
+
+---
+
+# Phase 10 — Preserve Atmosphere
+
+Maintain the existing peaceful mood.
+
+Avoid:
+
+excessive particles
+
+fantasy magic effects
+
+bright glowing objects everywhere
+
+overly saturated colours
+
+The Sanctuary should feel:
+
+quiet
+
+reverent
+
+timeless
+
+beautiful
+
+---
+
+# Constraints
+
+DO NOT
+
+❌ Add new features
+
+❌ Add new APIs
+
+❌ Add new databases
+
+❌ Change navigation
+
+❌ Change AI
+
+❌ Change authentication
+
+❌ Change business logic
+
+❌ Add unnecessary UI
+
+Everything must remain compatible with Version 1.0.
+
+---
+
+# Verification
+
+Walk the entire Sanctuary.
+
+Confirm:
+
+✓ Every destination feels meaningful.
+
+✓ Every candle place feels intentional.
+
+✓ Visitors naturally follow the pathway.
+
+✓ Landmarks are memorable.
+
+✓ Performance remains stable.
+
+✓ Mobile experience remains smooth.
+
+✓ No regressions.
+
+✓ TypeScript passes.
+
+✓ Production build passes.
+
+---
+
+# Deliverables
+
+1. Living Sanctuary implementation report.
+
+2. Updated Sanctuary layout overview.
+
+3. Destination inventory.
+
+4. Performance verification.
+
+5. Before/after walkthrough summary.
+
+Stop after verification.
+
+---
+
+# Chief Architect's Design Principle
+
+The Memorial Sanctuary is not a game.
+
+It is not an open-world adventure.
+
+It is a place of remembrance.
+
+Every step should invite reflection.
+
+Every destination should have meaning.
+
+Every candle should feel personal.
+
+Every visitor should leave feeling they have completed a peaceful journey rather than explored a virtual map.

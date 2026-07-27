@@ -1,0 +1,130 @@
+# SPR-034A — Dead Code Elimination
+
+## Role
+
+Act as a Principal React Architect, Senior TypeScript Engineer, Production Release Engineer, and Codebase Maintainer.
+
+---
+
+## Mission
+
+Perform a safe dead-code elimination of the Memorial feature.
+
+The objective is to remove unreachable code while preserving all production functionality.
+
+Do NOT redesign.
+
+Do NOT refactor unrelated modules.
+
+Do NOT change business logic.
+
+Do NOT change backend APIs.
+
+Do NOT change the database.
+
+---
+
+## Step 0 — Safety Check
+
+Before deleting anything:
+
+Create a Git checkpoint (or Replit checkpoint).
+
+Then verify every file slated for removal satisfies ALL of the following:
+
+* Never rendered
+* Never routed
+* Never imported by any production component
+* No runtime reference
+* No dynamic import
+* No React.lazy import
+* No test dependency
+* No indirect dependency through barrel exports
+
+If ANY condition fails, stop and report instead of deleting.
+
+---
+
+## Remove
+
+Delete ONLY these files if confirmed unreachable:
+
+* MemorialSanctuaryPage
+* MemorialProfilePage
+* SanctuaryHeader
+* SanctuaryHero
+* SanctuaryWorldPreview
+* MemorialPlaceholderCard
+* LoadingState
+
+Do not remove any shared hook, utility, API client, translation, or component that is still referenced by SanctuaryWorld.
+
+---
+
+## Cleanup
+
+After deletion, remove only the now-unused:
+
+* exports
+* barrel exports
+* imports
+* TypeScript types
+* translation keys
+* Zustand state (unused portions only)
+* styles
+* helper functions
+
+Never remove code that is shared by active production features.
+
+---
+
+## Verification
+
+Run:
+
+* TypeScript
+* Full build
+* Production bundle
+* Sanctuary navigation
+* Memorial Browser
+* Memorial Profile
+* Candle flow
+* Tribute flow
+* Search
+* Reflection Mode
+* Minimap
+* 3D Sanctuary entry
+
+Everything must continue working exactly as before.
+
+---
+
+## Documentation
+
+Update the architecture documentation to state:
+
+> Memorial Sanctuary now has one production implementation.
+
+---
+
+## Success Criteria
+
+✓ One production Sanctuary
+
+✓ No duplicate architecture
+
+✓ No unreachable React components
+
+✓ No dead Memorial pages
+
+✓ No unused exports
+
+✓ No TypeScript errors
+
+✓ No runtime regressions
+
+✓ Documentation updated
+
+Stop after verification.
+
+Do NOT perform any additional refactoring.

@@ -1,0 +1,170 @@
+SPR-P006F — Community Census Step 4: Submit
+
+Project:
+Menashe Platform
+
+Scope:
+📱 MOBILE ONLY
+
+Priority:
+Community Census Workflow
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+EXECUTION CONTRACT
+
+Maximum files to READ:
+4
+
+Maximum files to MODIFY:
+4
+
+Maximum actions:
+20
+
+STOP after implementation.
+
+==================================================
+
+MISSION
+
+Build ONLY the final submission step.
+
+Do NOT modify previous workflow steps.
+
+==================================================
+
+READ ONLY
+
+1.
+
+app/census/review.tsx
+
+2.
+
+lib/shared-core/src/census/client.ts
+
+3.
+
+lib/shared-core/src/census/types.ts
+
+4.
+
+artifacts/menashe-mobile/lib/censusStore.ts
+
+==================================================
+
+CREATE
+
+app/census/submit.tsx
+
+==================================================
+
+SCREEN
+
+Title
+
+Submit Community Census
+
+Subtitle
+
+Step 4 of 4
+
+Progress
+
+100%
+
+==================================================
+
+DISPLAY
+
+Summary message
+
+Explain:
+
+• information will be securely submitted
+
+• administrators may review it
+
+• edits may require resubmission
+
+==================================================
+
+ACTION
+
+Use the existing Shared Census Client SDK.
+
+Reuse the existing Census APIs.
+
+Do NOT duplicate networking.
+
+Submit the Family Head and Family Members collected in censusStore.
+
+==================================================
+
+SUCCESS
+
+Navigate to:
+
+/census/success
+
+(if it does not yet exist, create a lightweight placeholder screen)
+
+Display:
+
+✓ Submission received
+
+✓ Thank you
+
+✓ Next steps
+
+==================================================
+
+FAILURE
+
+Display a premium error card.
+
+Allow Retry.
+
+Do not lose the in-memory census data.
+
+==================================================
+
+AFTER SUCCESS
+
+Clear censusStore.
+
+==================================================
+
+DO NOT
+
+❌ Modify Shared Core
+
+❌ Modify Web
+
+❌ Modify APIs
+
+❌ Add AsyncStorage
+
+❌ Add offline sync
+
+==================================================
+
+RETURN ONLY
+
+✓ Files modified
+
+✓ Submission completed
+
+✓ Census workflow complete
+
+STOP
+
+No build.
+
+No typecheck.
+
+No verification.

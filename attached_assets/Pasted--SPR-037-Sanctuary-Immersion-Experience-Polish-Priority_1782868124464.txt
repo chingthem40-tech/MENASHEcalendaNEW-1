@@ -1,0 +1,503 @@
+# SPR-037 — Sanctuary Immersion & Experience Polish
+
+## Priority
+
+🟢 High Priority
+
+Version 1.0 Polish Sprint
+
+No new features.
+
+No architecture changes.
+
+No database changes.
+
+No API changes.
+
+No business logic changes.
+
+This sprint focuses exclusively on refining the user experience of the Memorial Sanctuary.
+
+---
+
+# ROLE
+
+Act as a:
+
+- Principal Software Architect
+- Senior UX Designer
+- Senior Three.js Engineer
+- Senior React Engineer
+- Performance Engineer
+- Accessibility Engineer
+- Release Engineer
+
+Your goal is to make SanctuaryWorld feel like a premium, peaceful, world-class memorial experience.
+
+---
+
+# MISSION
+
+The Memorial Sanctuary is feature complete.
+
+Now refine every detail so the experience feels intentional, immersive, and emotionally meaningful.
+
+The user should never feel confused, disoriented, or distracted.
+
+The Sanctuary should feel calm, elegant, and sacred.
+
+---
+
+# PHASE 1 — Complete Walkthrough Audit
+
+Walk through the Sanctuary exactly like a real user.
+
+Start from:
+
+Home
+
+↓
+
+Memorial Sanctuary
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+Front Gate
+
+↓
+
+Sacred Avenue
+
+↓
+
+Tree of Remembrance
+
+↓
+
+Reflection Pool
+
+↓
+
+Prayer Pavilion
+
+↓
+
+Every memorial area
+
+Audit:
+
+✓ Walking path
+
+✓ Camera movement
+
+✓ Collision
+
+✓ Invisible walls
+
+✓ Floating objects
+
+✓ Object clipping
+
+✓ Stuck locations
+
+✓ Camera jitter
+
+✓ Terrain transitions
+
+✓ Navigation comfort
+
+Fix only issues found.
+
+---
+
+# PHASE 2 — Interaction Audit
+
+Verify every interaction.
+
+Test:
+
+✓ Candle Lighting
+
+✓ Candle Lists
+
+✓ Memorial Profile
+
+✓ Memorial Browser
+
+✓ Search
+
+✓ Tribute
+
+✓ Share
+
+✓ Reflection Mode
+
+✓ Exit Sanctuary
+
+Confirm:
+
+No interaction returns the user to Home unexpectedly.
+
+No modal stacking issues.
+
+No broken buttons.
+
+No dead interactions.
+
+---
+
+# PHASE 3 — Visual Polish
+
+Inspect the Sanctuary from multiple viewpoints.
+
+Audit:
+
+✓ Entrance Gate
+
+✓ Welcome Board
+
+✓ Community Candle Board
+
+✓ Visitor Guide
+
+✓ Sacred Avenue
+
+✓ Memorial Trees
+
+✓ Waterfall
+
+✓ Bridges
+
+✓ Prayer Pavilion
+
+✓ Reflection Pool
+
+✓ Sky
+
+✓ Mountains
+
+✓ Terrain
+
+Improve only visual polish.
+
+Do NOT add new scene objects.
+
+---
+
+# PHASE 4 — Lighting Audit
+
+Inspect:
+
+Morning
+
+Golden Hour
+
+Evening
+
+Night
+
+Verify:
+
+✓ Memorial Gate remains readable
+
+✓ Entrance Boards remain readable
+
+✓ Candles glow naturally
+
+✓ Bloom is balanced
+
+✓ God Rays remain subtle
+
+✓ Fog feels atmospheric
+
+✓ No overly dark areas
+
+✓ No overexposed lighting
+
+Adjust only existing lighting values if necessary.
+
+---
+
+# PHASE 5 — Camera Experience
+
+Audit:
+
+Landing camera
+
+Walking camera
+
+Idle camera
+
+Reflection mode camera
+
+Verify:
+
+✓ Comfortable height
+
+✓ Comfortable speed
+
+✓ Natural turning
+
+✓ No sudden jumps
+
+✓ No clipping through objects
+
+✓ No motion discomfort
+
+Camera should always guide attention naturally toward meaningful places.
+
+---
+
+# PHASE 6 — Mobile Experience
+
+Audit on small screens.
+
+320px
+
+360px
+
+390px
+
+412px
+
+430px
+
+Verify:
+
+✓ Touch targets
+
+✓ Text readability
+
+✓ Floating panels
+
+✓ Buttons
+
+✓ Memorial Browser
+
+✓ Candle panel
+
+✓ Memorial profile
+
+✓ Reflection mode
+
+✓ Orientation changes
+
+No overflow.
+
+No hidden controls.
+
+No clipped UI.
+
+---
+
+# PHASE 7 — Performance Audit
+
+Measure:
+
+Desktop
+
+Mid-range Android
+
+Audit:
+
+✓ FPS
+
+✓ Draw Calls
+
+✓ GPU Load
+
+✓ CPU Load
+
+✓ Memory Usage
+
+✓ Texture Count
+
+✓ Shader Compilation
+
+Do not sacrifice performance for unnecessary visual effects.
+
+---
+
+# PHASE 8 — Accessibility
+
+Verify:
+
+✓ Keyboard navigation
+
+✓ Escape handling
+
+✓ Screen reader labels
+
+✓ Reduced motion
+
+✓ Focus order
+
+✓ Color contrast
+
+✓ Touch accessibility
+
+---
+
+# PHASE 9 — Emotional Experience Review
+
+Evaluate the Sanctuary as a visitor remembering a loved one.
+
+Ask:
+
+Does every visual element support remembrance?
+
+Does every sound support peace?
+
+Does every interaction feel respectful?
+
+Does anything distract from reflection?
+
+Reduce visual noise where appropriate.
+
+Strengthen the atmosphere using existing assets only.
+
+---
+
+# PHASE 10 — Code Quality
+
+Remove:
+
+Unused local variables
+
+Dead UI states
+
+Duplicate styling
+
+Minor render inefficiencies
+
+Only where safe.
+
+Do NOT perform architectural refactoring.
+
+Do NOT change component ownership.
+
+---
+
+# DOCUMENTATION
+
+Update:
+
+docs/SanctuaryExperienceAudit.md
+
+Include:
+
+Walkthrough findings
+
+Interaction findings
+
+Visual improvements
+
+Lighting adjustments
+
+Performance measurements
+
+Accessibility notes
+
+Final recommendations
+
+---
+
+# VERIFICATION
+
+Confirm:
+
+✓ Sanctuary boots correctly
+
+✓ Landing experience works
+
+✓ Navigation works
+
+✓ Memorial Browser works
+
+✓ Memorial Profile works
+
+✓ Candle Lighting works
+
+✓ Tribute system works
+
+✓ Reflection Mode works
+
+✓ Mobile works
+
+✓ Desktop works
+
+✓ No regressions
+
+✓ Production build passes
+
+✓ TypeScript passes
+
+---
+
+# SUCCESS CRITERIA
+
+A first-time visitor should experience:
+
+• A peaceful arrival
+
+• Clear orientation
+
+• Beautiful visuals
+
+• Smooth performance
+
+• Reliable interactions
+
+• Emotional connection
+
+without confusion, frustration, or technical distractions.
+
+---
+
+# CONSTRAINTS
+
+DO NOT:
+
+❌ Add new features
+
+❌ Add new APIs
+
+❌ Change database schema
+
+❌ Change business logic
+
+❌ Refactor architecture
+
+❌ Redesign the Sanctuary
+
+Focus entirely on polish, refinement, stability, and immersion.
+
+---
+
+# DELIVERABLES
+
+1. Sanctuary walkthrough report
+
+2. Interaction verification report
+
+3. Lighting audit
+
+4. Mobile UX audit
+
+5. Performance report
+
+6. Accessibility report
+
+7. Updated documentation
+
+8. Final verification checklist
+
+Stop after verification.

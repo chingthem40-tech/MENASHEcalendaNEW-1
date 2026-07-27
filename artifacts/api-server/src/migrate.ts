@@ -1,0 +1,781 @@
+import { pool } from "@workspace/db";
+import { logger } from "./lib/logger";
+
+const SEED_BOOKS = [
+  {
+    title: "Siddur Ashkenaz",
+    language: "Hebrew / English",
+    category: "Siddur",
+    description:
+      "The complete Ashkenazic prayer book for weekdays, Shabbat, and holidays with Hebrew text and English translation.",
+    cover_emoji: "🕍",
+    cover_color: "#1a3050",
+    file_url: "https://www.sefaria.org/sheets/print",
+    is_premium: false,
+    published: true,
+    sort_order: 1,
+  },
+  {
+    title: "Tehillim — Psalms",
+    language: "Hebrew / English",
+    category: "Tehillim",
+    description:
+      "The complete Book of Psalms (Tehillim) with Hebrew text, transliteration, and English translation. Essential daily reading.",
+    cover_emoji: "📜",
+    cover_color: "#2a1a40",
+    file_url: null,
+    is_premium: false,
+    published: true,
+    sort_order: 2,
+  },
+  {
+    title: "Parashat HaShavua",
+    language: "Hebrew / English",
+    category: "Torah Portions",
+    description:
+      "Complete weekly Torah portions with commentary and Haftarah readings for the entire year.",
+    cover_emoji: "📖",
+    cover_color: "#1a2a20",
+    file_url: null,
+    is_premium: false,
+    published: true,
+    sort_order: 3,
+  },
+  {
+    title: "Siddur Sefard",
+    language: "Hebrew",
+    category: "Siddur",
+    description:
+      "The Sefardic prayer rite, used by many Bnei Menashe communities and Mizrachi congregations.",
+    cover_emoji: "🌟",
+    cover_color: "#30200a",
+    file_url: null,
+    is_premium: true,
+    published: true,
+    sort_order: 4,
+  },
+  {
+    title: "Mishna Yomit",
+    language: "Hebrew / English",
+    category: "Daily Study",
+    description:
+      "One Mishna per day — complete Shisha Sidrei Mishna cycle with commentary.",
+    cover_emoji: "📚",
+    cover_color: "#1a1a30",
+    file_url: null,
+    is_premium: true,
+    published: true,
+    sort_order: 5,
+  },
+  {
+    title: "Hebrew Alef-Bet Primer",
+    language: "English",
+    category: "Hebrew Learning",
+    description:
+      "Beginner guide to reading and writing Hebrew — letters, vowels, and basic words for Bnei Menashe newcomers.",
+    cover_emoji: "🔤",
+    cover_color: "#0a2030",
+    file_url: null,
+    is_premium: false,
+    published: true,
+    sort_order: 6,
+  },
+  {
+    title: "Bnei Menashe Prayer Guide",
+    language: "Kuki / Hebrew",
+    category: "Kuki Christian Books",
+    description:
+      "Traditional prayers and liturgy adapted for Bnei Menashe communities transitioning to Jewish observance.",
+    cover_emoji: "🙏",
+    cover_color: "#2a1030",
+    file_url: null,
+    is_premium: false,
+    published: true,
+    sort_order: 7,
+  },
+  {
+    title: "Shabbat Table Songs",
+    language: "Hebrew / Transliteration",
+    category: "Prayer Books",
+    description:
+      "Complete Zemirot for Friday night and Shabbat day — songs, melodies, and traditions of Bnei Menashe.",
+    cover_emoji: "🎵",
+    cover_color: "#1a2a10",
+    file_url: null,
+    is_premium: false,
+    published: true,
+    sort_order: 8,
+  },
+];
+
+export async function runMigrations(): Promise<void> {
+  const client = await pool.connect();
+  try {
+    logger.info("Running startup migrations…");
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS books (
+        id           SERIAL PRIMARY KEY,
+        title        TEXT NOT NULL,
+        language     TEXT NOT NULL DEFAULT 'English',
+        category     TEXT NOT NULL,
+        description  TEXT NOT NULL DEFAULT '',
+        cover_emoji  TEXT NOT NULL DEFAULT '📖',
+        cover_color  TEXT NOT NULL DEFAULT '#1a2540',
+        file_url     TEXT,
+        is_premium   BOOLEAN NOT NULL DEFAULT false,
+        published    BOOLEAN NOT NULL DEFAULT true,
+        sort_order   INTEGER NOT NULL DEFAULT 0,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Public member profiles
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS user_public_profiles (
+        user_id       TEXT PRIMARY KEY,
+        display_name  TEXT NOT NULL DEFAULT '',
+        congregation  TEXT NOT NULL DEFAULT '',
+        bio           TEXT NOT NULL DEFAULT '',
+        role          TEXT NOT NULL DEFAULT 'Member',
+        city          TEXT NOT NULL DEFAULT '',
+        country       TEXT NOT NULL DEFAULT '',
+        avatar_emoji  TEXT NOT NULL DEFAULT '👤',
+        updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // User profiles
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS user_profiles (
+        user_id       TEXT PRIMARY KEY,
+        theme         TEXT NOT NULL DEFAULT 'dark',
+        location      JSONB,
+        is_premium    BOOLEAN NOT NULL DEFAULT false,
+        candle_enabled BOOLEAN NOT NULL DEFAULT true,
+        language      TEXT NOT NULL DEFAULT 'en',
+        notif_prefs   JSONB,
+        lead_time     INTEGER NOT NULL DEFAULT 10,
+        updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Yahrzeit entries
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS yahrzeit_entries (
+        id              TEXT NOT NULL,
+        user_id         TEXT NOT NULL,
+        name            TEXT NOT NULL,
+        hebrew_day      INTEGER NOT NULL,
+        hebrew_month    INTEGER NOT NULL,
+        display_date    TEXT NOT NULL,
+        was_after_sunset BOOLEAN NOT NULL DEFAULT false,
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, id)
+      )
+    `);
+
+    // Torah tracker entries
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS torah_tracker_entries (
+        id          TEXT NOT NULL,
+        user_id     TEXT NOT NULL,
+        date        TEXT NOT NULL,
+        subject     TEXT NOT NULL,
+        description TEXT NOT NULL DEFAULT '',
+        duration    INTEGER NOT NULL DEFAULT 0,
+        notes       TEXT NOT NULL DEFAULT '',
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, id)
+      )
+    `);
+
+    // Torah tracker goals
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS torah_tracker_goals (
+        user_id   TEXT PRIMARY KEY,
+        goal_mins INTEGER NOT NULL DEFAULT 0,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Community Yahrzeit Board
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS community_yahrzeit (
+        id                  TEXT PRIMARY KEY,
+        user_id             TEXT NOT NULL,
+        deceased_name       TEXT NOT NULL,
+        hebrew_day          INTEGER NOT NULL,
+        hebrew_month        INTEGER NOT NULL,
+        display_date        TEXT NOT NULL DEFAULT '',
+        passing_year        INTEGER,
+        message             TEXT NOT NULL DEFAULT '',
+        candle_lit          BOOLEAN NOT NULL DEFAULT false,
+        candle_lit_by       TEXT,
+        candle_lit_at       TIMESTAMPTZ,
+        donor_display_name  TEXT NOT NULL DEFAULT '',
+        created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Active learning dedications (text floats in candle flame for 5 min)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS community_yahrzeit_learners (
+        id            TEXT PRIMARY KEY,
+        entry_id      TEXT NOT NULL,
+        user_id       TEXT NOT NULL,
+        learner_name  TEXT NOT NULL DEFAULT '',
+        study_subject TEXT NOT NULL DEFAULT '',
+        active_until  TIMESTAMPTZ NOT NULL,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Push notification subscriptions (persistent across restarts)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id          TEXT PRIMARY KEY,
+        endpoint    TEXT NOT NULL,
+        p256dh      TEXT NOT NULL,
+        auth        TEXT NOT NULL,
+        schedule    JSONB NOT NULL DEFAULT '[]',
+        added_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Census — local admin's branch (one per authenticated user)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS census_branches (
+        id              TEXT PRIMARY KEY,
+        owner_user_id   TEXT NOT NULL UNIQUE,
+        name            TEXT NOT NULL,
+        city_id         TEXT NOT NULL DEFAULT '',
+        city_name       TEXT NOT NULL DEFAULT '',
+        admin_name      TEXT,
+        established     TEXT,
+        logo_url             TEXT,
+        synagogue_image_url  TEXT,
+        families        JSONB NOT NULL DEFAULT '[]',
+        updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Add logo_url / synagogue_image_url to census_branches (idempotent, for pre-existing tables)
+    await client.query(`
+      ALTER TABLE census_branches ADD COLUMN IF NOT EXISTS logo_url TEXT
+    `);
+    await client.query(`
+      ALTER TABLE census_branches ADD COLUMN IF NOT EXISTS synagogue_image_url TEXT
+    `);
+
+    // Census — branch submissions for global admin review
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS census_submissions (
+        id              TEXT PRIMARY KEY,
+        owner_user_id   TEXT NOT NULL,
+        branch_data     JSONB NOT NULL,
+        status          TEXT NOT NULL DEFAULT 'pending',
+        submitted_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        reviewed_at     TIMESTAMPTZ,
+        review_note     TEXT
+      )
+    `);
+
+    // Census — community member submissions to a branch
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS census_member_submissions (
+        id              TEXT PRIMARY KEY,
+        branch_id       TEXT NOT NULL,
+        branch_name     TEXT NOT NULL,
+        submitter_name  TEXT NOT NULL,
+        submitter_note  TEXT,
+        head_census     JSONB NOT NULL DEFAULT '{}',
+        members         JSONB NOT NULL DEFAULT '[]',
+        status          TEXT NOT NULL DEFAULT 'pending',
+        submitted_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        reviewed_at     TIMESTAMPTZ,
+        review_note     TEXT
+      )
+    `);
+
+    // Add cover_image_url to books (idempotent)
+    await client.query(`
+      ALTER TABLE books ADD COLUMN IF NOT EXISTS cover_image_url TEXT
+    `);
+
+    // Add profile_photo_url to user_public_profiles (idempotent)
+    await client.query(`
+      ALTER TABLE user_public_profiles ADD COLUMN IF NOT EXISTS profile_photo_url TEXT
+    `);
+
+    // Add user_id to push_subscriptions (idempotent)
+    await client.query(`
+      ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS user_id TEXT
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS push_subs_user_id_idx
+        ON push_subscriptions (user_id) WHERE user_id IS NOT NULL
+    `);
+
+    // Community announcements (server-backed, broadcastable)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS community_announcements (
+        id           TEXT PRIMARY KEY,
+        emoji        TEXT NOT NULL DEFAULT '📢',
+        title        TEXT NOT NULL,
+        body         TEXT NOT NULL DEFAULT '',
+        status       TEXT NOT NULL DEFAULT 'sent',
+        pinned       BOOLEAN NOT NULL DEFAULT false,
+        scheduled_at TIMESTAMPTZ,
+        sent_at      TIMESTAMPTZ,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Expo push tokens (mobile)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS expo_push_tokens (
+        id          TEXT PRIMARY KEY,
+        user_id     TEXT NOT NULL,
+        token       TEXT NOT NULL UNIQUE,
+        location    JSONB,
+        notif_prefs JSONB,
+        lead_mins   INTEGER NOT NULL DEFAULT 15,
+        updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS expo_tokens_user_id_idx ON expo_push_tokens (user_id)
+    `);
+
+    // Premium access requests
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS premium_requests (
+        id           TEXT PRIMARY KEY,
+        user_id      TEXT NOT NULL UNIQUE,
+        status       TEXT NOT NULL DEFAULT 'pending',
+        note         TEXT NOT NULL DEFAULT '',
+        display_name TEXT,
+        avatar_emoji TEXT NOT NULL DEFAULT '👤',
+        congregation TEXT,
+        city         TEXT,
+        country      TEXT,
+        requested_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        reviewed_at  TIMESTAMPTZ
+      )
+    `);
+
+    // Razorpay payment records
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS payment_records (
+        id         SERIAL PRIMARY KEY,
+        user_id    TEXT NOT NULL,
+        order_id   TEXT NOT NULL,
+        payment_id TEXT NOT NULL UNIQUE,
+        plan       TEXT NOT NULL,
+        amount     INTEGER NOT NULL,
+        status     TEXT NOT NULL DEFAULT 'captured',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // Scheduled broadcasts (admin-composed, fire at a future time)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS scheduled_broadcasts (
+        id           SERIAL PRIMARY KEY,
+        emoji        TEXT NOT NULL DEFAULT '📢',
+        title        TEXT NOT NULL,
+        body         TEXT NOT NULL,
+        fire_at      TIMESTAMPTZ NOT NULL,
+        sent_at      TIMESTAMPTZ,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    // ── Memorial Sanctuary V1 ─────────────────────────────────────────────────
+
+    // Enums (idempotent — one DO block per type)
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_status AS ENUM ('draft','published','archived','removed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_privacy_level AS ENUM ('private','family','community','public'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_interaction_permission AS ENUM ('nobody','family','community','public'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_candle_type AS ENUM ('yahrzeit','shabbat','memorial','neshama','shloshim'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_tribute_status AS ENUM ('pending','approved','rejected','removed'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_family_member_role AS ENUM ('admin','member','viewer'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_location_type AS ENUM ('burial','birthplace','hometown','synagogue','other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_families (
+        id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        name                TEXT NOT NULL,
+        primary_contact_id  TEXT NOT NULL,
+        member_count        INTEGER NOT NULL DEFAULT 0,
+        created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at          TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_family_members (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        family_id   UUID NOT NULL REFERENCES memorial_families(id) ON DELETE CASCADE,
+        user_id     TEXT NOT NULL,
+        role        memorial_family_member_role NOT NULL DEFAULT 'member',
+        invited_by  TEXT,
+        joined_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE (family_id, user_id)
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_fam_members_user ON memorial_family_members (user_id);
+      CREATE INDEX IF NOT EXISTS idx_fam_members_family ON memorial_family_members (family_id);
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_persons (
+        id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        full_name            TEXT NOT NULL,
+        hebrew_name          TEXT,
+        hebrew_father_name   TEXT,
+        hebrew_mother_name   TEXT,
+        birth_date           TEXT,
+        birth_date_hebrew    TEXT,
+        death_date           TEXT NOT NULL,
+        death_date_hebrew    TEXT,
+        birth_city           TEXT,
+        birth_country        TEXT,
+        death_city           TEXT,
+        death_country        TEXT,
+        tribe_affiliation    TEXT,
+        occupation           TEXT,
+        biography            TEXT,
+        created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at           TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorials (
+        id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        slug             TEXT NOT NULL UNIQUE,
+        person_id        UUID NOT NULL REFERENCES memorial_persons(id) ON DELETE RESTRICT,
+        family_id        UUID NOT NULL REFERENCES memorial_families(id) ON DELETE RESTRICT,
+        status           memorial_status NOT NULL DEFAULT 'draft',
+        created_by       TEXT NOT NULL,
+        published_at     TIMESTAMPTZ,
+        last_activity_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        candle_count     INTEGER NOT NULL DEFAULT 0,
+        flower_count     INTEGER NOT NULL DEFAULT 0,
+        tribute_count    INTEGER NOT NULL DEFAULT 0,
+        prayer_count     INTEGER NOT NULL DEFAULT 0,
+        view_count       INTEGER NOT NULL DEFAULT 0,
+        created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at       TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_memorials_family ON memorials (family_id) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS idx_memorials_status ON memorials (status) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS idx_memorials_slug ON memorials (slug) WHERE deleted_at IS NULL;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_privacy (
+        id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        memorial_id           UUID NOT NULL UNIQUE REFERENCES memorials(id) ON DELETE CASCADE,
+        visibility_level      memorial_privacy_level NOT NULL DEFAULT 'family',
+        can_light_candles     memorial_interaction_permission NOT NULL DEFAULT 'community',
+        can_leave_tributes    memorial_interaction_permission NOT NULL DEFAULT 'family',
+        can_view_photos       memorial_interaction_permission NOT NULL DEFAULT 'family',
+        require_moderation    BOOLEAN NOT NULL DEFAULT true,
+        allow_guest_interaction BOOLEAN NOT NULL DEFAULT false,
+        updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_candles (
+        id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        memorial_id  UUID NOT NULL REFERENCES memorials(id) ON DELETE CASCADE,
+        user_id      TEXT,
+        guest_name   TEXT,
+        message      TEXT,
+        candle_type  memorial_candle_type NOT NULL DEFAULT 'memorial',
+        is_anonymous BOOLEAN NOT NULL DEFAULT false,
+        ip_hash      TEXT,
+        lit_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at   TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_candles_memorial ON memorial_candles (memorial_id) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS idx_candles_user ON memorial_candles (user_id) WHERE user_id IS NOT NULL;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_tributes (
+        id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        memorial_id      UUID NOT NULL REFERENCES memorials(id) ON DELETE CASCADE,
+        user_id          TEXT,
+        guest_name       TEXT,
+        guest_email      TEXT,
+        title            TEXT,
+        body             TEXT NOT NULL,
+        language         TEXT NOT NULL DEFAULT 'en',
+        is_anonymous     BOOLEAN NOT NULL DEFAULT false,
+        status           memorial_tribute_status NOT NULL DEFAULT 'pending',
+        moderated_by     TEXT,
+        moderated_at     TIMESTAMPTZ,
+        rejection_reason TEXT,
+        created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at       TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_tributes_memorial ON memorial_tributes (memorial_id, status) WHERE deleted_at IS NULL;
+      CREATE INDEX IF NOT EXISTS idx_tributes_pending ON memorial_tributes (status, created_at) WHERE status = 'pending' AND deleted_at IS NULL;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_photos (
+        id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        memorial_id    UUID NOT NULL REFERENCES memorials(id) ON DELETE CASCADE,
+        uploaded_by    TEXT NOT NULL,
+        photo_url      TEXT NOT NULL,
+        caption        TEXT,
+        taken_year     INTEGER,
+        taken_location TEXT,
+        is_featured    BOOLEAN NOT NULL DEFAULT false,
+        is_approved    BOOLEAN NOT NULL DEFAULT false,
+        created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at     TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_photos_memorial ON memorial_photos (memorial_id) WHERE deleted_at IS NULL;
+    `);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS memorial_locations (
+        id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        person_id     UUID NOT NULL REFERENCES memorial_persons(id) ON DELETE CASCADE,
+        location_type memorial_location_type NOT NULL DEFAULT 'burial',
+        label         TEXT NOT NULL,
+        address       TEXT,
+        city          TEXT,
+        country       TEXT,
+        latitude      TEXT,
+        longitude     TEXT,
+        notes         TEXT,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        deleted_at    TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_locations_person ON memorial_locations (person_id) WHERE deleted_at IS NULL;
+    `);
+
+    // ── Memorial Sanctuary V2 — SPR-017 enhancements ─────────────────────────
+
+    // New enum for tribute types
+    await client.query(
+      `DO $$ BEGIN CREATE TYPE memorial_tribute_type AS ENUM ('memory','prayer','scripture','family','community'); EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+    );
+
+    // Add relationship and community fields to candles
+    await client.query(
+      `ALTER TABLE memorial_candles ADD COLUMN IF NOT EXISTS relationship TEXT`,
+    );
+    await client.query(
+      `ALTER TABLE memorial_candles ADD COLUMN IF NOT EXISTS community TEXT`,
+    );
+
+    // Add tribute_type to tributes
+    await client.query(
+      `ALTER TABLE memorial_tributes ADD COLUMN IF NOT EXISTS tribute_type memorial_tribute_type`,
+    );
+
+    // Performance indexes
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_memorials_view_count ON memorials (view_count DESC) WHERE deleted_at IS NULL AND status = 'published'`,
+    );
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_memorials_last_activity ON memorials (last_activity_at DESC) WHERE deleted_at IS NULL AND status = 'published'`,
+    );
+    await client.query(
+      `CREATE INDEX IF NOT EXISTS idx_memorials_candle_count ON memorials (candle_count DESC) WHERE deleted_at IS NULL AND status = 'published'`,
+    );
+
+    logger.info("Memorial Sanctuary V2 schema ready");
+
+    // Beta feedback submissions
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS feedback (
+        id          SERIAL PRIMARY KEY,
+        user_id     TEXT,
+        category    TEXT NOT NULL DEFAULT 'bug',
+        priority    TEXT NOT NULL DEFAULT 'medium',
+        message     TEXT NOT NULL,
+        page        TEXT NOT NULL DEFAULT '',
+        device      TEXT NOT NULL DEFAULT '',
+        status      TEXT NOT NULL DEFAULT 'open',
+        admin_note  TEXT NOT NULL DEFAULT '',
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS feedback_status_idx ON feedback (status, created_at DESC)
+    `);
+
+    // ── Community Prayer Board ────────────────────────────────────────────────
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS prayer_requests (
+        id            TEXT PRIMARY KEY,
+        user_id       TEXT,
+        name          TEXT NOT NULL DEFAULT 'Anonymous',
+        is_anonymous  BOOLEAN NOT NULL DEFAULT FALSE,
+        text          TEXT NOT NULL,
+        category      TEXT NOT NULL DEFAULT 'Blessing',
+        status        TEXT NOT NULL DEFAULT 'pending',
+        pinned        BOOLEAN NOT NULL DEFAULT FALSE,
+        admin_response TEXT NOT NULL DEFAULT '',
+        amens         INTEGER NOT NULL DEFAULT 0,
+        submitted_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_prayer_requests_status ON prayer_requests (status, submitted_at DESC)
+    `);
+
+    // ── Member Directory (server-backed, shared across web + mobile) ────────
+    await client.query(`
+      DO $mds$ BEGIN
+        CREATE TYPE member_directory_status AS ENUM ('pending','approved','hidden');
+      EXCEPTION WHEN duplicate_object THEN NULL;
+      END $mds$
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS member_directory (
+        id                 TEXT PRIMARY KEY,
+        user_id            TEXT NOT NULL UNIQUE,
+        name               TEXT NOT NULL,
+        city               TEXT NOT NULL DEFAULT '',
+        country            TEXT NOT NULL DEFAULT 'India',
+        role               TEXT NOT NULL DEFAULT 'Member',
+        bio                TEXT NOT NULL DEFAULT '',
+        whatsapp           TEXT,
+        phone              TEXT,
+        email              TEXT,
+        other_contact      TEXT,
+        birthday           TEXT,
+        aliyah_date        TEXT,
+        avatar_emoji       TEXT,
+        profile_photo_url  TEXT,
+        status             member_directory_status NOT NULL DEFAULT 'pending',
+        joined_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_member_directory_status ON member_directory (status)
+    `);
+
+    // Personal Remembrance Events (yahrzeits, birthdays, anniversaries)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS remembrance_events (
+        id                   TEXT NOT NULL,
+        user_id              TEXT NOT NULL,
+        name                 TEXT NOT NULL,
+        relationship         TEXT NOT NULL DEFAULT '',
+        event_type           TEXT NOT NULL DEFAULT 'yahrzeit',
+        gregorian_date       TEXT,
+        hebrew_day           INTEGER,
+        hebrew_month         INTEGER,
+        hebrew_year          INTEGER,
+        uses_hebrew_date     BOOLEAN NOT NULL DEFAULT false,
+        before_sunset        BOOLEAN NOT NULL DEFAULT true,
+        notification_enabled BOOLEAN NOT NULL DEFAULT false,
+        notification_days    INTEGER NOT NULL DEFAULT 1,
+        repeat_annually      BOOLEAN NOT NULL DEFAULT true,
+        notes                TEXT NOT NULL DEFAULT '',
+        photo_url            TEXT,
+        census_person_id     TEXT,
+        created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, id)
+      )
+    `);
+    await client.query(
+      `ALTER TABLE remembrance_events ADD COLUMN IF NOT EXISTS notification_time TEXT NOT NULL DEFAULT '09:00'`,
+    );
+    await client.query(
+      `ALTER TABLE remembrance_events ADD COLUMN IF NOT EXISTS location TEXT NOT NULL DEFAULT ''`,
+    );
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_remembrance_user ON remembrance_events (user_id)
+    `);
+
+    logger.info("Schema ready");
+
+    const { rows } = await client.query("SELECT COUNT(*) AS cnt FROM books");
+    const count = parseInt(rows[0].cnt, 10);
+
+    if (count === 0) {
+      logger.info("Seeding default books…");
+      for (const book of SEED_BOOKS) {
+        await client.query(
+          `INSERT INTO books
+             (title, language, category, description, cover_emoji, cover_color, file_url, is_premium, published, sort_order)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+          [
+            book.title,
+            book.language,
+            book.category,
+            book.description,
+            book.cover_emoji,
+            book.cover_color,
+            book.file_url,
+            book.is_premium,
+            book.published,
+            book.sort_order,
+          ],
+        );
+      }
+      logger.info({ count: SEED_BOOKS.length }, "Default books seeded");
+    } else {
+      logger.info({ count }, "Books table already has data — skipping seed");
+    }
+  } finally {
+    client.release();
+  }
+}

@@ -1,0 +1,13 @@
+uploads = []
+
+[[generated]]
+id = "GnQpPlT478quyLLt2lh_M"
+uri = "file://artifacts/menashe-mobile/assets/images/icon.png"
+type = "image"
+title = "generated_image"
+
+[[outputs]]
+id = "lTyEPP25NSn4lNh8d92GK"
+uri = "file://docs/MemorialSanctuaryReview.md"
+type = "text"
+title = "Memorial Sanctuary — Architectural Review"

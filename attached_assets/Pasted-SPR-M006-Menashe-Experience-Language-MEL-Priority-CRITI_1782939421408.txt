@@ -1,0 +1,559 @@
+SPR-M006 — Menashe Experience Language (MEL)
+
+Priority:
+🔴 CRITICAL
+
+Chief Architect:
+Samuel & ChatGPT
+
+Platform:
+Menashe Calendar Mobile
+
+Version:
+1.0
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Create the official Menashe Experience Language (MEL).
+
+MEL defines HOW the application feels.
+
+It is NOT a Design System.
+
+It is NOT Components.
+
+It is NOT Business Logic.
+
+It is the collection of experience principles that every future
+screen must follow.
+
+The goal is to ensure that Home, Calendar, Sanctuary, Torah,
+Community, AI and Settings all feel like one unified product.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify Web Application
+
+❌ Modify Mobile Components
+
+❌ Modify Mobile Shell
+
+❌ Modify Business Logic
+
+❌ Modify Shared Core
+
+❌ Build New Screens
+
+❌ Redesign Existing Home
+
+This sprint creates standards only.
+
+------------------------------------------------------------
+CREATE
+
+src/mobile/experience/
+
+------------------------------------------------------------
+
+------------------------------------------------------------
+PHASE 1
+
+Experience Philosophy
+
+------------------------------------------------------------
+
+Create
+
+EXPERIENCE_PRINCIPLES.md
+
+Document principles such as:
+
+• Calm before excitement
+
+• Reading before decoration
+
+• White space is a feature
+
+• Motion guides attention
+
+• Information has hierarchy
+
+• Every animation has purpose
+
+• Premium through simplicity
+
+• Jewish heritage without visual clutter
+
+• Beauty through consistency
+
+• Respectful interaction
+
+------------------------------------------------------------
+PHASE 2
+
+Information Hierarchy
+
+------------------------------------------------------------
+
+Create
+
+informationHierarchy.ts
+
+Define visual priorities.
+
+Example
+
+Level 1
+
+Today's Date
+
+Hero
+
+Countdown
+
+Level 2
+
+Prayer
+
+Parashah
+
+Holiday
+
+Level 3
+
+Community
+
+AI
+
+Settings
+
+Document why.
+
+------------------------------------------------------------
+PHASE 3
+
+Card Language
+
+------------------------------------------------------------
+
+Define official card families.
+
+Hero Card
+
+Feature Card
+
+Information Card
+
+Statistic Card
+
+Countdown Card
+
+Action Card
+
+Learning Card
+
+Preview Card
+
+Gallery Card
+
+Alert Card
+
+Each should specify:
+
+Purpose
+
+Maximum height
+
+Padding
+
+Typography
+
+Illustration rules
+
+CTA placement
+
+Animation style
+
+------------------------------------------------------------
+PHASE 4
+
+Motion Language
+
+------------------------------------------------------------
+
+Document
+
+Entrance
+
+Exit
+
+Press
+
+Scroll
+
+Collapse
+
+Expand
+
+Bottom Sheet
+
+Dialog
+
+Hero
+
+Navigation
+
+Motion philosophy.
+
+Motion should never distract.
+
+------------------------------------------------------------
+PHASE 5
+
+Illustration Language
+
+------------------------------------------------------------
+
+Define artwork standards.
+
+Examples
+
+Warm sunrise
+
+Golden hour
+
+Soft shadows
+
+Natural landscapes
+
+Stone
+
+Parchment
+
+Olive
+
+Jerusalem limestone
+
+Candlelight
+
+No generic stock art.
+
+------------------------------------------------------------
+PHASE 6
+
+Photography Language
+
+------------------------------------------------------------
+
+Create standards.
+
+Lighting
+
+Color grading
+
+Depth
+
+Contrast
+
+Crop
+
+Composition
+
+Future AI image generation guidance.
+
+------------------------------------------------------------
+PHASE 7
+
+Typography Usage
+
+------------------------------------------------------------
+
+Define
+
+When DisplayXL is used.
+
+When Heading is used.
+
+When Caption is used.
+
+Hebrew hierarchy.
+
+English hierarchy.
+
+Never guess.
+
+------------------------------------------------------------
+PHASE 8
+
+Spacing Language
+
+------------------------------------------------------------
+
+Rules.
+
+Large section spacing.
+
+Card rhythm.
+
+Reading rhythm.
+
+Margins.
+
+Safe area.
+
+Breathing room.
+
+------------------------------------------------------------
+PHASE 9
+
+Interaction Language
+
+------------------------------------------------------------
+
+Define
+
+Tap
+
+Long press
+
+Swipe
+
+Pull
+
+Scroll
+
+Selection
+
+Confirmation
+
+Feedback
+
+Haptics
+
+Future gestures.
+
+------------------------------------------------------------
+PHASE 10
+
+Loading Language
+
+------------------------------------------------------------
+
+Standardize
+
+Skeleton
+
+Loading
+
+Refreshing
+
+Offline
+
+Retry
+
+Progress
+
+Never use inconsistent loading UI.
+
+------------------------------------------------------------
+PHASE 11
+
+Empty States
+
+------------------------------------------------------------
+
+Create standards.
+
+Illustration
+
+Headline
+
+Description
+
+Primary Action
+
+Secondary Action
+
+Tone
+
+------------------------------------------------------------
+PHASE 12
+
+Error Language
+
+------------------------------------------------------------
+
+Friendly.
+
+Human.
+
+Recovery first.
+
+Never technical.
+
+Never blame the user.
+
+------------------------------------------------------------
+PHASE 13
+
+Accessibility Language
+
+------------------------------------------------------------
+
+Document
+
+Dynamic Type
+
+Reduced Motion
+
+VoiceOver
+
+TalkBack
+
+Contrast
+
+Touch Targets
+
+Keyboard
+
+Screen Readers
+
+------------------------------------------------------------
+PHASE 14
+
+Future Experience Rules
+
+------------------------------------------------------------
+
+Reserve guidance for
+
+Widgets
+
+Watch
+
+Tablet
+
+Desktop
+
+CarPlay
+
+Android Auto
+
+Future Vision Pro
+
+------------------------------------------------------------
+DOCUMENTATION
+
+------------------------------------------------------------
+
+Produce
+
+MEL.md
+
+Experience Principles
+
+Interaction Guide
+
+Motion Guide
+
+Card Guide
+
+Illustration Guide
+
+Photography Guide
+
+Accessibility Guide
+
+Information Hierarchy
+
+Experience Checklist
+
+Contribution Rules
+
+------------------------------------------------------------
+VERIFICATION
+
+------------------------------------------------------------
+
+Verify
+
+✅ Web untouched
+
+✅ Mobile Foundation untouched
+
+✅ Component Library untouched
+
+✅ Mobile Shell untouched
+
+✅ No business logic changed
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+------------------------------------------------------------
+DELIVERABLES
+
+------------------------------------------------------------
+
+Provide
+
+Experience Folder Tree
+
+Architecture Diagram
+
+Experience Diagram
+
+Card Hierarchy
+
+Motion Hierarchy
+
+Interaction Hierarchy
+
+Illustration Rules
+
+Documentation Index
+
+Verification Checklist
+
+------------------------------------------------------------
+STOP POINT
+
+------------------------------------------------------------
+
+Do NOT build Home.
+
+Do NOT build Calendar.
+
+Do NOT build Sanctuary.
+
+Do NOT build AI.
+
+Stop after documentation.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+
+MMDL defines WHAT things look like.
+
+Components define WHAT things are.
+
+MEL defines HOW people feel.
+
+Every future feature must inherit MEL.
+
+No new screen should ever invent its own experience.
+
+Menashe Calendar should feel calm,
+timeless,
+warm,
+respectful,
+and unmistakably Menashe.
+
+This document becomes the permanent experience constitution of the mobile application.

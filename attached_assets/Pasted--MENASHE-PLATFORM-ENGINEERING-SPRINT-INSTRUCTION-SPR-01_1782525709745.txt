@@ -1,0 +1,255 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-010.5 — Admin Workflow Validation
+
+ROLE
+
+Act as a Senior QA Engineer, Senior Full Stack Engineer, and Security Engineer.
+
+This is a validation sprint.
+
+The objective is NOT to build features.
+
+The objective is to verify that every administrator workflow still functions correctly after the Authentication Security and API Security refactoring.
+
+---
+
+## IMPORTANT
+
+Do NOT redesign the UI.
+
+Do NOT refactor code.
+
+Do NOT add new features.
+
+Do NOT improve architecture.
+
+Do NOT optimize code.
+
+Only validate existing administrator workflows.
+
+If a bug is discovered, fix ONLY that bug.
+
+---
+
+# TASK 1
+
+Verify Administrator Authentication.
+
+Test:
+
+✓ Login as administrator
+
+✓ Clerk authentication
+
+✓ Admin role detection
+
+✓ Logout
+
+✓ Session persistence
+
+✓ Unauthorized user blocked
+
+---
+
+# TASK 2
+
+Books Module
+
+Verify:
+
+✓ Create Book
+
+✓ Edit Book
+
+✓ Save Draft
+
+✓ Publish Book
+
+✓ Unpublish Book
+
+✓ Delete Book
+
+✓ Draft visible only to administrator
+
+✓ Published book visible to users
+
+---
+
+# TASK 3
+
+Announcements Module
+
+Verify:
+
+✓ Create announcement
+
+✓ Edit announcement
+
+✓ Publish announcement
+
+✓ Delete announcement
+
+✓ Public announcement visibility
+
+---
+
+# TASK 4
+
+Member Approval
+
+Verify:
+
+✓ Pending members list
+
+✓ Approve member
+
+✓ Reject member
+
+✓ Status updates correctly
+
+✓ Refresh works
+
+---
+
+# TASK 5
+
+Census Administration
+
+Verify:
+
+✓ View submissions
+
+✓ Search submissions
+
+✓ Approve
+
+✓ Reject
+
+✓ Export (if implemented)
+
+---
+
+# TASK 6
+
+Community Administration
+
+Verify:
+
+✓ Events
+
+✓ Prayer Board moderation
+
+✓ Member Directory
+
+✓ Community settings
+
+Document any unavailable feature.
+
+---
+
+# TASK 7
+
+Premium
+
+Verify:
+
+✓ Payment upgrade
+
+✓ Manual premium assignment
+
+✓ Premium removal
+
+✓ User cannot self-upgrade
+
+---
+
+# TASK 8
+
+Push Notifications
+
+Verify:
+
+✓ Subscribe
+
+✓ Send test notification
+
+✓ Receive notification
+
+---
+
+# TASK 9
+
+AI Features
+
+Verify:
+
+✓ AI Rav chat
+
+✓ Torah insight generation
+
+✓ Holiday insight generation
+
+✓ Rate limiting behaves correctly
+
+---
+
+# TASK 10
+
+Audit
+
+Produce a validation matrix.
+
+For every workflow report:
+
+PASS
+
+FAIL
+
+PARTIAL
+
+If FAIL:
+
+Describe:
+
+* Root cause
+* Severity
+* Proposed fix
+
+Only implement fixes for confirmed regressions.
+
+---
+
+# DELIVERABLES
+
+Provide:
+
+1. Validation Matrix
+
+2. Bugs Found
+
+3. Bugs Fixed
+
+4. Remaining Issues
+
+5. Overall Platform Readiness
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✓ Every administrator workflow tested.
+
+✓ Authentication verified.
+
+✓ Authorization verified.
+
+✓ Existing features still work.
+
+✓ No new features added.
+
+✓ Only regression fixes permitted.
+
+Stop after validation and wait for Chief Architect review.

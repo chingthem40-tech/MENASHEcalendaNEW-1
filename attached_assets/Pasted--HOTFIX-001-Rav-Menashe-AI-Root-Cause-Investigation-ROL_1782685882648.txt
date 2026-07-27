@@ -1,0 +1,312 @@
+# HOTFIX-001 — Rav Menashe AI Root Cause Investigation
+
+## ROLE
+
+Act as a Principal AI Reliability Engineer, Principal Backend Engineer, Senior React Engineer, API Architect, and Production Debugging Engineer.
+
+This is a production hotfix.
+
+Do NOT add features.
+
+Do NOT refactor architecture.
+
+Do NOT redesign the UI.
+
+Your only objective is to identify and fix the exact cause of Rav Menashe AI returning:
+
+> "I'm temporarily unavailable. Please try again in a moment."
+
+---
+
+# MISSION
+
+Perform a complete end-to-end investigation of the AI request pipeline.
+
+Do not guess.
+
+Collect evidence.
+
+Identify the exact failure point.
+
+Repair only the confirmed root cause.
+
+---
+
+# STEP 1 — Verify AI Health
+
+Call:
+
+GET /api/ai/health
+
+Confirm the current status of:
+
+* OpenAI
+* Gemini
+* Grok
+
+Report:
+
+* healthy
+* unhealthy
+* skipped
+* disabled
+
+If any provider is unhealthy, explain why.
+
+---
+
+# STEP 2 — Trace One Chat Request
+
+Trace one complete user message through the entire system.
+
+React Chat UI
+
+↓
+
+Submit Handler
+
+↓
+
+Frontend API Client
+
+↓
+
+Backend Route
+
+↓
+
+Authentication
+
+↓
+
+Prompt Builder
+
+↓
+
+AI Gateway
+
+↓
+
+Provider Selection
+
+↓
+
+Provider Response
+
+↓
+
+Streaming
+
+↓
+
+Frontend Rendering
+
+Identify exactly where execution stops.
+
+---
+
+# STEP 3 — Browser Network Investigation
+
+Open Developer Tools.
+
+Send one AI message.
+
+Capture:
+
+* Request URL
+* HTTP Method
+* HTTP Status Code
+* Response Body
+* Response Headers
+* Timing
+
+Determine whether the response is:
+
+200
+
+400
+
+401
+
+403
+
+404
+
+429
+
+500
+
+502
+
+503
+
+Explain what the response means.
+
+---
+
+# STEP 4 — Backend Logs
+
+Inspect API server logs while sending the request.
+
+Capture:
+
+* stack traces
+* thrown exceptions
+* timeout errors
+* provider failures
+* authentication failures
+* parsing failures
+
+Do NOT suppress errors.
+
+Report the real exception.
+
+---
+
+# STEP 5 — AI Gateway Investigation
+
+Determine:
+
+Which provider is selected first?
+
+If it fails:
+
+Is fallback attempted?
+
+If fallback fails:
+
+Why?
+
+Verify:
+
+OpenAI
+
+↓
+
+Gemini
+
+↓
+
+Grok
+
+works exactly as designed.
+
+---
+
+# STEP 6 — Prompt Builder
+
+Verify that buildSystemPrompt() completes successfully.
+
+Specifically inspect:
+
+* Hebrew date
+* Parashah
+* Holidays
+* Zmanim
+* Community context
+
+If any context source throws an exception, identify it and ensure the system falls back gracefully to a base prompt.
+
+---
+
+# STEP 7 — Streaming
+
+Determine whether the issue is caused by streaming.
+
+Temporarily disable streaming and test again.
+
+If non-streaming succeeds but streaming fails, identify the streaming bug.
+
+---
+
+# STEP 8 — Environment Verification
+
+Verify that the backend can read:
+
+OPENAI_API_KEY
+
+GEMINI_API_KEY
+
+GROK_API_KEY
+
+Do NOT print secrets.
+
+Only report:
+
+Loaded ✓
+
+Missing ✗
+
+Invalid ✗
+
+---
+
+# STEP 9 — Frontend Rendering
+
+Determine whether the backend actually returns a valid response that the frontend fails to render.
+
+Inspect:
+
+* JSON parsing
+* Stream reader
+* Error boundary
+* Chat state updates
+* Provider badge updates
+
+---
+
+# STEP 10 — Root Cause
+
+Identify ONE confirmed root cause.
+
+Do not provide theories.
+
+Support your conclusion with evidence from logs, network traces, and execution flow.
+
+If multiple independent issues exist, list them in order of severity.
+
+---
+
+# REQUIRED OUTPUT
+
+Produce:
+
+docs/RavMenasheAI-Hotfix-001.md
+
+Include:
+
+1. Health check results
+
+2. Network trace
+
+3. Backend log excerpts
+
+4. Execution flow
+
+5. Root cause
+
+6. Fix applied
+
+7. Verification steps
+
+8. Final status
+
+---
+
+# SUCCESS CRITERIA
+
+✓ Rav Menashe AI responds successfully.
+
+✓ No "I'm temporarily unavailable." message during normal operation.
+
+✓ AI Gateway fallback verified.
+
+✓ Streaming verified (or graceful fallback confirmed).
+
+✓ Provider selection verified.
+
+✓ No new TypeScript errors.
+
+✓ No architecture changes outside the hotfix scope.
+
+Stop only after the root cause has been identified, fixed, verified, and documented.

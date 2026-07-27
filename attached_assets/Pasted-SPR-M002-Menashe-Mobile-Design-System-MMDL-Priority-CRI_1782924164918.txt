@@ -1,0 +1,619 @@
+SPR-M002 — Menashe Mobile Design System (MMDL)
+
+Priority:
+🔴 CRITICAL
+
+Chief Architect:
+Samuel & ChatGPT
+
+Platform:
+Menashe Calendar Mobile
+
+Version:
+Mobile V2
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Create the official Menashe Mobile Design Language (MMDL).
+
+This SPR establishes the visual design system for the entire
+mobile application.
+
+DO NOT build application screens.
+
+DO NOT implement business logic.
+
+DO NOT modify the Web Application.
+
+Create only the reusable visual design foundation.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify any Web files
+
+❌ Modify Web UI
+
+❌ Modify Web CSS
+
+❌ Modify Web Components
+
+❌ Duplicate existing business logic
+
+❌ Build Home Screen
+
+❌ Build Calendar
+
+❌ Build Zmanim
+
+❌ Build Community
+
+❌ Build Torah
+
+❌ Build Settings
+
+This SPR creates ONLY the Mobile Design System.
+
+------------------------------------------------------------
+DESIGN PHILOSOPHY
+------------------------------------------------------------
+
+The design language should feel like:
+
+Apple Human Interface
+
++
+
+Luxury Reading App
+
++
+
+Jewish Heritage
+
++
+
+Modern Minimalism
+
++
+
+Warm Parchment
+
+The application should feel calm,
+spiritual,
+premium,
+timeless.
+
+Never busy.
+
+Never noisy.
+
+Never colorful.
+
+------------------------------------------------------------
+COLOR SYSTEM
+------------------------------------------------------------
+
+Create semantic color tokens.
+
+Do NOT hardcode colors.
+
+Example categories:
+
+Background
+
+Surface
+
+Card
+
+Border
+
+Divider
+
+Primary
+
+Secondary
+
+Accent Gold
+
+Accent Olive
+
+Accent Stone
+
+Success
+
+Warning
+
+Error
+
+Info
+
+Text Primary
+
+Text Secondary
+
+Text Muted
+
+Disabled
+
+Overlay
+
+Glass
+
+Shadow
+
+Dark Mode
+
+Light Mode
+
+Example palette
+
+Parchment
+
+Warm Cream
+
+Ivory
+
+Stone
+
+Gold
+
+Olive
+
+Deep Navy
+
+Charcoal
+
+Do not copy Material colors.
+
+------------------------------------------------------------
+TYPOGRAPHY
+------------------------------------------------------------
+
+Create typography scale.
+
+Display XL
+
+Display
+
+Heading
+
+Title
+
+Subtitle
+
+Body Large
+
+Body
+
+Body Small
+
+Caption
+
+Label
+
+Overline
+
+Include
+
+Font weight
+
+Letter spacing
+
+Line height
+
+Responsive scaling
+
+Accessibility scaling
+
+------------------------------------------------------------
+SPACING SYSTEM
+------------------------------------------------------------
+
+Create spacing tokens.
+
+Example
+
+2
+
+4
+
+8
+
+12
+
+16
+
+20
+
+24
+
+32
+
+40
+
+48
+
+56
+
+64
+
+Never use magic numbers.
+
+------------------------------------------------------------
+BORDER RADIUS
+------------------------------------------------------------
+
+Create radius tokens.
+
+XS
+
+SM
+
+MD
+
+LG
+
+XL
+
+2XL
+
+Pill
+
+Circle
+
+Target visual language:
+
+Soft
+
+Elegant
+
+Premium
+
+------------------------------------------------------------
+ELEVATION
+------------------------------------------------------------
+
+Create elevation tokens.
+
+Level 0
+
+Level 1
+
+Level 2
+
+Level 3
+
+Floating
+
+Modal
+
+Overlay
+
+Shadow opacity
+
+Blur
+
+Offset
+
+------------------------------------------------------------
+GLASS SYSTEM
+------------------------------------------------------------
+
+Create reusable Glass styles.
+
+Light Glass
+
+Dark Glass
+
+Navigation Glass
+
+Header Glass
+
+Card Glass
+
+Overlay Glass
+
+Do not implement.
+
+Prepare reusable tokens.
+
+------------------------------------------------------------
+ICONOGRAPHY
+------------------------------------------------------------
+
+Define icon system.
+
+Stroke width
+
+Sizes
+
+Padding
+
+Color behavior
+
+Active
+
+Inactive
+
+Disabled
+
+Selected
+
+------------------------------------------------------------
+MOTION SYSTEM
+------------------------------------------------------------
+
+Create animation tokens.
+
+Duration
+
+Fast
+
+Normal
+
+Slow
+
+Very Slow
+
+Curves
+
+Ease
+
+Spring
+
+Entrance
+
+Exit
+
+Shared Element
+
+Press Animation
+
+Card Animation
+
+Navigation Animation
+
+Bottom Sheet Animation
+
+------------------------------------------------------------
+COMPONENT DESIGN SPECIFICATIONS
+------------------------------------------------------------
+
+Prepare specifications only.
+
+NO implementation.
+
+Document reusable components.
+
+MenasheButton
+
+MenasheCard
+
+MenasheSurface
+
+MenasheHeader
+
+MenasheSection
+
+MenasheChip
+
+MenasheBadge
+
+MenasheAvatar
+
+MenasheIconButton
+
+MenasheBottomTab
+
+MenasheCalendarCell
+
+MenasheListTile
+
+MenasheStatisticCard
+
+MenasheDateCard
+
+MenashePrayerCard
+
+MenasheParashaCard
+
+MenasheQuickToolCard
+
+MenasheSearchBar
+
+MenasheFloatingButton
+
+MenasheDialog
+
+MenasheBottomSheet
+
+Each specification should define:
+
+Purpose
+
+Padding
+
+Radius
+
+Typography
+
+Elevation
+
+States
+
+Pressed
+
+Disabled
+
+Loading
+
+Focused
+
+Selected
+
+------------------------------------------------------------
+LAYOUT SYSTEM
+------------------------------------------------------------
+
+Create layout tokens.
+
+Screen padding
+
+Section spacing
+
+Card spacing
+
+List spacing
+
+Safe area
+
+Status bar
+
+Bottom navigation
+
+Keyboard
+
+Landscape
+
+Tablet
+
+Foldable
+
+------------------------------------------------------------
+ACCESSIBILITY
+------------------------------------------------------------
+
+Prepare standards.
+
+Minimum touch target
+
+48dp+
+
+Contrast
+
+Dynamic text
+
+Reduced motion
+
+Screen readers
+
+VoiceOver
+
+TalkBack
+
+------------------------------------------------------------
+THEME SWITCHING
+------------------------------------------------------------
+
+Support
+
+Light Theme
+
+Dark Theme
+
+Future Dynamic Theme
+
+All colors must come from semantic tokens.
+
+------------------------------------------------------------
+DESIGN DOCUMENTATION
+------------------------------------------------------------
+
+Generate documentation for:
+
+Color palette
+
+Typography
+
+Spacing
+
+Radius
+
+Elevation
+
+Motion
+
+Icons
+
+Component specifications
+
+Naming conventions
+
+Usage examples
+
+------------------------------------------------------------
+VERIFICATION
+------------------------------------------------------------
+
+Verify
+
+✅ Existing Web untouched
+
+✅ Existing Mobile Foundation untouched
+
+✅ No duplicated logic
+
+✅ Design tokens compile
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide
+
+Design Token Inventory
+
+Theme Architecture Diagram
+
+Typography Scale
+
+Spacing Scale
+
+Radius Scale
+
+Elevation Scale
+
+Motion Scale
+
+Glass Specification
+
+Component Inventory
+
+Design Documentation
+
+Verification Checklist
+
+Stop after verification.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+This SPR defines the visual DNA of the Menashe Mobile App.
+
+Every future mobile screen must be built using these design tokens.
+
+No hardcoded values.
+
+No duplicated styles.
+
+No inconsistent spacing.
+
+No inconsistent typography.
+
+One Design Language.
+
+Infinite Screens.
+
+STOP AFTER VERIFICATION.
+
+DO NOT BUILD THE HOME SCREEN.

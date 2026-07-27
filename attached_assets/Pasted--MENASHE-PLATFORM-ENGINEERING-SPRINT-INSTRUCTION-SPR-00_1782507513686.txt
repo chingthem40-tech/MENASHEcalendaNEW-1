@@ -1,0 +1,169 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-003 — Shared Core Foundation
+
+ROLE
+
+Act as a Senior Software Architect and Senior TypeScript Engineer.
+
+This sprint focuses ONLY on eliminating duplicated business logic between the web and mobile applications.
+
+---
+
+## OBJECTIVE
+
+Create a reusable shared logic foundation.
+
+Do NOT redesign the application.
+
+Do NOT modify UI.
+
+Do NOT change APIs.
+
+Do NOT change the database.
+
+Maintain complete backward compatibility.
+
+---
+
+## TASK 1
+
+Inventory all duplicated business logic.
+
+Examples include:
+
+* Hebrew calendar
+* Zmanim
+* Translation utilities
+* Location utilities
+* Date formatting
+* Shared constants
+
+Verify every duplicate before moving code.
+
+---
+
+## TASK 2
+
+Create a new shared workspace package.
+
+Suggested structure:
+
+packages/shared-core/
+
+calendar/
+
+hebrew/
+
+zmanim/
+
+translations/
+
+locations/
+
+utils/
+
+types/
+
+Keep the structure modular.
+
+---
+
+## TASK 3
+
+Move duplicated business logic into the shared package.
+
+Preserve public function names where practical to minimize downstream changes.
+
+---
+
+## TASK 4
+
+Update both the web application and the mobile application to import from the shared package.
+
+Avoid changing behavior.
+
+---
+
+## TASK 5
+
+Verify that outputs remain identical.
+
+Examples:
+
+* Hebrew dates
+* Zmanim calculations
+* Translation lookups
+* Location calculations
+
+No visible regressions are acceptable.
+
+---
+
+## TASK 6
+
+Document the migration.
+
+Update:
+
+docs/Architecture.md
+
+Explain:
+
+* What moved
+* Why it moved
+* Future guidelines for shared logic
+
+---
+
+## CONSTRAINTS
+
+Do NOT change UI.
+
+Do NOT change routing.
+
+Do NOT change Clerk authentication.
+
+Do NOT modify Memorial Sanctuary.
+
+Do NOT introduce new features.
+
+Do NOT modify business rules.
+
+Only eliminate duplication.
+
+---
+
+## DELIVERABLES
+
+Provide:
+
+1. Files created
+
+2. Files modified
+
+3. Duplicated modules removed
+
+4. Verification summary
+
+5. Remaining duplication (if any)
+
+6. Recommendation for SPR-004
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Web behaves exactly the same.
+
+✓ Mobile behaves exactly the same.
+
+✓ Shared package created.
+
+✓ Duplicate logic reduced.
+
+✓ No feature regressions.
+
+Stop after completing this sprint and wait for Chief Architect review.

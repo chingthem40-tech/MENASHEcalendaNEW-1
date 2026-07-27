@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <!-- Star of David: two overlapping triangles -->
+  <polygon points="40,6 58,38 22,38" stroke="#D4AF37" stroke-width="2.8" stroke-linejoin="round" fill="none"/>
+  <polygon points="40,62 22,30 58,30" stroke="#D4AF37" stroke-width="2.8" stroke-linejoin="round" fill="none"/>
+  <!-- M letterform paths -->
+  <polyline points="14,74 14,30 40,56 66,30 66,74" stroke="#D4AF37" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

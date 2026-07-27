@@ -1,0 +1,174 @@
+SPR-P006E — Community Census Step 3: Review & Validation
+
+Project:
+Menashe Platform
+
+Scope:
+📱 MOBILE ONLY
+
+Priority:
+Community Census Workflow
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+EXECUTION CONTRACT
+
+Maximum files to READ:
+4
+
+Maximum files to MODIFY:
+3
+
+Maximum agent actions:
+20
+
+STOP after implementation.
+
+==================================================
+
+MISSION
+
+Build ONLY Step 3.
+
+Review & Validation.
+
+Do NOT build submission.
+
+Do NOT modify previous steps.
+
+==================================================
+
+READ ONLY
+
+1.
+
+app/census/family-head.tsx
+
+2.
+
+app/census/family-members.tsx
+
+3.
+
+lib/shared-core/src/census/labels.ts
+
+4.
+
+lib/shared-core/src/census/types.ts
+
+==================================================
+
+CREATE
+
+app/census/review.tsx
+
+==================================================
+
+SCREEN
+
+Title
+
+Review Your Census
+
+Subtitle
+
+Step 3 of 4
+
+Progress
+
+75%
+
+==================================================
+
+DISPLAY
+
+Family Head summary
+
+↓
+
+Family Members summary
+
+↓
+
+Total people
+
+↓
+
+Aliyah breakdown
+
+(using branchStats() where appropriate if available, otherwise simple derived display)
+
+==================================================
+
+VALIDATION
+
+Highlight
+
+Missing required fields
+
+Invalid dates
+
+Empty names
+
+using existing shared validation only.
+
+Do NOT create duplicate validation logic.
+
+==================================================
+
+BOTTOM BAR
+
+Previous
+
+Back to Family Members
+
+Submit
+
+Navigate only to:
+
+/census/submit
+
+(The screen does not exist yet.)
+
+==================================================
+
+UI
+
+Read-only review.
+
+No editing here.
+
+Each section includes an Edit button that returns to the appropriate previous step.
+
+==================================================
+
+DO NOT
+
+❌ Submit data
+
+❌ Call APIs
+
+❌ Modify Shared Core
+
+❌ Modify Web
+
+❌ Add storage
+
+==================================================
+
+RETURN ONLY
+
+✓ Files modified
+
+✓ Review step completed
+
+Stop.
+
+No build.
+
+No typecheck.
+
+No verification.

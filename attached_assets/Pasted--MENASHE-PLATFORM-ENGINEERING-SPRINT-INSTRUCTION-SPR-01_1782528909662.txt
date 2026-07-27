@@ -1,0 +1,283 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-011 — Memorial Domain Architecture
+
+ROLE
+
+Act as a Senior Software Architect, Domain Architect, and Database Architect.
+
+This sprint designs the Memorial Sanctuary domain.
+
+Do NOT build the UI.
+
+Do NOT build the 3D world.
+
+Do NOT implement React Three Fiber.
+
+Architecture only.
+
+---
+
+## OBJECTIVE
+
+Create a complete architectural foundation for the Community Memorial Sanctuary.
+
+The domain model must support future expansion for thousands of memorials while remaining maintainable.
+
+---
+
+## TASK 1
+
+Design the core domain entities.
+
+Suggested entities:
+
+Memorial
+
+Person
+
+Family
+
+Candle
+
+Tribute
+
+Flower
+
+Visitor
+
+Prayer
+
+Photo
+
+Story
+
+Timeline
+
+Privacy
+
+Community
+
+Yahrzeit
+
+Location
+
+Media
+
+Notification
+
+Relationship
+
+Do not implement business logic yet.
+
+---
+
+## TASK 2
+
+For every entity define:
+
+Purpose
+
+Primary fields
+
+Relationships
+
+Ownership
+
+Lifecycle
+
+Validation rules
+
+---
+
+## TASK 3
+
+Create a domain relationship diagram.
+
+Examples:
+
+Family
+
+↓
+
+Memorial
+
+↓
+
+Candles
+
+↓
+
+Visitors
+
+↓
+
+Tributes
+
+↓
+
+Photos
+
+↓
+
+Stories
+
+---
+
+## TASK 4
+
+Design repositories.
+
+Examples:
+
+MemorialRepository
+
+CandleRepository
+
+TributeRepository
+
+VisitorRepository
+
+PhotoRepository
+
+FamilyRepository
+
+---
+
+## TASK 5
+
+Design service layer.
+
+Examples:
+
+MemorialService
+
+CandleService
+
+PrayerService
+
+NotificationService
+
+VisitorService
+
+SearchService
+
+ModerationService
+
+---
+
+## TASK 6
+
+Design future APIs.
+
+Document proposed endpoints only.
+
+Do not implement them.
+
+Examples:
+
+Create memorial
+
+Light candle
+
+Leave flower
+
+Add tribute
+
+Upload photo
+
+Search memorial
+
+Visit memorial
+
+Family management
+
+---
+
+## TASK 7
+
+Design permissions.
+
+Examples:
+
+Owner
+
+Family Admin
+
+Community Moderator
+
+Administrator
+
+Visitor
+
+Guest
+
+Premium
+
+---
+
+## TASK 8
+
+Update:
+
+docs/Architecture.md
+
+Create:
+
+docs/MemorialArchitecture.md
+
+Include diagrams, entity descriptions, and future expansion notes.
+
+---
+
+## CONSTRAINTS
+
+No UI.
+
+No Three.js.
+
+No React components.
+
+No database migrations.
+
+No routes.
+
+No backend implementation.
+
+Architecture only.
+
+---
+
+## DELIVERABLES
+
+1. MemorialArchitecture.md
+
+2. Entity model
+
+3. Service architecture
+
+4. Repository architecture
+
+5. Permission model
+
+6. Future API design
+
+7. Scalability recommendations
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Architecture complete.
+
+✓ Domain model documented.
+
+✓ Future-ready.
+
+✓ Supports thousands of memorials.
+
+✓ Ready for implementation.
+
+Stop after completion and wait for Chief Architect review.

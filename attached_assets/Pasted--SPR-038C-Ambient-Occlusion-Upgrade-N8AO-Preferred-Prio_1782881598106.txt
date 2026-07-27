@@ -1,0 +1,307 @@
+# SPR-038C — Ambient Occlusion Upgrade (N8AO Preferred)
+
+## Priority
+
+🟢 Version 1.0 Visual Polish
+
+This sprint improves environmental realism by adding high-quality Ambient Occlusion.
+
+No gameplay changes.
+
+No UI changes.
+
+No navigation changes.
+
+No backend changes.
+
+Only improve rendering quality.
+
+---
+
+# Mission
+
+The Sanctuary already has:
+
+✓ Bloom
+
+✓ SMAA
+
+✓ God Rays
+
+✓ Fog
+
+✓ Ground Mist
+
+The missing element is subtle contact shadowing.
+
+Objects should feel grounded.
+
+Stone architecture should feel heavier.
+
+Candles should sit naturally on stone.
+
+Trees should connect visually with the terrain.
+
+---
+
+# Phase 1 — Audit
+
+Inspect the current rendering pipeline.
+
+Identify:
+
+• EffectComposer setup
+
+• Existing post-processing chain
+
+• Render passes
+
+• Quality tier system
+
+• Mobile quality switching
+
+Determine whether:
+
+N8AO
+
+or
+
+SSAO
+
+is the better implementation.
+
+N8AO is preferred if compatible.
+
+---
+
+# Phase 2 — Implementation
+
+If compatible:
+
+Implement N8AO.
+
+Otherwise:
+
+Implement SSAO.
+
+Do NOT use both.
+
+---
+
+# Phase 3 — Quality Settings
+
+The AO effect must be subtle.
+
+Avoid:
+
+❌ black corners
+
+❌ muddy shadows
+
+❌ dirty-looking stone
+
+❌ excessive darkening
+
+Aim for:
+
+• soft grounding
+
+• realistic stone contact
+
+• natural tree roots
+
+• candle holders sitting firmly on surfaces
+
+• architectural depth
+
+The user should feel the improvement rather than notice the effect.
+
+---
+
+# Phase 4 — Apply Throughout Sanctuary
+
+Ensure AO improves:
+
+✓ Memorial Gate
+
+✓ Sacred Avenue
+
+✓ Stone Pathway
+
+✓ Candle Shrines
+
+✓ Tree of Remembrance
+
+✓ Prayer Pavilion
+
+✓ Reflection Pool
+
+✓ Waterfall Stonework
+
+✓ Memorial Walls
+
+✓ Benches
+
+✓ Lantern Bases
+
+✓ Destination Markers
+
+---
+
+# Phase 5 — Quality Tiers
+
+Respect existing quality settings.
+
+Ultra
+
+• Full AO
+
+High
+
+• Full AO
+
+Medium
+
+• Reduced AO quality
+
+Low
+
+• Disable AO
+
+Very Low
+
+• Disable AO completely
+
+Never enable AO on devices that cannot maintain smooth performance.
+
+---
+
+# Phase 6 — Performance
+
+Measure:
+
+Desktop
+
+Target:
+
+≈60 FPS
+
+Average Android
+
+Target:
+
+40–60 FPS
+
+If AO causes noticeable frame drops:
+
+Reduce quality automatically.
+
+Do not sacrifice smooth movement.
+
+---
+
+# Phase 7 — Visual Calibration
+
+Tune AO carefully.
+
+Target:
+
+Natural limestone appearance.
+
+Warm golden-hour lighting.
+
+Soft candle illumination.
+
+Preserve existing Bloom and God Rays.
+
+Avoid crushing shadow detail.
+
+The Sanctuary must remain peaceful and inviting.
+
+---
+
+# Phase 8 — Compatibility
+
+Verify compatibility with:
+
+✓ Bloom
+
+✓ SMAA
+
+✓ God Rays
+
+✓ Fog
+
+✓ Ground Mist
+
+✓ Reflection Mode
+
+✓ Walk Mode
+
+✓ Orbit Mode
+
+No rendering artifacts.
+
+No flickering.
+
+No z-fighting.
+
+No shader conflicts.
+
+---
+
+# Constraints
+
+DO NOT:
+
+❌ Change scene layout
+
+❌ Change geometry
+
+❌ Add new models
+
+❌ Add new lighting
+
+❌ Add new shaders unrelated to AO
+
+❌ Change business logic
+
+❌ Affect AI
+
+❌ Affect Memorial features
+
+---
+
+# Deliverables
+
+Provide:
+
+1. Which solution was selected (N8AO or SSAO)
+
+2. Why it was selected
+
+3. Performance comparison
+
+4. AO tuning values
+
+5. Before/after rendering comparison
+
+6. FPS measurements
+
+7. Verification that all existing rendering features still function
+
+TypeScript must pass.
+
+Production build must pass.
+
+Stop after verification.
+
+---
+
+# Chief Architect's Design Principle
+
+Ambient Occlusion should never be obvious.
+
+Visitors should simply feel that every stone, candle, tree, and memorial structure belongs naturally in the Sanctuary.
+
+The effect should enhance realism without drawing attention to itself.

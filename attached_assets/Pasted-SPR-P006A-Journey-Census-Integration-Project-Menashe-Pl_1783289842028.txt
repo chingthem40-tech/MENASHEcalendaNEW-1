@@ -1,0 +1,174 @@
+SPR-P006A — Journey × Census Integration
+
+Project:
+Menashe Platform
+
+Scope:
+🔄 PLATFORM
+(Shared Core + Mobile Journey)
+
+Priority:
+Platform Integration
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+MISSION
+
+Integrate the completed Census Shared Core into the Menashe Journey experience.
+
+Reuse ONLY existing infrastructure.
+
+Do NOT create new APIs.
+
+Do NOT modify database schema.
+
+Do NOT modify Web UI.
+
+==================================================
+
+REUSE
+
+✓ @workspace/shared-core/census
+
+✓ Census Client SDK
+
+✓ Existing Census APIs
+
+✓ Journey screen
+
+✓ Existing translations
+
+==================================================
+
+IMPLEMENT ONLY
+
+--------------------------------------------------
+1.
+
+Journey Milestone
+
+--------------------------------------------------
+
+If the user has no Census Branch record:
+
+Display a premium Journey card:
+
+"Complete Community Census"
+
+Subtitle:
+
+"Help strengthen the Bnei Menashe community by completing your family census."
+
+CTA:
+
+Start Census
+
+Navigate using the existing Census flow.
+
+Do NOT create a new Census UI.
+
+--------------------------------------------------
+2.
+
+Journey Status
+
+--------------------------------------------------
+
+If a Census Branch exists:
+
+Display:
+
+• Branch name
+
+• Community (city)
+
+• Number of families
+
+Use branchStats() from Shared Core.
+
+No duplicate calculations.
+
+--------------------------------------------------
+3.
+
+Journey Priority
+
+--------------------------------------------------
+
+If headAliyah === "awaiting"
+
+Display a highlighted priority card:
+
+"Prepare for Aliyah"
+
+This is presentation only.
+
+Do NOT implement new workflows.
+
+--------------------------------------------------
+4.
+
+Graceful Loading
+
+--------------------------------------------------
+
+While Census data loads:
+
+Show an MMDL skeleton card.
+
+If the API is unavailable:
+
+Display a premium empty state.
+
+Do not crash.
+
+==================================================
+
+DO NOT
+
+❌ Modify Census APIs
+
+❌ Modify Shared Census models
+
+❌ Modify Community
+
+❌ Modify Memorial
+
+❌ Modify AI
+
+❌ Add AsyncStorage
+
+❌ Add new backend logic
+
+==================================================
+
+RETURN ONLY
+
+✓ Files modified
+
+✓ Shared Core modules reused
+
+✓ Journey integration completed
+
+Stop.
+
+Do NOT run production build.
+
+Do NOT inspect unrelated modules.
+
+==================================================
+
+CHIEF ARCHITECT PRINCIPLE
+
+The Journey screen is the platform's guide.
+
+It should surface the user's next meaningful step using existing platform data.
+
+It should never duplicate business logic.
+
+It should never own Census data.
+
+It should only consume the Census Platform through the Shared Core.

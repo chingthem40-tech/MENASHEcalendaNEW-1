@@ -1,0 +1,47 @@
+Here is a prompt you can use to recreate the design and functionality of the calendar portion you like. You can feed this into a UI generator, an AI coding assistant, or give it to a front-end developer:
+
+---
+
+**Prompt for UI Design / Development:**
+
+**Objective:** Create a dark-mode, dual-calendar (Gregorian and Hebrew) monthly view component optimized for mobile/tablet screens. The design should be elegant, high-contrast, and clearly display Jewish holidays, candle-lighting times, and the current date.
+
+**1. Color Palette & Theming:**
+
+* **Background:** Deep Navy/Midnight Blue (e.g., `#0f172a` or similar dark slate).
+* **Accent Color:** Warm Gold/Mustard Yellow (for highlights, active states, and primary titles).
+* **Text Colors:** Pure White for primary text, Light Grey for secondary text, Red for holidays/special events.
+* **Grid Lines/Separators:** Subtle dark grey or slightly lighter navy to separate the calendar cells without overwhelming the screen.
+
+**2. Header Section:**
+
+* **Top Bar:** Include a logo on the left (a gold square with a Hebrew letter), the app name ("Menashe") in bold white, and "CALENDAR" in small gold caps below it. On the right, include a location pin icon with "Jerusalem Israel" and a settings gear icon.
+* **Month Title:** Centered, bold, using the gold accent color. It should display both the Gregorian month/year and the corresponding Hebrew months/year (e.g., "JUNE 2026 — TEVET - SHEVAT 5785").
+
+**3. Days of the Week Header:**
+
+* A 7-column grid starting with Sunday and ending with Saturday.
+* Display the English abbreviation (Sun, Mon, Tue) in bold white, and the Hebrew equivalent (ראשון, שני) in a smaller, lighter font directly below it.
+* The Saturday (Sat / שבת) column header should have a distinct dark red background to signify Shabbat.
+
+**4. Calendar Grid & Cells:**
+
+* **Cell Layout:** Each day cell should have the Gregorian date number positioned in the top-left corner.
+* **Hebrew Date:** Below the Gregorian number, display the corresponding Hebrew date (e.g., "15 of Tevet") in a small, muted grey font.
+* **Icons & Events:** * Fridays should feature a small candle icon (🕯️) in the top right of the cell to indicate candle lighting.
+* Rosh Chodesh or other Jewish holidays should be displayed at the bottom of the corresponding cell in bold Red text (e.g., "R.CH. TAMMUZ").
+
+
+* **Special Cell States:**
+* **Today:** Highlight the current day's cell entirely with the Gold/Mustard Yellow background. The text inside this cell should turn black or dark navy for contrast.
+* **Shabbat (Saturday column):** Give the entire column for Saturday a slightly darker or distinct background tint to differentiate it from the weekdays.
+
+
+
+**5. Footer & Navigation:**
+
+* **Legend:** Below the calendar grid, include a small legend with three color swatches: "Weekday" (grey), "Shabbat" (dark blue), and "Today" (gold).
+* **Navigation Arrows:** Provide left (`<`) and right (`>`) chevron buttons on the bottom right to navigate between months.
+* **Bottom Navigation Bar:** A fixed tab bar at the very bottom with 5 icons: Home, Calendar, Zmanim, Torah, and Settings. The "Calendar" icon should be highlighted in gold, with a thin gold border at the top of its section to indicate it is the active tab.
+
+*** *Note: I adjusted the prompt to instruct the generator/developer to use actual Hebrew dates (like "15 of Tevet") instead of the "undefined of Tevet" placeholder text visible in the preview screenshot.*

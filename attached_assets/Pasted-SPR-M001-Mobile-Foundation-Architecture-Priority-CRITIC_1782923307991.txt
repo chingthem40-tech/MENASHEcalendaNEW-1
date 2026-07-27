@@ -1,0 +1,444 @@
+SPR-M001 — Mobile Foundation Architecture
+
+Priority:
+🔴 CRITICAL
+
+Chief Architect:
+Samuel & ChatGPT
+
+Platform:
+Menashe Calendar
+
+Version:
+Mobile V2 Foundation
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Create a completely separate Mobile Application architecture
+inside the existing repository WITHOUT affecting the existing
+Web Application in any way.
+
+This SPR establishes the foundation for every future Mobile SPR.
+
+NO visual redesign.
+
+NO feature additions.
+
+NO business logic changes.
+
+Architecture only.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify existing Web UI
+
+❌ Modify Web Navigation
+
+❌ Modify Web Pages
+
+❌ Modify Web Routing
+
+❌ Modify Desktop Components
+
+❌ Modify Web Layout
+
+❌ Modify Web Theme
+
+❌ Break existing production application
+
+❌ Duplicate business logic
+
+❌ Duplicate API code
+
+❌ Duplicate services
+
+❌ Duplicate hooks
+
+❌ Duplicate stores
+
+The current Web application is considered Production.
+
+It must remain completely untouched.
+
+------------------------------------------------------------
+ARCHITECTURE PRINCIPLE
+------------------------------------------------------------
+
+One Backend
+
+One Business Logic
+
+One API Layer
+
+One Database
+
+One Authentication
+
+One Translation System
+
+One Calendar Engine
+
+One Zmanim Engine
+
+One Memorial Engine
+
+One AI Engine
+
+Two Independent Presentation Layers
+
+WEB
+
+and
+
+MOBILE
+
+------------------------------------------------------------
+PHASE 1
+Create Mobile Application Root
+------------------------------------------------------------
+
+Create a new architecture.
+
+Example
+
+src/
+
+    mobile/
+
+        app/
+
+        components/
+
+        layouts/
+
+        navigation/
+
+        pages/
+
+        theme/
+
+        hooks/
+
+        providers/
+
+        features/
+
+        assets/
+
+        utils/
+
+        types/
+
+Do NOT move existing web files.
+
+Do NOT rename existing web files.
+
+------------------------------------------------------------
+PHASE 2
+Shared Layer Verification
+------------------------------------------------------------
+
+Audit current project.
+
+Everything that should remain shared:
+
+Authentication
+
+Translation
+
+Hebrew Calendar
+
+Zmanim
+
+Holiday Engine
+
+Database
+
+API
+
+Services
+
+Hooks
+
+Utilities
+
+Types
+
+must continue being shared.
+
+If any code should become shared,
+
+move it carefully into
+
+src/shared/
+
+ONLY if beneficial.
+
+Otherwise leave untouched.
+
+------------------------------------------------------------
+PHASE 3
+Independent Navigation
+------------------------------------------------------------
+
+Prepare an independent Mobile Navigation layer.
+
+Do NOT connect it yet.
+
+Only architecture.
+
+Example
+
+mobile/navigation
+
+RootNavigator
+
+BottomTabs
+
+Stack
+
+DeepLinks
+
+Navigation Types
+
+------------------------------------------------------------
+PHASE 4
+Independent Theme
+------------------------------------------------------------
+
+Prepare
+
+mobile/theme
+
+with
+
+Colors
+
+Spacing
+
+Radius
+
+Typography
+
+Elevation
+
+Animation Tokens
+
+Glass Tokens
+
+Dark Theme
+
+Light Theme
+
+Future Dynamic Theme support
+
+Do NOT change current web theme.
+
+------------------------------------------------------------
+PHASE 5
+Responsive Foundation
+------------------------------------------------------------
+
+Prepare breakpoints
+
+Phone
+
+Large Phone
+
+Foldable
+
+Tablet
+
+Landscape
+
+Future Desktop
+
+Safe Area support
+
+Keyboard Avoidance
+
+Status Bar
+
+Bottom Insets
+
+------------------------------------------------------------
+PHASE 6
+Mobile Providers
+------------------------------------------------------------
+
+Create provider composition.
+
+Example
+
+MobileAppProvider
+
+Language
+
+Theme
+
+Settings
+
+Notifications
+
+SafeArea
+
+Navigation
+
+Quality
+
+Do not duplicate existing providers.
+
+Reuse where appropriate.
+
+------------------------------------------------------------
+PHASE 7
+Platform Detection
+------------------------------------------------------------
+
+Introduce a clean platform abstraction.
+
+Example
+
+Platform
+
+isWeb
+
+isMobile
+
+isAndroid
+
+isIOS
+
+This should allow future platform-specific rendering.
+
+Never use scattered platform checks.
+
+------------------------------------------------------------
+PHASE 8
+Performance Foundation
+------------------------------------------------------------
+
+Prepare architecture for
+
+Lazy Screens
+
+Screen Prefetch
+
+Image Cache
+
+Asset Cache
+
+Offline Cache
+
+Gesture Engine
+
+Animation Engine
+
+without implementing them yet.
+
+------------------------------------------------------------
+PHASE 9
+Future Screen Registry
+------------------------------------------------------------
+
+Prepare empty registration for
+
+Home
+
+Calendar
+
+Zmanim
+
+Community
+
+Torah
+
+Settings
+
+Sanctuary
+
+AI
+
+Library
+
+Notifications
+
+No implementation.
+
+Architecture only.
+
+------------------------------------------------------------
+PHASE 10
+Verification
+------------------------------------------------------------
+
+Verify
+
+✅ Existing Web builds successfully
+
+✅ Existing Web UI unchanged
+
+✅ Existing Web routing unchanged
+
+✅ Existing Web pages unchanged
+
+✅ Existing Web performance unchanged
+
+✅ Mobile architecture compiles
+
+✅ No duplicate logic
+
+✅ No duplicate services
+
+✅ No duplicate API
+
+✅ No duplicate authentication
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide
+
+Architecture tree
+
+Dependency diagram
+
+Shared layer diagram
+
+Mobile layer diagram
+
+Verification checklist
+
+Future expansion recommendations
+
+Production build result
+
+TypeScript result
+
+Stop after verification.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+The Mobile application is NOT a second application.
+
+It is a second presentation layer.
+
+Business logic belongs to the shared core.
+
+Presentation belongs to Web or Mobile.
+
+The Web platform must remain completely untouched.
+
+Everything built after SPR-M001 will stand on this architecture.
+
+STOP AFTER VERIFICATION.
+DO NOT BEGIN BUILDING MOBILE SCREENS.

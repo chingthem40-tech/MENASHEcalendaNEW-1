@@ -1,0 +1,301 @@
+# SPR-035E — Application Boot Recovery
+
+## Priority
+
+🔴 CRITICAL
+
+Release Blocker
+
+No feature development until this sprint is complete.
+
+---
+
+# Mission
+
+Identify and repair the application startup failure causing the Replit Preview to render a blank page and produce HTTP 502 errors.
+
+The goal is to restore a reliable development environment without changing business logic or application features.
+
+---
+
+# Objectives
+
+Determine exactly where the application fails during startup.
+
+Restore successful application boot.
+
+Ensure Preview, Desktop, and Mobile all start consistently.
+
+---
+
+# Phase 1 — Boot Sequence Audit
+
+Trace the complete startup sequence.
+
+Document every stage.
+
+```
+Browser
+    │
+    ▼
+index.html
+    │
+    ▼
+main.tsx
+    │
+    ▼
+ReactDOM.createRoot()
+    │
+    ▼
+<App />
+    │
+    ▼
+SplashScreen
+    │
+    ▼
+Clerk Initialization
+    │
+    ▼
+AppShell
+    │
+    ▼
+Router
+    │
+    ▼
+Home
+```
+
+For every stage report:
+
+- Started
+- Completed
+- Waiting
+- Failed
+- Exception
+- Duration
+
+---
+
+# Phase 2 — 502 Investigation
+
+Locate every request producing:
+
+HTTP 502 Bad Gateway
+
+For each request report:
+
+- Request URL
+- Response
+- Origin
+- Which component requested it
+- Stack trace
+- Is it required for startup?
+
+Classify:
+
+Critical
+
+Optional
+
+Development only
+
+---
+
+# Phase 3 — Dev Server Health
+
+Verify:
+
+✓ Vite running
+
+✓ Node server running
+
+✓ Express API running
+
+✓ WebSocket connected
+
+✓ HMR connected
+
+✓ No restart loops
+
+Report:
+
+Memory
+
+CPU
+
+Startup duration
+
+Compile duration
+
+---
+
+# Phase 4 — Startup Dependencies
+
+Verify initialization order.
+
+Examples:
+
+LaunchDarkly
+
+Apollo
+
+Clerk
+
+Environment Variables
+
+Feature Flags
+
+AI Gateway
+
+Supabase
+
+Database
+
+Router
+
+PWA
+
+Determine whether any dependency blocks rendering.
+
+---
+
+# Phase 5 — Suspense & Lazy Imports
+
+Inspect every:
+
+React.lazy()
+
+dynamic import()
+
+Suspense
+
+Verify:
+
+Module loads
+
+Chunk available
+
+Fallback completes
+
+No hanging promise
+
+---
+
+# Phase 6 — Error Boundaries
+
+Determine whether an uncaught exception is hidden.
+
+Inspect:
+
+main.tsx
+
+App.tsx
+
+AppShell
+
+Root Providers
+
+React Error Boundary
+
+Report first uncaught exception if any exists.
+
+---
+
+# Phase 7 — Preview Environment
+
+Verify differences between:
+
+Desktop Browser
+
+Mobile Browser
+
+Replit Preview
+
+Authenticated Session
+
+Unauthenticated Session
+
+Identify every conditional branch that changes startup behaviour.
+
+---
+
+# Phase 8 — Build Verification
+
+Run:
+
+TypeScript
+
+Production Build
+
+Development Build
+
+Preview Build
+
+Ensure all succeed.
+
+---
+
+# Deliverables
+
+Provide:
+
+1. Startup timeline
+
+2. 502 root cause
+
+3. Resource causing failure
+
+4. First blocking component
+
+5. Dependency analysis
+
+6. Runtime stack trace
+
+7. Recommended repair plan
+
+---
+
+# Constraints
+
+Do NOT:
+
+- Add features
+- Refactor unrelated code
+- Modify Memorial Sanctuary
+- Modify Calendar
+- Modify AI
+- Modify database schema
+
+Only repair startup reliability.
+
+---
+
+# Success Criteria
+
+The application must:
+
+✓ Start successfully in Replit Preview
+
+✓ Start successfully in Desktop Browser
+
+✓ Start successfully in Mobile Browser
+
+✓ Reach Home screen
+
+✓ Reach Memorial Sanctuary
+
+✓ Reach Rav Menashe AI
+
+without blank screens, startup hangs, or HTTP 502 errors.
+
+---
+
+# Stop Condition
+
+Stop after:
+
+- Identifying the root cause.
+- Repairing only the startup failure.
+- Verifying successful application boot.
+
+No additional feature work.

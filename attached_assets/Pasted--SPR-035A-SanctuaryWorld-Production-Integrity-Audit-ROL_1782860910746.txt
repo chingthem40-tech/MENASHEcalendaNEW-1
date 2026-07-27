@@ -1,0 +1,397 @@
+# SPR-035A — SanctuaryWorld Production Integrity Audit
+
+## ROLE
+
+Act as a Principal Software Architect, Senior React Engineer, Senior Three.js Engineer, TypeScript Engineer, Runtime Debugging Specialist, and Production Release Engineer.
+
+---
+
+# MISSION
+
+Perform a complete forensic audit of the Memorial Sanctuary architecture.
+
+The objective is to verify that the production SanctuaryWorld still exists, is connected correctly, and is the implementation currently rendered by the application.
+
+This is an audit sprint.
+
+**DO NOT MODIFY ANY CODE.**
+
+**DO NOT REFACTOR.**
+
+**DO NOT FIX ANYTHING.**
+
+Produce evidence only.
+
+---
+
+# BACKGROUND
+
+Recent architecture sprints (SPR-034 through SPR-035) removed duplicate Memorial implementations and simplified navigation.
+
+However, the current runtime behaviour indicates the production SanctuaryWorld may no longer be the implementation being rendered.
+
+Observed symptoms include:
+
+- Entrance Gate not visible.
+- Welcome Board missing.
+- Community Candle Board missing.
+- Visitor Guide missing.
+- Camera still spawning in the old location.
+- Camera facing terrain instead of the Sanctuary.
+- Spawn orientation unchanged.
+- Runtime behaviour does not match previous implementation reports.
+
+This audit must determine the exact production runtime path.
+
+No assumptions.
+
+Evidence only.
+
+---
+
+# STEP 1 — Locate Every Sanctuary Component
+
+Search the entire project.
+
+Locate every component related to the Memorial Sanctuary.
+
+Include (but not limited to):
+
+- MemorialSanctuaryModal
+- MemorialValley3D
+- MemorialBrowserPanel
+- CommunityYahrzeitModal
+- MemorialHub
+- MemorialProfileSheet
+- MemorialScrollStrip
+- MinimapOverlay
+- FirstPersonController
+- ReflectionMode
+- CameraIdleDrift
+- AAAEntranceBoards
+- AAAMemorialGate
+- AAATreeOfRemembrance
+
+For each component report:
+
+- File path
+- Component name
+- Export type
+- Imported by
+- Active
+- Unused
+- Dead
+- Removed
+
+---
+
+# STEP 2 — Runtime Navigation Trace
+
+Starting from the Home screen Memorial Sanctuary card,
+
+trace the exact runtime execution path.
+
+Document every transition.
+
+Example:
+
+Home
+
+↓
+
+Memorial Sanctuary Card
+
+↓
+
+Callback
+
+↓
+
+setModal(...)
+
+↓
+
+Component
+
+↓
+
+React.lazy(...)
+
+↓
+
+SanctuaryWorld
+
+↓
+
+MemorialValley3D
+
+↓
+
+FirstPersonController
+
+Show the actual runtime path currently executed.
+
+---
+
+# STEP 3 — Runtime Camera Ownership
+
+Locate every place that modifies:
+
+- camera.position
+- camera.rotation
+- camera.lookAt()
+- controls.target
+- OrbitControls
+- PointerLockControls
+- FirstPersonController
+- Spawn Position
+- Spawn Rotation
+
+For each modification report:
+
+- File
+- Component
+- Function
+- Execution order
+- Whether another function overrides it later
+
+Determine:
+
+Which function performs the FINAL camera update before the first rendered frame?
+
+---
+
+# STEP 4 — Verify Production Scene
+
+Confirm whether the production Sanctuary scene currently contains:
+
+✓ Memorial Gate
+
+✓ Entrance Path
+
+✓ Welcome Board
+
+✓ Community Candle Board
+
+✓ Visitor Guide
+
+✓ Tree of Remembrance
+
+✓ Mountains
+
+✓ Bridges
+
+✓ Waterfall
+
+✓ Prayer Pavilion
+
+✓ Reflection Mode
+
+✓ Camera Idle Drift
+
+✓ Entry Fade
+
+✓ Ambient Lighting
+
+For each item report:
+
+- Present
+- Missing
+- Present but unreachable
+
+---
+
+# STEP 5 — Full Codebase Search
+
+Search for:
+
+MemorialValley3D
+
+MemorialSanctuaryModal
+
+FirstPersonController
+
+AAAEntranceBoards
+
+AAAMemorialGate
+
+AAATreeOfRemembrance
+
+ReflectionMode
+
+CameraIdleDrift
+
+showSanctuary
+
+For every result provide:
+
+- File
+- Line
+- Imported by
+- Active or unused
+
+---
+
+# STEP 6 — Navigation Inventory
+
+Locate EVERY place capable of opening SanctuaryWorld.
+
+For each report:
+
+- Screen
+- Component
+- Button
+- Callback
+- Destination
+
+Then classify each entry as:
+
+- Official
+- Legacy
+- Prototype
+- Dead
+- Hidden
+
+---
+
+# STEP 7 — Runtime Verification
+
+Answer these questions.
+
+Can SanctuaryWorld still render?
+
+YES / NO
+
+Can MemorialValley3D still render?
+
+YES / NO
+
+Does Home reach SanctuaryWorld?
+
+YES / NO
+
+Does Settings reach SanctuaryWorld?
+
+YES / NO
+
+Does another implementation still exist?
+
+YES / NO
+
+Is the runtime rendering the expected implementation?
+
+YES / NO
+
+---
+
+# STEP 8 — Runtime Architecture Diagram
+
+Produce the ACTUAL runtime architecture discovered during the audit.
+
+Example only:
+
+Home
+│
+▼
+Memorial Sanctuary Card
+│
+▼
+Memorial Hub
+│
+▼
+Enter Memorial Sanctuary
+│
+▼
+MemorialSanctuaryModal
+│
+▼
+MemorialValley3D
+│
+▼
+FirstPersonController
+
+Do NOT assume.
+
+Produce the real runtime architecture.
+
+---
+
+# STEP 9 — Production Integrity Verdict
+
+Choose ONE conclusion only.
+
+### A
+
+SanctuaryWorld is fully intact.
+
+Navigation only is incorrect.
+
+---
+
+### B
+
+SanctuaryWorld exists.
+
+Runtime is connected to an outdated implementation.
+
+---
+
+### C
+
+SanctuaryWorld was partially disconnected.
+
+Some production components are unreachable.
+
+---
+
+### D
+
+SanctuaryWorld was accidentally removed or replaced.
+
+---
+
+### E
+
+Multiple Sanctuary implementations still exist.
+
+Runtime is rendering the wrong implementation.
+
+---
+
+# DELIVERABLES
+
+Provide:
+
+1. Complete component inventory.
+
+2. Runtime execution trace.
+
+3. Camera ownership report.
+
+4. Sanctuary asset verification.
+
+5. Navigation inventory.
+
+6. Runtime architecture diagram.
+
+7. Production integrity verdict.
+
+---
+
+# SUCCESS CRITERIA
+
+The audit must answer with certainty:
+
+> **Which exact code path is responsible for rendering the SanctuaryWorld that users currently see in production?**
+
+No assumptions.
+
+No repairs.
+
+No refactoring.
+
+No feature work.
+
+No code modifications.
+
+Stop immediately after delivering the audit report.

@@ -1,0 +1,181 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-007 — Home Migration (H-003)
+
+ROLE
+
+Act as a Senior React Architect.
+
+Continue executing the approved Home Migration Blueprint.
+
+Do NOT extract components.
+
+Do NOT redesign Home.
+
+Do NOT change rendering.
+
+Do NOT modify APIs.
+
+---
+
+## OBJECTIVE
+
+Extract reusable Home business logic into dedicated custom React hooks.
+
+The purpose is to separate behavior from presentation while preserving identical functionality.
+
+---
+
+## TASK 1
+
+Inventory all Home responsibilities that own state or effects.
+
+Examples:
+
+* Calendar loading
+* Hebrew date calculation
+* User greeting
+* Holiday computation
+* AI suggestion state
+* Notification state
+* Geolocation
+* Candle lighting state
+* Community preview loading
+* Daily Torah loading
+
+Group related logic.
+
+---
+
+## TASK 2
+
+Create:
+
+src/pages/home/hooks/
+
+Suggested hooks:
+
+useHomeCalendar.ts
+
+useHomeLocation.ts
+
+useHomeCommunity.ts
+
+useHomeNotifications.ts
+
+useHomeAI.ts
+
+useHomeGreeting.ts
+
+index.ts
+
+---
+
+## TASK 3
+
+Move only reusable business logic.
+
+Keep hooks cohesive.
+
+Avoid giant hooks.
+
+---
+
+## TASK 4
+
+Home.tsx should become an orchestrator.
+
+It should assemble hooks instead of owning implementation details.
+
+---
+
+## TASK 5
+
+Do NOT move JSX.
+
+Do NOT move UI.
+
+Do NOT extract visual components.
+
+Behavior only.
+
+---
+
+## TASK 6
+
+Update:
+
+docs/Architecture.md
+
+Document:
+
+* Hooks created
+* Responsibilities moved
+* State ownership
+* Remaining Home migration phases
+
+---
+
+## TASK 7
+
+Verification
+
+Confirm:
+
+✓ UI identical
+
+✓ Hook outputs identical
+
+✓ No TypeScript regressions
+
+✓ No runtime regressions
+
+✓ No API regressions
+
+---
+
+## CONSTRAINTS
+
+Do NOT extract components.
+
+Do NOT move JSX.
+
+Do NOT modify routes.
+
+Do NOT modify database code.
+
+Do NOT change styling.
+
+Behavior only.
+
+---
+
+## DELIVERABLES
+
+Provide:
+
+1. Hooks created
+
+2. Responsibilities moved
+
+3. Estimated Home reduction
+
+4. Remaining migration phases
+
+5. Verification summary
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Home UI unchanged.
+
+✓ Behavior unchanged.
+
+✓ Business logic centralized.
+
+✓ Home.tsx significantly simplified.
+
+Stop after H-003 and wait for Chief Architect review.

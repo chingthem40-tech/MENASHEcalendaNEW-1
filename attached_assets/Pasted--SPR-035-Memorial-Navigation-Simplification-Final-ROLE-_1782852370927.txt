@@ -1,0 +1,376 @@
+# SPR-035 — Memorial Navigation Simplification (Final)
+
+## ROLE
+
+Act as a Principal Software Architect, React Architect, UX Architect, TypeScript Engineer, and Production Release Engineer.
+
+---
+
+# MISSION
+
+Simplify the Memorial feature by reducing all Sanctuary navigation to a single architecture.
+
+The Memorial Sanctuary must have:
+
+* One identity
+* One Memorial Hub
+* One SanctuaryWorld
+* No duplicate entry points
+
+Do NOT change backend APIs.
+
+Do NOT change the database.
+
+Do NOT modify business logic.
+
+Do NOT redesign the SanctuaryWorld.
+
+This sprint is navigation architecture only.
+
+---
+
+# OFFICIAL USER FLOW
+
+## Primary Entry
+
+HOME
+
+↓
+
+Memorial Sanctuary Card
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+SanctuaryWorld
+
+---
+
+## Secondary Entry
+
+SETTINGS
+
+↓
+
+Yahrzeit Calculator
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+SanctuaryWorld
+
+Both paths MUST arrive at the exact same MemorialHub and the exact same SanctuaryWorld.
+
+No duplicate implementations.
+
+---
+
+# STEP 1 — Navigation Audit
+
+Before modifying code, locate EVERY path that opens SanctuaryWorld.
+
+Search for:
+
+* setModal(...)
+* showSanctuary
+* MemorialSanctuaryModal
+* CommunityYahrzeitModal
+* MemorialHub
+* Enter Memorial Sanctuary
+* Enter 3D World
+* Community Memorial Board
+* SanctuaryWorld
+
+Create a complete inventory.
+
+For each entry report:
+
+* File
+* Component
+* Button
+* Callback
+* Destination
+
+Do NOT delete anything until the inventory is complete.
+
+---
+
+# STEP 2 — KEEP ONLY THESE TWO ENTRY POINTS
+
+KEEP:
+
+✓ Home → Memorial Sanctuary Card
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+SanctuaryWorld
+
+AND
+
+✓ Settings
+
+↓
+
+Yahrzeit Calculator
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+SanctuaryWorld
+
+These become the ONLY production entry points.
+
+---
+
+# STEP 3 — REMOVE ALL OTHER SANCTUARY ENTRANCES
+
+Remove every other direct SanctuaryWorld entry.
+
+Including:
+
+* Community Memorial Board
+* Community Memorial modal shortcuts
+* Duplicate "Enter Memorial Sanctuary" buttons
+* Legacy Memorial navigation
+* More Tools shortcut
+* Floating shortcuts
+* Prototype buttons
+* Hidden/debug navigation
+* Any additional SanctuaryWorld launch path
+
+Remove ONLY navigation.
+
+Do NOT remove:
+
+* Candle system
+* Tribute system
+* Memorial Browser
+* Memorial Profile
+* Community statistics
+* Search
+* Reflection Mode
+
+---
+
+# STEP 4 — MEMORIAL HUB
+
+The Memorial Hub becomes the official gateway.
+
+Keep:
+
+✓ Search
+
+✓ Light a Candle
+
+✓ Community statistics
+
+✓ Flowers
+
+✓ Hebrew blessing
+
+✓ Memorial content
+
+Replace:
+
+"3D World"
+
+with
+
+"Enter Memorial Sanctuary"
+
+or
+
+"Enter Sanctuary"
+
+The button should describe the experience, not the technology.
+
+---
+
+# STEP 5 — SANCTUARYWORLD
+
+SanctuaryWorld must only be opened from MemorialHub.
+
+Never open SanctuaryWorld directly from any other screen.
+
+This guarantees one consistent entrance experience.
+
+---
+
+# STEP 6 — CONSISTENT TRANSITIONS
+
+Regardless of entry point:
+
+Home
+
+or
+
+Settings
+
+The user should always experience:
+
+Fade
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+Front Gate
+
+↓
+
+SanctuaryWorld
+
+Exactly the same.
+
+---
+
+# STEP 7 — DOCUMENTATION
+
+Update:
+
+docs/Architecture.md
+
+Document the final navigation.
+
+HOME
+│
+▼
+Memorial Sanctuary Card
+│
+▼
+Memorial Hub
+│
+▼
+Enter Memorial Sanctuary
+│
+▼
+SanctuaryWorld
+
+SETTINGS
+│
+▼
+Yahrzeit Calculator
+│
+▼
+Memorial Hub
+│
+▼
+Enter Memorial Sanctuary
+│
+▼
+SanctuaryWorld
+
+Exactly two production entry points.
+
+---
+
+# STEP 8 — VERIFICATION
+
+Confirm:
+
+✓ Only two Sanctuary entry points remain.
+
+✓ Home path works.
+
+✓ Settings path works.
+
+✓ Both open the same MemorialHub.
+
+✓ Both open the same SanctuaryWorld.
+
+✓ No duplicate navigation remains.
+
+✓ No broken buttons.
+
+✓ No unreachable navigation.
+
+✓ No dead routes.
+
+✓ No TypeScript errors.
+
+✓ No build errors.
+
+✓ No runtime regressions.
+
+---
+
+# SUCCESS CRITERIA
+
+Version 1.0 Memorial Architecture:
+
+✓ One Memorial Hub
+
+✓ One SanctuaryWorld
+
+✓ One Memorial Browser
+
+✓ One Memorial Profile
+
+✓ One Candle System
+
+✓ One Tribute System
+
+✓ One Reflection Mode
+
+✓ Two official entry points
+
+✓ Zero duplicate Sanctuary navigation
+
+✓ Zero unreachable navigation
+
+---
+
+# DELIVERABLES
+
+1. Navigation inventory.
+
+2. Removal of all duplicate Sanctuary entry points.
+
+3. Two official production entry points only.
+
+4. Updated architecture documentation.
+
+5. Verification report.
+
+Stop after verification.
+
+Do NOT add new features.
+
+Do NOT redesign the SanctuaryWorld.
+
+Focus only on navigation simplification.

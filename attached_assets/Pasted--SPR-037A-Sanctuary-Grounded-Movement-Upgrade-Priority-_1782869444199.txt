@@ -1,0 +1,262 @@
+# SPR-037A — Sanctuary Grounded Movement Upgrade
+
+## Priority
+
+🟢 Version 1.0 Polish
+
+NO new features.
+
+NO database changes.
+
+NO API changes.
+
+NO new UI.
+
+Improve only the feeling of walking inside SanctuaryWorld.
+
+---
+
+# Mission
+
+The Sanctuary currently feels like:
+
+- flying
+- floating
+- riding a merry-go-round
+- gliding over the terrain
+
+It should instead feel like:
+
+- walking on sacred ground
+- having body weight
+- moving naturally
+- being physically present inside the valley
+
+The goal is to make SanctuaryWorld feel closer to a premium AAA exploration experience.
+
+---
+
+# Phase 1 — Camera Height
+
+The camera currently feels too high.
+
+Lower the first-person eye level to realistic human height.
+
+Target:
+
+• Eye height ≈ 1.65–1.75 m
+
+The visitor should feel like standing on the pathway, not hovering above it.
+
+---
+
+# Phase 2 — Field of View
+
+Current FOV still feels too wide.
+
+Evaluate a cinematic FOV between:
+
+60°–68°
+
+Choose the value that feels most natural while walking.
+
+Avoid fisheye distortion.
+
+---
+
+# Phase 3 — Walking Physics
+
+Walking should have weight.
+
+Tune movement:
+
+• Lower walk speed slightly
+• Reduce acceleration
+• Reduce deceleration
+• Add smooth easing
+• Remove skating/gliding feeling
+
+Movement should resemble a respectful walking pace.
+
+---
+
+# Phase 4 — Camera Motion
+
+Implement subtle natural body movement.
+
+When walking:
+
+✓ gentle head bob
+✓ tiny vertical movement
+✓ slight left/right sway
+✓ subtle breathing motion
+
+Requirements:
+
+• extremely subtle
+• no nausea
+• automatically disabled when prefers-reduced-motion is enabled
+
+---
+
+# Phase 5 — Rotation
+
+Current turning feels too loose.
+
+Improve:
+
+• smoother mouse look
+• gentle damping
+• lower rotation sensitivity
+• remove spinning sensation
+
+The visitor should feel connected to the environment.
+
+---
+
+# Phase 6 — Ground Presence
+
+Strengthen the feeling of being on the ground.
+
+Verify:
+
+✓ feet feel close to terrain
+✓ no hovering above paths
+✓ camera follows terrain correctly
+✓ no clipping through slopes
+✓ no sudden height jumps
+
+---
+
+# Phase 7 — Collision
+
+Audit every walkable area.
+
+Fix:
+
+• invisible walls
+• snagging on rocks
+• walking through objects
+• terrain clipping
+• floating over stairs
+
+The player should naturally follow paths.
+
+---
+
+# Phase 8 — Environmental Feedback
+
+Increase the sense of presence using existing systems.
+
+Improve:
+
+• candle glow nearby
+• tree shadows
+• ground texture detail
+• stone path readability
+• fog depth
+• atmospheric perspective
+
+Do NOT add new assets.
+
+Use existing scene elements more effectively.
+
+---
+
+# Phase 9 — Audio Presence
+
+Refine existing ambient sound.
+
+Walking should feel alive through:
+
+• gentle wind
+• distant water
+• soft birds
+• subtle candle ambience
+
+No loud or distracting effects.
+
+---
+
+# Phase 10 — Camera Focus
+
+As visitors approach:
+
+• Memorial Gate
+• Tree of Remembrance
+• Reflection Pool
+• Prayer Pavilion
+
+Use subtle camera framing only.
+
+Do NOT take control away from the user.
+
+No forced cinematic sequences.
+
+---
+
+# Performance
+
+Maintain:
+
+Desktop:
+≈60 FPS
+
+Average Android:
+40–60 FPS
+
+Do not introduce heavy post-processing or expensive shaders.
+
+---
+
+# Constraints
+
+DO NOT:
+
+❌ Add new features
+
+❌ Add new UI
+
+❌ Add new navigation
+
+❌ Add new databases
+
+❌ Add new APIs
+
+❌ Add new scene objects
+
+❌ Change business logic
+
+Focus entirely on movement, camera, immersion, and realism.
+
+---
+
+# Deliverables
+
+Provide:
+
+1. Camera tuning report
+2. Movement tuning report
+3. Collision audit
+4. Grounding improvements
+5. Performance verification
+6. Before/after comparison of movement feel
+
+---
+
+# Success Criteria
+
+A first-time visitor should immediately feel:
+
+• "I am walking through a real memorial sanctuary."
+
+They should never feel:
+
+• like they are flying
+• like they are floating
+• like they are riding a merry-go-round
+• like they are controlling a game camera
+
+The Sanctuary should feel calm, grounded, reverent, and physically believable.
+
+Stop after verification.

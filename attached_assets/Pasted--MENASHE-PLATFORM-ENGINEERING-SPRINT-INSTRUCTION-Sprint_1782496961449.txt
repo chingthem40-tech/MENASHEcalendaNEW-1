@@ -1,0 +1,312 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+Sprint ID:
+SPR-001
+
+Sprint Name:
+Project Foundation & Architecture Preparation
+
+Role:
+Act as a Senior Software Architect and Senior Full Stack Engineer.
+
+IMPORTANT
+
+Do NOT build any new features.
+
+Do NOT redesign the UI.
+
+Do NOT modify the Memorial Sanctuary.
+
+Do NOT modify the Hebrew Calendar.
+
+Do NOT change routing.
+
+Do NOT change business logic.
+
+Do NOT install unnecessary packages.
+
+This sprint is ONLY for preparing the project for long-term engineering.
+
+---
+
+## OBJECTIVE
+
+Analyze and improve the internal project organization while keeping 100% backward compatibility.
+
+The application must look and behave exactly the same after this sprint.
+
+Users should notice no visual difference.
+
+---
+
+## TASK 1
+
+Create an `/docs` directory at the project root if it does not already exist.
+
+Inside it, prepare documentation placeholders for:
+
+Architecture.md
+
+ProjectStructure.md
+
+CodingStandards.md
+
+DatabaseOverview.md
+
+PerformanceNotes.md
+
+SecurityChecklist.md
+
+Each document should contain a short description of its purpose.
+
+Do not write long documentation yet.
+
+---
+
+## TASK 2
+
+Analyze the project structure.
+
+Produce a report identifying:
+
+Large files
+
+Duplicate logic
+
+Shared logic opportunities
+
+Large components
+
+Feature boundaries
+
+Save this report inside:
+
+docs/Architecture.md
+
+---
+
+## TASK 3
+
+Locate every file larger than approximately 400 lines.
+
+Create a refactoring candidate list.
+
+Do NOT split files yet.
+
+Only document them.
+
+---
+
+## TASK 4
+
+Locate duplicated business logic.
+
+Examples include:
+
+Calendar calculations
+
+Hebrew utilities
+
+Zmanim
+
+Translations
+
+Locations
+
+API helpers
+
+Document every duplication.
+
+Do NOT modify code.
+
+---
+
+## TASK 5
+
+Identify reusable modules.
+
+Examples:
+
+Authentication
+
+Calendar Engine
+
+Memorial Engine
+
+Community
+
+AI
+
+Notifications
+
+Payments
+
+Document their boundaries.
+
+---
+
+## TASK 6
+
+Create a proposed future folder structure.
+
+This is documentation only.
+
+Do not move files.
+
+Example:
+
+packages/
+
+shared/
+
+calendar/
+
+zmanim/
+
+hebrew/
+
+translations/
+
+notifications/
+
+components/
+
+---
+
+## TASK 7
+
+Create an Engineering Technical Debt Register.
+
+Include:
+
+Issue
+
+Severity
+
+Impact
+
+Recommended Sprint
+
+Estimate
+
+Priority
+
+---
+
+## TASK 8
+
+Create a Production Readiness Checklist.
+
+Categories:
+
+Architecture
+
+Security
+
+Performance
+
+Accessibility
+
+Testing
+
+Deployment
+
+Monitoring
+
+Analytics
+
+Documentation
+
+---
+
+## TASK 9
+
+Generate an Engineering Summary.
+
+Include:
+
+Current architecture score
+
+Maintainability score
+
+Scalability score
+
+Security score
+
+Performance score
+
+Overall engineering maturity
+
+Top five risks
+
+Top five strengths
+
+---
+
+## CONSTRAINTS
+
+No UI changes.
+
+No API changes.
+
+No database changes.
+
+No package installations.
+
+No feature additions.
+
+No routing changes.
+
+No visual changes.
+
+No code refactoring.
+
+No business logic changes.
+
+Documentation only.
+
+---
+
+## DELIVERABLES
+
+At the end provide:
+
+1.
+
+Files created
+
+2.
+
+Engineering Summary
+
+3.
+
+Technical Debt Register
+
+4.
+
+Recommended Sprint 2
+
+5.
+
+Any blockers discovered
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Application behaves exactly the same.
+
+✓ No regression.
+
+✓ No feature removed.
+
+✓ No visual difference.
+
+✓ Documentation added.
+
+✓ Future engineering work becomes easier.
+
+When complete, stop and wait for approval before making any additional changes.

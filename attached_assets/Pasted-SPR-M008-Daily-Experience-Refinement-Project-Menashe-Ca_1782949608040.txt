@@ -1,0 +1,458 @@
+SPR-M008 — Daily Experience Refinement
+Project: Menashe Calendar Mobile V1
+
+Priority:
+🔴 Executive Priority
+
+Chief Architect:
+Samuel & ChatGPT
+
+Status:
+Vision Implementation Sprint
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Refine the Mobile Home screen into a world-class premium
+daily experience.
+
+Do NOT redesign the Home.
+
+Do NOT introduce new business logic.
+
+Do NOT add unnecessary features.
+
+Instead, elevate every existing element until the Home
+screen feels handcrafted, calm, and unmistakably Menashe.
+
+------------------------------------------------------------
+ARCHITECTURE
+------------------------------------------------------------
+
+Reuse without modification:
+
+✓ MMDL Design System
+✓ MEL Experience Language
+✓ Mobile Shell
+✓ Component Library
+✓ Shared Core
+✓ Existing APIs
+✓ Existing Navigation
+
+Do NOT duplicate code.
+
+Do NOT bypass existing architecture.
+
+------------------------------------------------------------
+DO NOT
+------------------------------------------------------------
+
+❌ Modify Web Application
+
+❌ Modify Shared Core
+
+❌ Modify Business Logic
+
+❌ Modify Database
+
+❌ Modify Authentication
+
+❌ Modify Calendar Engine
+
+❌ Modify Sanctuary Engine
+
+❌ Build Calendar Screen
+
+❌ Build AI Screen
+
+❌ Build Community Screen
+
+Home refinement only.
+
+------------------------------------------------------------
+PHASE 1
+Hero Experience
+------------------------------------------------------------
+
+Refine the Hero.
+
+Improve:
+
+• visual balance
+
+• typography hierarchy
+
+• artwork composition
+
+• overlay readability
+
+• spacing
+
+Hero should occupy approximately
+30–35% of the first viewport.
+
+Artwork should feel:
+
+warm
+
+peaceful
+
+hopeful
+
+golden hour
+
+timeless
+
+Add elegant loading placeholder.
+
+Fade image naturally.
+
+------------------------------------------------------------
+PHASE 2
+Today's Focus
+------------------------------------------------------------
+
+Refine the Focus Card.
+
+Display exactly ONE priority item.
+
+Priority order:
+
+1. Holiday Today
+
+2. Fast Today
+
+3. Candle Lighting
+
+4. Shabbat
+
+5. Weekly Parashah
+
+6. Daily Reminder
+
+The card should feel important
+without dominating the screen.
+
+------------------------------------------------------------
+PHASE 3
+Sacred Time
+------------------------------------------------------------
+
+Prayer Times card.
+
+Improve:
+
+spacing
+
+icon alignment
+
+typography
+
+current prayer emphasis
+
+time readability
+
+Card should be immediately scannable.
+
+------------------------------------------------------------
+PHASE 4
+Shabbat Experience
+------------------------------------------------------------
+
+Refine Countdown.
+
+Improve hierarchy:
+
+Countdown
+
+↓
+
+Candle Lighting
+
+↓
+
+Havdalah
+
+Improve typography scale.
+
+Improve spacing rhythm.
+
+------------------------------------------------------------
+PHASE 5
+Quick Actions
+------------------------------------------------------------
+
+Keep existing functionality.
+
+Refine:
+
+icon consistency
+
+spacing
+
+touch targets
+
+visual weight
+
+button feedback
+
+Use premium card treatment.
+
+No tiny buttons.
+
+------------------------------------------------------------
+PHASE 6
+Learning Experience
+------------------------------------------------------------
+
+Refine:
+
+Weekly Parashah
+
+Torah Insight
+
+Daf Yomi
+
+All three cards should belong
+to one visual family.
+
+Consistent spacing.
+
+Consistent illustration treatment.
+
+Consistent CTA placement.
+
+------------------------------------------------------------
+PHASE 7
+Sanctuary Card
+------------------------------------------------------------
+
+Treat Sanctuary as a flagship experience.
+
+Improve:
+
+artwork
+
+lighting
+
+card depth
+
+headline
+
+description
+
+CTA prominence
+
+The card should invite reflection.
+
+Not entertainment.
+
+------------------------------------------------------------
+PHASE 8
+Rav Menashe AI
+------------------------------------------------------------
+
+Refine AI card.
+
+Premium sapphire appearance.
+
+Improve typography.
+
+Improve illustration.
+
+Conversation preview should feel welcoming.
+
+------------------------------------------------------------
+PHASE 9
+Visual Rhythm
+------------------------------------------------------------
+
+Audit the complete Home.
+
+Ensure:
+
+consistent margins
+
+consistent card spacing
+
+breathing room
+
+reading rhythm
+
+No crowded areas.
+
+No abrupt transitions.
+
+------------------------------------------------------------
+PHASE 10
+Micro Interactions
+------------------------------------------------------------
+
+Refine:
+
+button press
+
+card press
+
+scroll reveal
+
+header collapse
+
+hero fade
+
+image loading
+
+No exaggerated animation.
+
+Everything should feel effortless.
+
+------------------------------------------------------------
+PHASE 11
+Performance
+------------------------------------------------------------
+
+Verify:
+
+60 FPS target
+
+memoized sections
+
+lazy images
+
+no unnecessary rerenders
+
+smooth scrolling
+
+no dropped frames
+
+------------------------------------------------------------
+PHASE 12
+Accessibility
+------------------------------------------------------------
+
+Verify:
+
+VoiceOver
+
+TalkBack
+
+Dynamic Type
+
+Reduced Motion
+
+Contrast
+
+48dp touch targets
+
+Accessible labels
+
+------------------------------------------------------------
+QUALITY REVIEW
+------------------------------------------------------------
+
+Review the entire Home screen.
+
+Remove:
+
+visual clutter
+
+uneven spacing
+
+misaligned typography
+
+inconsistent icon sizes
+
+uneven card heights
+
+random shadows
+
+Everything should feel intentional.
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide:
+
+• Updated Home screenshots
+  - Top
+  - Middle
+  - Bottom
+
+• Component reuse report
+
+• Animation summary
+
+• Performance summary
+
+• Accessibility report
+
+• Before vs After comparison
+
+• Verification checklist
+
+------------------------------------------------------------
+VERIFY
+------------------------------------------------------------
+
+Confirm:
+
+✅ Web untouched
+
+✅ Shared Core untouched
+
+✅ Mobile Shell reused
+
+✅ MMDL reused
+
+✅ MEL followed
+
+✅ Component Library reused
+
+✅ Existing APIs reused
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+------------------------------------------------------------
+STOP POINT
+------------------------------------------------------------
+
+Stop after Home refinement.
+
+Do NOT continue into:
+
+Calendar
+
+Community
+
+Sanctuary internals
+
+AI internals
+
+Settings
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+This sprint is about craftsmanship.
+
+The user should not notice
+what changed.
+
+They should simply feel that
+everything is calmer,
+cleaner,
+more premium,
+and easier to understand.
+
+The Home screen should become
+the emotional front door
+of the Menashe Calendar platform.
+
+If every element feels like it belongs
+to the same family,
+the sprint is successful.

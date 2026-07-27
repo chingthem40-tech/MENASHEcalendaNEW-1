@@ -1,0 +1,215 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-014 — Memorial Frontend Architecture
+
+ROLE
+
+Act as a Senior React Architect and Frontend Platform Architect.
+
+Continue the Memorial Sanctuary implementation.
+
+This sprint defines the frontend architecture only.
+
+Do NOT build visual pages yet.
+
+Do NOT build Three.js scenes.
+
+Do NOT redesign the UI.
+
+---
+
+## OBJECTIVE
+
+Design a scalable frontend feature module for the Memorial Sanctuary.
+
+The implementation should support future growth while remaining easy to maintain.
+
+---
+
+## TASK 1
+
+Create the feature module structure:
+
+src/features/memorial/
+
+api/
+
+hooks/
+
+components/
+
+pages/
+
+stores/
+
+types/
+
+utils/
+
+index.ts
+
+---
+
+## TASK 2
+
+Design the API client layer.
+
+Document functions such as:
+
+getMemorial()
+
+createMemorial()
+
+updateMemorial()
+
+lightCandle()
+
+addTribute()
+
+uploadPhoto()
+
+searchMemorial()
+
+Do not redesign backend APIs.
+
+---
+
+## TASK 3
+
+Design custom hooks.
+
+Examples:
+
+useMemorial()
+
+useCandles()
+
+useTributes()
+
+useSearch()
+
+useCreateMemorial()
+
+useUploadPhoto()
+
+---
+
+## TASK 4
+
+State management.
+
+Define:
+
+Server state
+
+UI state
+
+Session state
+
+Temporary form state
+
+Optimistic updates
+
+Caching strategy
+
+---
+
+## TASK 5
+
+Routing architecture.
+
+Document pages:
+
+Search
+
+Create
+
+Profile
+
+Edit
+
+Family Management
+
+Gallery
+
+---
+
+## TASK 6
+
+Permission architecture.
+
+Guest
+
+Authenticated
+
+Family Member
+
+Family Admin
+
+Moderator
+
+Administrator
+
+---
+
+## TASK 7
+
+Error handling.
+
+Loading
+
+Empty states
+
+Retry
+
+Offline support
+
+Upload failures
+
+Permission denied
+
+---
+
+## TASK 8
+
+Documentation.
+
+Create:
+
+docs/MemorialFrontendArchitecture.md
+
+Include module diagrams and implementation roadmap.
+
+---
+
+## DELIVERABLES
+
+1. Feature module structure
+
+2. Hook architecture
+
+3. API layer design
+
+4. State ownership
+
+5. Routing design
+
+6. Permission flow
+
+7. Frontend implementation roadmap
+
+---
+
+## ACCEPTANCE CRITERIA
+
+No UI implementation.
+
+No visual redesign.
+
+No React Three Fiber.
+
+Architecture only.
+
+Stop after completion.

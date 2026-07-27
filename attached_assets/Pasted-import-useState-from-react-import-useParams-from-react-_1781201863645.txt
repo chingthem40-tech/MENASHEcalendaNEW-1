@@ -1,0 +1,198 @@
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api.js";
+import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
+import CensusLogo from "@/pages/census/_components/CensusLogo.tsx";
+import CensusTable from "@/pages/census/_components/CensusTable.tsx";
+import type { CensusMember } from "@/pages/census/types.ts";
+import { EMPTY_MEMBER } from "@/pages/census/types.ts";
+
+export default function SharePage() {
+  const { token } = useParams<{ token: string }>();
+  const census = useQuery(api.census.getByShareToken, token ? { token } : "skip");
+
+  const [communityName, setCommunityName] = useState("");
+  const [headOfFamily, setHeadOfFamily] = useState("");
+  const [members, setMembers] = useState<CensusMember[]>([]);
+  const [collaboratorName, setCollaboratorName] = useState("");
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const submitEdits = useMutation(api.census.submitCollaboratorEdits);
+
+  // Initialize form from loaded census data
+  if (census && !isInitialized) {
+    setCommunityName(census.communityName);
+    setHeadOfFamily(census.headOfFamily);
+    setMembers(census.members.length > 0 ? census.members : [{ ...EMPTY_MEMBER(), slNo: 1 }]);
+    setIsInitialized(true);
+  }
+
+  const handleEdit = (index: number, field: keyof CensusMember, value: string | number) => {
+    setMembers((prev) => prev.map((m, i) => i === index ? { ...m, [field]: value } : m));
+  };
+
+  const handleDeleteRow = (index: number) => {
+    setMembers((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleAddRow = () => {
+    setMembers((prev) => [...prev, { ...EMPTY_MEMBER(), slNo: prev.length + 1 }]);
+  };
+
+  const handleSubmit = async () => {
+    if (!token) return;
+    if (!collaboratorName.trim()) {
+      toast.error("Please enter your name so the form owner knows who submitted the edits");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await submitEdits({
+        shareToken: token,
+        communityName,
+        headOfFamily,
+        members,
+        collaboratorName: collaboratorName.trim(),
+      });
+      setSubmitted(true);
+      toast.success("Your edits have been submitted for review!");
+    } catch {
+      toast.error("Failed to submit edits. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!token) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Invalid share link.</div>;
+  }
+
+  if (census === undefined) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <Skeleton className="h-20 w-80" />
+      </div>
+    );
+  }
+
+  if (census === null) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 text-center px-4">
+        <p className="text-lg font-semibold" style={{ fontFamily: "'Times New Roman', serif" }}>
+          This share link is no longer active.
+        </p>
+        <p className="text-sm text-gray-500">The form owner may have revoked this link.</p>
+      </div>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
+        <div className="w-16 h-16">
+          <CensusLogo className="w-full h-full" />
+        </div>
+        <h2 className="text-xl font-bold" style={{ fontFamily: "'Times New Roman', serif" }}>
+          Edits Submitted!
+        </h2>
+        <p className="text-sm text-gray-600 max-w-md">
+          Your changes have been sent to the form owner for review. They will apply them if everything looks correct.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-200 py-6">
+      {/* Banner */}
+      <div className="max-w-[1100px] mx-auto px-4 mb-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-blue-900">
+              You have been invited to fill in missing fields on this census form.
+            </p>
+            <p className="text-xs text-blue-700 mt-0.5">
+              Your edits will be sent to the form owner for review — nothing is saved until they approve.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <label className="text-xs text-gray-600 whitespace-nowrap">Your name:</label>
+            <input
+              className="border rounded px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-blue-400 w-40"
+              placeholder="e.g. John Haokip"
+              value={collaboratorName}
+              onChange={(e) => setCollaboratorName(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="bg-white shadow-lg max-w-[1100px] mx-4 sm:mx-auto px-8 py-6"
+        style={{ fontFamily: "'Times New Roman', Times, serif" }}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between mb-1">
+          <div className="w-[90px] h-[90px] flex-shrink-0">
+            <CensusLogo className="w-full h-full object-contain" />
+          </div>
+          <div className="flex-1 text-center px-2">
+            <h1 className="text-xl font-bold tracking-wide uppercase">
+              BNEI MENASHE COUNCIL INDIA CENSUS {census.year}
+            </h1>
+            <p className="text-sm font-bold mt-0.5">Regd. No. 23/SR/2010-CCP</p>
+            <p className="text-sm italic">
+              Head Office: Beith Shalom B.Vengnom, Churachandpur, Manipur, India - 795128
+            </p>
+          </div>
+          <div className="w-[90px] flex-shrink-0" />
+        </div>
+
+        <hr className="border-black border-t-2 my-2" />
+
+        <div className="flex items-end gap-8 my-3 text-sm">
+          <div className="flex items-end gap-1">
+            <span className="whitespace-nowrap">Name of the Community:</span>
+            <input
+              className="border-b border-black bg-transparent font-bold text-sm outline-none focus:bg-yellow-50 px-1 min-w-[180px]"
+              value={communityName}
+              onChange={(e) => setCommunityName(e.target.value)}
+              placeholder="Community Name"
+            />
+          </div>
+          <div className="flex items-end gap-1">
+            <span className="whitespace-nowrap">Head of the Family:</span>
+            <input
+              className="border-b border-black bg-transparent font-bold text-sm outline-none focus:bg-yellow-50 px-1 min-w-[180px]"
+              value={headOfFamily}
+              onChange={(e) => setHeadOfFamily(e.target.value)}
+              placeholder="Head of Family Name"
+            />
+          </div>
+        </div>
+
+        <CensusTable
+          members={members}
+          onEdit={handleEdit}
+          onDeleteRow={handleDeleteRow}
+          onAddRow={handleAddRow}
+        />
+
+        {/* Submit bar */}
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={() => void handleSubmit()}
+            disabled={isSubmitting}
+            className="px-5 py-2 bg-blue-700 text-white text-sm rounded hover:bg-blue-800 disabled:opacity-60 cursor-pointer"
+          >
+            {isSubmitting ? "Submitting…" : "Submit Edits for Review"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

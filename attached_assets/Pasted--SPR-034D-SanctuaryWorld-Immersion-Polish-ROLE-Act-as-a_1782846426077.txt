@@ -1,0 +1,286 @@
+# SPR-034D — SanctuaryWorld Immersion Polish
+
+## ROLE
+
+Act as a Principal UX Architect, Three.js Graphics Engineer, Environment Artist, React Architect, Mobile Performance Engineer, and Production Release Engineer.
+
+---
+
+# MISSION
+
+Transform SanctuaryWorld from a technically impressive 3D scene into a peaceful, believable place of remembrance.
+
+Do NOT add major new features.
+
+Do NOT redesign the Memorial system.
+
+Do NOT modify backend APIs.
+
+Do NOT create new database tables.
+
+This sprint focuses entirely on immersion, atmosphere, movement, orientation, and environmental interaction.
+
+---
+
+# DESIGN PRINCIPLE
+
+Every visual and interactive element should help visitors:
+
+Pause.
+
+Remember.
+
+Reflect.
+
+Nothing should feel like a video game.
+
+Everything should feel intentional.
+
+---
+
+# TASK 1 — Natural Walking Experience
+
+Improve player movement.
+
+Walking should feel calm and effortless.
+
+Review:
+
+* walking speed
+* turning speed
+* acceleration
+* deceleration
+* camera sensitivity
+* mobile touch controls
+
+Movement should never feel twitchy.
+
+---
+
+# TASK 2 — Camera Polish
+
+Improve camera behaviour.
+
+Requirements:
+
+✓ Smooth acceleration
+
+✓ Smooth deceleration
+
+✓ Gentle stop
+
+✓ No sudden snapping
+
+✓ No unexpected resets
+
+✓ Stable horizon
+
+✓ Comfortable mobile experience
+
+The camera should always feel like a person walking peacefully.
+
+---
+
+# TASK 3 — Environmental Orientation
+
+Help visitors understand where they are without using intrusive UI.
+
+Use environmental guidance such as:
+
+* stone paths
+* subtle lighting
+* landmark placement
+* flower beds
+* tree spacing
+* bridge positioning
+
+Avoid floating arrows or game-style markers.
+
+---
+
+# TASK 4 — Interactive Entrance Boards
+
+When the player approaches a board:
+
+* subtle warm glow
+* gentle bloom increase
+* soft shimmer
+* optional "Tap to Read"
+
+Do NOT use narration.
+
+Do NOT display pop-up windows.
+
+The interaction should feel natural.
+
+---
+
+# TASK 5 — Living Community Board
+
+Replace the static entrance board with a rotating information display.
+
+Cycle every few seconds between:
+
+• Recently Lit Candles
+
+• Upcoming Yahrzeit
+
+• Recent Tributes
+
+• Community Prayer Requests (existing data only)
+
+Reuse existing APIs.
+
+Do NOT create duplicate data.
+
+---
+
+# TASK 6 — Environmental Animation
+
+Add subtle environmental motion.
+
+Examples:
+
+* drifting pollen
+* floating dust
+* occasional falling blossom petals
+* gentle grass sway
+* slow tree movement
+
+Motion must remain subtle.
+
+Avoid fantasy effects.
+
+---
+
+# TASK 7 — Sanctuary Lighting Polish
+
+Improve atmosphere.
+
+Review:
+
+* sunlight direction
+* shadow softness
+* bloom strength
+* fog balance
+* warm highlights
+* entrance lighting
+
+Avoid overexposed bloom.
+
+Maintain realistic golden-hour ambience.
+
+---
+
+# TASK 8 — Reflection Experience
+
+When Reflection Mode activates:
+
+Hide unnecessary interface.
+
+Leave only:
+
+* valley
+* candles
+* water
+* trees
+* ambient environment
+
+The transition should feel peaceful.
+
+---
+
+# TASK 9 — Mobile Optimization
+
+Verify:
+
+* stable FPS
+* touch comfort
+* no overlapping controls
+* comfortable joystick sensitivity
+* readable entrance boards
+* responsive UI
+
+Target:
+
+30–60 FPS on average Android devices.
+
+---
+
+# TASK 10 — Performance Budget
+
+Maintain or improve current performance.
+
+Do not exceed existing draw call budget.
+
+Reuse materials.
+
+Reuse geometry.
+
+Continue using InstancedMesh where possible.
+
+No unnecessary allocations inside useFrame().
+
+---
+
+# TASK 11 — Accessibility
+
+Verify:
+
+✓ Reduced Motion
+
+✓ Keyboard Navigation
+
+✓ Screen Reader compatibility
+
+✓ High Contrast
+
+✓ Mobile usability
+
+---
+
+# VERIFICATION
+
+Confirm:
+
+✓ Stable camera
+
+✓ Stable movement
+
+✓ Stable spawn
+
+✓ Stable reflection mode
+
+✓ Interactive boards
+
+✓ Living community board
+
+✓ No regressions
+
+✓ No TypeScript errors
+
+✓ No FPS regression
+
+---
+
+# DELIVERABLES
+
+1. More natural movement.
+
+2. Improved camera.
+
+3. Better environmental guidance.
+
+4. Interactive entrance boards.
+
+5. Living community board.
+
+6. Enhanced atmosphere.
+
+7. Improved mobile experience.
+
+8. Updated documentation.
+
+Stop after verification.
+
+Do NOT add unrelated features.

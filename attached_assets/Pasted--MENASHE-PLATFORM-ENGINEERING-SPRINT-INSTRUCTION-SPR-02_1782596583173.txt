@@ -1,0 +1,179 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-021 — Production Validation & Release Readiness
+
+ROLE
+
+Act as a Senior QA Engineer, Release Engineer, Security Tester, Product Tester, Accessibility Tester, and Mobile Tester.
+
+Do NOT add new features.
+
+Do NOT redesign the UI.
+
+Do NOT change the database schema.
+
+Do NOT create new APIs.
+
+Your only goal is to prove that the Menashe Platform is ready for Version 1.0 production.
+
+---
+
+## TASK 1 — Workflow Validation
+
+Test every complete workflow.
+
+### Calendar
+
+* Hebrew Date
+* Holidays
+* Zmanim
+* Parasha
+* Notifications
+
+### Memorial
+
+* Search memorial
+* Open memorial
+* Light candle
+* Leave tribute
+* View family
+* Share memorial
+
+### Community
+
+* Announcements
+* Events
+* Prayer Board
+* Member Directory
+
+### Admin
+
+* Login
+* Approve member
+* Create announcement
+* Upload book
+* Moderate tribute
+* View audit
+
+---
+
+## TASK 2 — Error Handling
+
+Verify every error state.
+
+Examples:
+
+* Offline
+* Empty search
+* Invalid URL
+* Unauthorized
+* Session expired
+* API timeout
+* Missing image
+* 404
+* 500
+
+Every failure must show a friendly message.
+
+No blank screens.
+
+No crashes.
+
+---
+
+## TASK 3 — Mobile Validation
+
+Test:
+
+* Android
+* iPhone
+* Portrait
+* Landscape
+* Small screens
+* Large screens
+
+Verify:
+
+* No overflow
+* No clipped cards
+* Safe-area support
+* Keyboard behaviour
+* Modal scrolling
+
+---
+
+## TASK 4 — Performance Validation
+
+Measure:
+
+* Initial load
+* Navigation speed
+* Bundle warnings
+* Large assets
+* Unnecessary re-renders
+* Memory leaks
+
+Document findings.
+
+---
+
+## TASK 5 — Accessibility Validation
+
+Verify:
+
+* Keyboard navigation
+* Focus order
+* Screen-reader labels
+* Contrast
+* RTL layouts
+* Reduced motion
+
+---
+
+## TASK 6 — Security Validation
+
+Retest:
+
+* Protected routes
+* Admin permissions
+* Member permissions
+* API authorization
+* File uploads
+
+Attempt invalid access.
+
+Ensure access is denied correctly.
+
+---
+
+## TASK 7 — Production Checklist
+
+Update:
+
+docs/ProductionReadinessChecklist.md
+
+Include:
+
+* Every test
+* Pass / Fail
+* Remaining blockers
+* Risk assessment
+* Recommended Go / No-Go decision
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ No new features.
+
+✓ No UI redesign.
+
+✓ Every workflow validated.
+
+✓ Every blocker documented.
+
+✓ Clear Go / No-Go recommendation.
+
+Stop after delivering the validation report.

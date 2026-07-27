@@ -1,0 +1,162 @@
+SPR-P005B — Shared Census Core
+
+Scope:
+🔄 Shared Core + API
+
+Priority:
+Platform Infrastructure
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+MISSION
+
+Create the canonical Census module.
+
+This is infrastructure only.
+
+Do NOT build UI.
+
+Do NOT modify Mobile screens.
+
+Do NOT modify Web screens.
+
+==================================================
+
+CREATE
+
+lib/shared-core/src/census/
+
+--------------------------------------------------
+
+types.ts
+
+--------------------------------------------------
+
+Canonical interfaces:
+
+CensusRow
+
+FamilyMember
+
+Family
+
+Branch
+
+--------------------------------------------------
+
+enums.ts
+
+--------------------------------------------------
+
+AliyahStatus
+
+Relation
+
+MaritalStatus
+
+==================================================
+
+schemas.ts
+
+--------------------------------------------------
+
+Move Zod validation here.
+
+Replace:
+
+z.record(z.unknown())
+
+with
+
+proper typed schemas.
+
+The API must validate every Census field.
+
+==================================================
+
+labels.ts
+
+--------------------------------------------------
+
+Display labels only.
+
+No business logic.
+
+==================================================
+
+stats.ts
+
+--------------------------------------------------
+
+Pure functions only.
+
+Examples:
+
+memberCount()
+
+branchStats()
+
+aliyahBreakdown()
+
+familyCount()
+
+==================================================
+
+index.ts
+
+--------------------------------------------------
+
+Single export point.
+
+==================================================
+
+API
+
+--------------------------------------------------
+
+Update census.ts
+
+Import schemas from shared-core.
+
+Remove duplicate validation.
+
+==================================================
+
+DO NOT
+
+❌ Modify UI
+
+❌ Modify Community
+
+❌ Modify Journey
+
+❌ Modify Memorial
+
+❌ Modify AI
+
+==================================================
+
+RETURN ONLY
+
+✓ Files created
+
+✓ Files modified
+
+✓ Duplicate models removed
+
+Stop.
+
+No TypeScript.
+
+No build.
+
+==================================================
+
+CHIEF ARCHITECT PRINCIPLE
+
+There must be ONE Census model.
+
+Everything else imports it.

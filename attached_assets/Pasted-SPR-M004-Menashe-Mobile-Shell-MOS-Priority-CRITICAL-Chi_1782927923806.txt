@@ -1,0 +1,409 @@
+SPR-M004 — Menashe Mobile Shell (MOS)
+
+Priority:
+🔴 CRITICAL
+
+Chief Architect:
+Samuel & ChatGPT
+
+Platform:
+Menashe Calendar Mobile V2
+
+Version:
+1.0
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Build the Menashe Mobile Shell (MOS).
+
+The Mobile Shell becomes the permanent framework that hosts every
+future screen.
+
+The Shell is NOT a feature.
+
+It is the operating environment of the application.
+
+Every screen built afterwards must live inside this Shell.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify Web UI
+
+❌ Modify Web Components
+
+❌ Modify Web Navigation
+
+❌ Modify Existing Business Logic
+
+❌ Build Home Screen
+
+❌ Build Calendar
+
+❌ Build Sanctuary
+
+❌ Build AI
+
+❌ Build Community
+
+❌ Build Torah
+
+❌ Build Settings
+
+The existing Web Platform is production protected.
+
+------------------------------------------------------------
+ARCHITECTURE
+------------------------------------------------------------
+
+Create
+
+MobileShell
+
+inside
+
+src/mobile/
+
+The Shell becomes
+
+App
+
+↓
+
+Shell
+
+↓
+
+Screens
+
+------------------------------------------------------------
+BUILD
+------------------------------------------------------------
+
+Create
+
+MobileShell
+
+Responsibilities
+
+• Safe Area
+
+• Status Bar
+
+• Navigation Container
+
+• Bottom Navigation Host
+
+• Floating Layer
+
+• Overlay Layer
+
+• Toast Layer
+
+• Dialog Layer
+
+• Bottom Sheet Host
+
+• Modal Host
+
+• Keyboard Avoidance
+
+• Theme Injection
+
+• Responsive Layout
+
+• Offline Banner Host
+
+• Loading Overlay Host
+
+• Future Notification Host
+
+------------------------------------------------------------
+NAVIGATION
+------------------------------------------------------------
+
+Prepare Bottom Navigation.
+
+Tabs
+
+🏠 Home
+
+📅 Calendar
+
+🕯 Sanctuary
+
+📖 Study
+
+☰ More
+
+Do NOT connect screens yet.
+
+Create only the Shell.
+
+------------------------------------------------------------
+HEADER
+------------------------------------------------------------
+
+Build
+
+Animated Header
+
+Large Title
+
+Compact Title
+
+Scroll Transition
+
+Blur Background
+
+Safe Area Integration
+
+Dynamic Height
+
+Theme Support
+
+------------------------------------------------------------
+BOTTOM NAVIGATION
+------------------------------------------------------------
+
+Premium floating navigation.
+
+Rounded
+
+Glass
+
+Shadow
+
+Safe Area aware
+
+Animated selection
+
+Active indicator
+
+Future badge support
+
+Haptic-ready
+
+------------------------------------------------------------
+GLOBAL HOSTS
+------------------------------------------------------------
+
+Prepare
+
+ToastHost
+
+DialogHost
+
+BottomSheetHost
+
+LoadingHost
+
+SnackbarHost
+
+OverlayHost
+
+SearchHost
+
+Future NotificationHost
+
+No business logic.
+
+------------------------------------------------------------
+TRANSITIONS
+------------------------------------------------------------
+
+Prepare animation system.
+
+Screen Fade
+
+Slide
+
+Shared Element Ready
+
+Gesture Ready
+
+Interactive Ready
+
+Use only MMDL motion tokens.
+
+------------------------------------------------------------
+SAFE AREA
+------------------------------------------------------------
+
+Support
+
+Dynamic Island
+
+Android Cutouts
+
+Gesture Navigation
+
+Landscape
+
+Tablet
+
+Foldable
+
+------------------------------------------------------------
+RESPONSIVE
+------------------------------------------------------------
+
+Support
+
+Phone
+
+Large Phone
+
+Tablet
+
+Landscape
+
+Foldable
+
+Without screen implementations.
+
+------------------------------------------------------------
+PERFORMANCE
+------------------------------------------------------------
+
+Shell should remain mounted.
+
+Only screens change.
+
+Navigation must NOT recreate Shell.
+
+Prepare lazy screen mounting.
+
+------------------------------------------------------------
+ACCESSIBILITY
+------------------------------------------------------------
+
+VoiceOver
+
+TalkBack
+
+Dynamic Font
+
+Reduced Motion
+
+High Contrast
+
+Keyboard Navigation
+
+Large Touch Targets
+
+------------------------------------------------------------
+DEVELOPER MODE
+------------------------------------------------------------
+
+Create
+
+ShellPreview
+
+inside
+
+mobile/dev/
+
+Allow preview of
+
+Header
+
+Bottom Navigation
+
+Toast
+
+Bottom Sheet
+
+Dialog
+
+Overlay
+
+without feature screens.
+
+------------------------------------------------------------
+DOCUMENTATION
+------------------------------------------------------------
+
+Generate
+
+Shell Architecture
+
+Navigation Diagram
+
+Host Diagram
+
+Lifecycle Diagram
+
+Future Extension Guide
+
+------------------------------------------------------------
+VERIFICATION
+------------------------------------------------------------
+
+Verify
+
+✅ Existing Web untouched
+
+✅ Mobile Design System untouched
+
+✅ Component Library untouched
+
+✅ Shell compiles
+
+✅ Shell Preview renders
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide
+
+Shell Folder Tree
+
+Architecture Diagram
+
+Navigation Diagram
+
+Host Diagram
+
+Preview Screenshot
+
+Verification Checklist
+
+Stop after verification.
+
+------------------------------------------------------------
+STOP POINT
+------------------------------------------------------------
+
+DO NOT BUILD ANY SCREEN.
+
+Only build the Mobile Shell.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+The Shell is the heart of the Mobile Application.
+
+Screens are temporary.
+
+The Shell is permanent.
+
+A beautiful Shell allows every future screen to feel unified,
+stable,
+fast,
+and premium.
+
+Protect the Web Platform.
+
+Build the Mobile future.

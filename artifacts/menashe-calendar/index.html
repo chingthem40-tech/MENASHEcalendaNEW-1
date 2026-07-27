@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
+    <title>Menashe Calendar</title>
+    <meta name="description" content="The Sacred Calendar of Bnei Menashe — Zmanim, Torah wisdom, Jewish holidays, and community resources." />
+    <meta name="robots" content="index, follow" />
+
+    <!-- PWA core -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#D4AF37" />
+
+    <!-- Android / Chrome PWA -->
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Menashe" />
+    <link rel="apple-touch-icon" href="/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png" />
+
+    <!-- iOS splash screens (dark background matching app) -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- Microsoft -->
+    <meta name="msapplication-TileColor" content="#04010e" />
+    <meta name="msapplication-TileImage" content="/icon-192.png" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Menashe Calendar" />
+    <meta property="og:description" content="The Sacred Calendar of Bnei Menashe — Zmanim, Torah wisdom, Jewish holidays, and community resources." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/opengraph.jpg" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Menashe Calendar" />
+    <meta name="twitter:description" content="The Sacred Calendar of Bnei Menashe — Zmanim, Torah wisdom, Jewish holidays, and community resources." />
+    <meta name="twitter:image" content="/opengraph.jpg" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Prevent white flash: match dark app background -->
+    <style>html,body{background:#04010e;margin:0;padding:0}</style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

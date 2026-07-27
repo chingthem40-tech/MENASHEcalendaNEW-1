@@ -1,0 +1,297 @@
+# SPR-034C — Sanctuary Entrance Experience
+
+## Role
+
+Act as a Principal UX Architect, Three.js Engineer, React Architect, Environment Artist, and Production Release Engineer.
+
+---
+
+# Mission
+
+Redesign the entrance experience of the Memorial Sanctuary.
+
+The Memorial Sanctuary should no longer spawn users randomly inside the valley or facing the wrong direction.
+
+Instead, every visitor should experience a ceremonial arrival through the Front Gate before entering the Sanctuary.
+
+This is an immersion and navigation sprint.
+
+Do NOT change backend APIs.
+
+Do NOT modify database schemas.
+
+Do NOT change business logic.
+
+---
+
+# Design Philosophy
+
+The Memorial Sanctuary is not a game.
+
+It is a sacred digital place of remembrance.
+
+The first 20 seconds should communicate:
+
+* peace
+* orientation
+* reverence
+* purpose
+
+The entrance experience should feel like arriving at a real memorial park.
+
+---
+
+# Task 1 — Front Gate Spawn
+
+Remove the current spawn location.
+
+Create a permanent player spawn at the Memorial Front Gate.
+
+Requirements:
+
+* Camera faces INTO the Sanctuary.
+* Player immediately sees the valley ahead.
+* Player never spawns facing backwards.
+* Camera target points toward the central pathway.
+* Spawn position should remain stable after reopening the Sanctuary.
+
+Verify:
+
+* Mobile
+* Desktop
+* Reflection Mode
+* Browser panel
+* Memorial profile
+* Re-entering Sanctuary
+
+The player must never unexpectedly teleport back to the spawn point.
+
+---
+
+# Task 2 — Welcome Notice Board
+
+Build a high-quality 3D Welcome Board beside the entrance.
+
+Style:
+
+* carved stone
+* limestone
+* gold engraved lettering
+* softly illuminated
+
+Suggested content:
+
+MEMORIAL SANCTUARY
+
+A Valley of Remembrance & Love
+
+May every candle honour a life.
+
+Walk forward to enter.
+
+The board should exist naturally within the environment.
+
+Do NOT implement as a popup.
+
+---
+
+# Task 3 — Community Candle Board
+
+Create a second 3D information board near the entrance.
+
+Display:
+
+Recently Lit Candles
+
+Each entry:
+
+🕯 Name
+
+🕯 Memorial Name
+
+🕯 Time Lit
+
+Show only the latest community candles.
+
+If no candles exist:
+
+"No community candles have been lit today."
+
+The board should update from the existing memorial candle system.
+
+Do NOT create a second candle database.
+
+Reuse the existing APIs.
+
+---
+
+# Task 4 — Visitor Guidance Board
+
+Create a tasteful instruction board.
+
+Keep instructions minimal.
+
+Example:
+
+Welcome.
+
+• Walk to explore.
+
+• Tap memorials to learn more.
+
+• Light a candle.
+
+• Leave a tribute.
+
+• Reflection Mode begins after a period of stillness.
+
+Avoid excessive text.
+
+This should feel like museum guidance.
+
+---
+
+# Task 5 — Entrance Composition
+
+Arrange the entrance area as follows:
+
+Front Gate
+
+↓
+
+Welcome Board
+
+↓
+
+Community Candle Board
+
+↓
+
+Visitor Guide
+
+↓
+
+Main Path
+
+↓
+
+Tree of Remembrance
+
+↓
+
+Memorial Valley
+
+The entrance should naturally guide the visitor into the Sanctuary.
+
+---
+
+# Task 6 — Camera & Orientation
+
+When entering:
+
+Fade in.
+
+Camera settles.
+
+Small idle breathing motion.
+
+No sudden movement.
+
+No forced rotation.
+
+No automatic camera reset.
+
+The first view should showcase:
+
+* Front Gate
+* Path
+* Tree of Remembrance
+* Eternal Flame
+* Valley beyond
+
+---
+
+# Task 7 — Mobile Optimization
+
+Ensure:
+
+* Comfortable touch controls.
+* No overlapping UI.
+* Entrance boards remain readable.
+* Camera height appropriate for phones.
+* Stable frame rate.
+
+---
+
+# Task 8 — Accessibility
+
+Support:
+
+* Keyboard navigation.
+* Screen readers (for overlay UI).
+* Reduced motion.
+* High contrast text.
+* Readable font sizes.
+
+---
+
+# Task 9 — Performance
+
+Use existing materials whenever possible.
+
+Avoid excessive draw calls.
+
+Reuse textures.
+
+Instancing where appropriate.
+
+Target:
+
+* 60 FPS desktop.
+* 30–60 FPS average Android.
+
+---
+
+# Task 10 — Verification
+
+Verify:
+
+✓ Spawn always faces the valley.
+
+✓ No unexpected teleport.
+
+✓ Boards render correctly.
+
+✓ Candle board loads existing data.
+
+✓ Reflection Mode still works.
+
+✓ Memorial Browser still works.
+
+✓ Mobile layout is stable.
+
+✓ No TypeScript errors.
+
+✓ No performance regression.
+
+---
+
+# Deliverables
+
+1. Redesigned Sanctuary entrance.
+
+2. Permanent Front Gate spawn.
+
+3. Welcome Board.
+
+4. Community Candle Board.
+
+5. Visitor Guidance Board.
+
+6. Improved camera orientation.
+
+7. Updated documentation.
+
+Stop after verification.
+
+Do NOT add unrelated features.

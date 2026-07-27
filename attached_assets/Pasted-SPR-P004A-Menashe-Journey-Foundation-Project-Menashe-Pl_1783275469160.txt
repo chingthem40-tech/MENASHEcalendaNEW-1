@@ -1,0 +1,207 @@
+SPR-P004A — Menashe Journey Foundation
+Project: Menashe Platform
+Scope: MOBILE ONLY
+
+Priority:
+🔴 Platform Integration
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+MISSION
+
+Create the Menashe Journey screen.
+
+This is NOT a profile page.
+
+This is the user's personal journey through the Menashe Platform.
+
+The purpose is to connect all existing experiences into one place.
+
+Do NOT create business logic.
+
+Do NOT create new APIs.
+
+Reuse everything that already exists.
+
+==================================================
+
+REUSE
+
+✓ Shared Core
+
+✓ Clerk Authentication
+
+✓ Mobile Shell
+
+✓ MMDL
+
+✓ MEL
+
+✓ Existing translations
+
+✓ Existing navigation
+
+==================================================
+
+DO NOT
+
+❌ Modify Web
+
+❌ Modify Database
+
+❌ Modify APIs
+
+❌ Duplicate business logic
+
+❌ Create social profile features
+
+❌ Create edit forms
+
+❌ Build settings
+
+==================================================
+
+BUILD ONLY
+
+SECTION 1
+
+Greeting
+
+------------------------------------
+
+Display:
+
+Shalom, {First Name}
+
+Large greeting.
+
+Current Hebrew date.
+
+Current Gregorian date.
+
+==================================================
+
+SECTION 2
+
+Journey Summary
+
+------------------------------------
+
+Premium summary cards.
+
+Display placeholders using existing data where available.
+
+Examples:
+
+• Study Journey
+
+• Memorial Journey
+
+• Community
+
+• Calendar
+
+No fake numbers.
+
+If data does not exist,
+
+display:
+
+"Start Your Journey"
+
+==================================================
+
+SECTION 3
+
+Continue
+
+------------------------------------
+
+Show quick links.
+
+Continue Study
+
+Continue Calendar
+
+Continue Memorial
+
+Continue AI
+
+Reuse existing navigation.
+
+==================================================
+
+SECTION 4
+
+Bookmarks
+
+------------------------------------
+
+Placeholder section.
+
+If empty:
+
+Display premium empty state.
+
+No new storage.
+
+==================================================
+
+SECTION 5
+
+Reflection
+
+------------------------------------
+
+One inspirational quotation.
+
+Large typography.
+
+Quiet spacing.
+
+==================================================
+
+DESIGN
+
+Follow MEL.
+
+Follow MMDL.
+
+Large whitespace.
+
+Warm palette.
+
+Premium cards.
+
+==================================================
+
+RETURN ONLY
+
+✓ Files modified
+
+✓ Components reused
+
+Stop.
+
+Do NOT run:
+
+TypeScript
+
+Production build
+
+Reports
+
+==================================================
+
+CHIEF ARCHITECT PRINCIPLE
+
+The Menashe Journey is not about the user's account.
+
+It is about helping the user continue where they left off.
+
+The screen should answer:
+
+"What is the next meaningful step in my journey today?"

@@ -1,0 +1,284 @@
+# MENASHE PLATFORM
+
+# MEMORIAL SANCTUARY EXPERIENCE REVIEW
+
+## ROLE
+
+Act as a Principal UX Architect, Mobile UX Specialist, Senior React Engineer, Product Designer, Environment Artist, and Human-Centered Design Expert.
+
+You are reviewing ONLY the Memorial Sanctuary feature.
+
+Do NOT modify code.
+
+Do NOT create new features.
+
+Analyze ONLY.
+
+---
+
+# MISSION
+
+Review the Memorial Sanctuary as if it were about to launch to thousands of users.
+
+Ignore the rest of the application.
+
+Think only about this experience.
+
+Pretend you have never seen this project before.
+
+---
+
+# SECTION 1 — USER JOURNEY
+
+Review the complete Memorial Sanctuary experience.
+
+Starting from:
+
+Home
+
+↓
+
+Open Memorial Sanctuary
+
+↓
+
+Search
+
+↓
+
+Open Memorial
+
+↓
+
+Light Candle
+
+↓
+
+Leave Tribute
+
+↓
+
+Return Home
+
+Review every step.
+
+Identify friction.
+
+Identify unnecessary screens.
+
+Identify confusing interactions.
+
+---
+
+# SECTION 2 — MOBILE EXPERIENCE
+
+Review ONLY mobile.
+
+320px
+
+360px
+
+390px
+
+412px
+
+480px
+
+Look for:
+
+* oversized cards
+* wasted vertical space
+* horizontal scrolling
+* text clipping
+* poor spacing
+* oversized buttons
+* visual clutter
+* bottom navigation overlap
+* keyboard issues
+* poor thumb reach
+
+Score every screen.
+
+---
+
+# SECTION 3 — VISUAL HIERARCHY
+
+Review:
+
+Hero
+
+Search
+
+Featured Memorials
+
+Recently Remembered
+
+Recently Lit
+
+Community Picks
+
+Most Visited
+
+Upcoming Yahrzeit
+
+Create Memorial
+
+Enter Sanctuary
+
+Questions:
+
+Are they in the correct order?
+
+What should move?
+
+What should disappear?
+
+What should be smaller?
+
+What should be larger?
+
+---
+
+# SECTION 4 — SANCTUARY ATMOSPHERE
+
+Does this feel like:
+
+A sacred place?
+
+A memorial?
+
+A peaceful sanctuary?
+
+Or
+
+Does it feel like an app dashboard?
+
+Explain why.
+
+List everything reducing the emotional experience.
+
+---
+
+# SECTION 5 — DESIGN CONSISTENCY
+
+Review:
+
+Cards
+
+Portrait cards
+
+Typography
+
+Buttons
+
+Spacing
+
+Glass panels
+
+Icons
+
+Colors
+
+Animations
+
+Lighting
+
+Are they visually consistent?
+
+Where are inconsistencies?
+
+---
+
+# SECTION 6 — PERFORMANCE
+
+Review ONLY Memorial Sanctuary.
+
+Identify:
+
+Heavy renders
+
+Large images
+
+Unnecessary API calls
+
+Too many re-renders
+
+Components that should lazy-load
+
+Expensive animations
+
+Large React trees
+
+Memory issues
+
+Anything causing lag or stuttering.
+
+---
+
+# SECTION 7 — INFORMATION DENSITY
+
+Is too much shown?
+
+Too little?
+
+Should content be grouped differently?
+
+Can anything be removed entirely?
+
+Remember:
+
+The best UI is often achieved by removing elements.
+
+---
+
+# SECTION 8 — PRODUCTION READINESS
+
+Would you personally approve this Memorial Sanctuary for Version 1.0?
+
+YES or NO.
+
+Explain.
+
+If NO,
+
+list every blocker.
+
+---
+
+# SECTION 9 — EXECUTIVE RECOMMENDATIONS
+
+Provide:
+
+Top 20 improvements.
+
+Rank them:
+
+Critical
+
+High
+
+Medium
+
+Low
+
+Estimate impact.
+
+Estimate effort.
+
+---
+
+# FINAL QUESTION
+
+If YOU were the Chief Architect of ONLY the Memorial Sanctuary,
+
+what would be the NEXT sprint before public launch?
+
+Do NOT write code.
+
+Do NOT modify files.
+
+Produce ONLY a complete architectural review.
+
+Create:
+
+docs/MemorialSanctuaryReview.md

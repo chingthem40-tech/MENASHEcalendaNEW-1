@@ -1,0 +1,192 @@
+Integrate OpenAI API into the existing FanHub application.
+
+FanHub is a football community platform where users join groups, discuss matches, make predictions, earn XP, and compete on leaderboards.
+
+OPENAI RESPONSIBILITIES
+
+The AI should NOT invent fixtures, scores, standings, or football statistics.
+
+The AI must use football data already stored in the FanHub database or supplied by football APIs.
+
+The AI should act as FanHub AI, a football analyst and community engagement assistant.
+
+FEATURE 1: MATCH PREVIEW GENERATOR
+
+When a new fixture is available:
+
+Generate:
+
+* Match headline
+* Match overview
+* Key storylines
+* Players to watch
+* Discussion questions
+
+Example:
+
+"Argentina faces Brazil tonight in a crucial World Cup clash. Can Argentina continue their winning run?"
+
+FEATURE 2: AUTO DISCUSSION THREADS
+
+Before Match:
+
+Generate community discussion posts.
+
+Example:
+
+"Who will win tonight? Share your predictions below."
+
+During Match:
+
+Generate halftime discussion prompts.
+
+After Match:
+
+Generate reaction discussions.
+
+Example:
+
+"What was the turning point of the match?"
+
+FEATURE 3: PREDICTION ANALYSIS
+
+After users submit predictions:
+
+AI analyzes:
+
+* Community confidence
+* Most popular score prediction
+* Most predicted winner
+
+Example:
+
+"78% of users believe Argentina will win."
+
+FEATURE 4: XP COMMENTARY
+
+After results are processed:
+
+Generate XP achievement messages.
+
+Example:
+
+"You earned 70 XP for correctly predicting the winner and score."
+
+FEATURE 5: COMMUNITY INSIGHTS
+
+Analyze community activity.
+
+Generate:
+
+* Most active communities
+* Trending topics
+* Most discussed matches
+
+FEATURE 6: FAN SENTIMENT ANALYSIS
+
+Analyze comments and discussions.
+
+Return:
+
+* Positive %
+* Neutral %
+* Negative %
+
+Generate summary:
+
+"Community sentiment is highly optimistic about Argentina's chances."
+
+FEATURE 7: FANHUB AI ASSISTANT
+
+Users can ask football-related questions.
+
+Examples:
+
+* Explain offside rules.
+* Compare Messi and Ronaldo.
+* Analyze Argentina's chances.
+* Explain tournament format.
+
+If information is unavailable, clearly state limitations.
+
+FEATURE 8: POST-MATCH RECAPS
+
+After final score is available:
+
+Generate:
+
+* Match summary
+* Tactical analysis
+* Key moments
+* Man of the Match discussion
+
+FEATURE 9: LEADERBOARD COMMENTARY
+
+Generate dynamic messages.
+
+Examples:
+
+"Samuel climbs to #2 on the Global Leaderboard."
+
+"Argentina Fans become the highest ranked community this week."
+
+FEATURE 10: BADGE ANNOUNCEMENTS
+
+Generate achievement announcements.
+
+Examples:
+
+"Prediction Master unlocked."
+
+"10 Match Win Streak achieved."
+
+OPENAI SYSTEM BEHAVIOR
+
+Always behave as:
+
+* Professional football analyst
+* Community manager
+* Prediction expert
+* Friendly football companion
+
+Tone:
+
+* Exciting
+* Engaging
+* Sports-focused
+* Community-driven
+
+Never:
+
+* Invent live scores
+* Invent fixtures
+* Invent standings
+* Invent statistics
+
+Use only data supplied by FanHub databases or football APIs.
+
+Create reusable service files:
+
+services/openaiService.ts
+
+services/discussionGenerator.ts
+
+services/matchRecapGenerator.ts
+
+services/communityInsights.ts
+
+services/sentimentAnalysis.ts
+
+services/achievementGenerator.ts
+
+Store OpenAI API key securely in Replit Secrets as:
+
+OPENAI_API_KEY
+
+Use GPT-5.5 for all AI generation.
+
+Implement error handling, retries, rate limits, and caching.
+
+Goal:
+
+Transform FanHub into an AI-powered football community where discussions, predictions, XP rewards, leaderboards, and football analysis are automatically enhanced by OpenAI.

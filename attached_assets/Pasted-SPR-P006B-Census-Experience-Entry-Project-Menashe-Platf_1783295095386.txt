@@ -1,0 +1,166 @@
+SPR-P006B — Census Experience Entry
+
+Project:
+Menashe Platform
+
+Scope:
+📱 MOBILE ONLY
+
+Priority:
+Platform Experience
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+MISSION
+
+Create the official entry experience for the Census Platform.
+
+This sprint creates the doorway.
+
+It does NOT build the Census workflow.
+
+==================================================
+
+REUSE
+
+✓ Shared Census Core
+
+✓ Journey navigation
+
+✓ Community navigation
+
+✓ MMDL
+
+✓ MEL
+
+==================================================
+
+BUILD
+
+1.
+
+Community
+
+Add a premium "Community Census" card.
+
+Display:
+
+Title
+
+Short description
+
+Users icon
+
+Arrow
+
+Tap opens:
+
+/census
+
+--------------------------------------------------
+
+2.
+
+Journey
+
+Reuse exactly the same destination.
+
+Journey and Community must never diverge.
+
+--------------------------------------------------
+
+3.
+
+Create
+
+New route:
+
+/census
+
+This is an introduction screen.
+
+Content:
+
+• What is Community Census?
+
+• Why is it important?
+
+• Privacy reassurance
+
+• Estimated completion time
+
+• "Begin Census" button
+
+The button may display:
+
+"Coming in the next update"
+
+or navigate to a placeholder.
+
+Do NOT build the workflow.
+
+--------------------------------------------------
+
+4.
+
+Visual Design
+
+Use:
+
+Large illustration header
+
+Premium typography
+
+Generous whitespace
+
+Apple-quality spacing
+
+Warm neutral palette
+
+Gold accents
+
+==================================================
+
+DO NOT
+
+❌ Build Family Head form
+
+❌ Build Member form
+
+❌ Build Review screen
+
+❌ Build Submission logic
+
+❌ Modify Web
+
+❌ Modify Shared Core
+
+==================================================
+
+RETURN
+
+✓ Files modified
+
+✓ Navigation completed
+
+✓ Entry experience completed
+
+Stop.
+
+Do NOT build.
+
+Do NOT typecheck.
+
+==================================================
+
+CHIEF ARCHITECT PRINCIPLE
+
+Every important workflow deserves
+a meaningful introduction.
+
+Today we build the welcome.
+
+The workflow comes later.

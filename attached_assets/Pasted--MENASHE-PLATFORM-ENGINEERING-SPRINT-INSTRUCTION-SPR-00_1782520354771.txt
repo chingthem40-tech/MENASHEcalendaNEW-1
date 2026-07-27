@@ -1,0 +1,169 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-009 — Home Migration (H-004.5)
+
+ROLE
+
+Act as a Senior React Architect.
+
+Continue the Home Migration using the existing components.
+
+Do NOT redesign the UI.
+
+Do NOT change business logic.
+
+Do NOT modify APIs.
+
+---
+
+## OBJECTIVE
+
+Introduce a "Section" layer between Home.tsx and the presentational components.
+
+The purpose is to simplify Home.tsx by grouping related components into cohesive section containers.
+
+---
+
+## TASK 1
+
+Identify logical sections.
+
+Suggested candidates:
+
+CalendarSection
+
+LearningSection
+
+CommunitySection
+
+QuickActionsSection
+
+PrayerSection
+
+Today's Overview Section
+
+Do not invent new features.
+
+Only group existing UI.
+
+---
+
+## TASK 2
+
+Create:
+
+src/pages/home/sections/
+
+Each Section should compose existing components.
+
+Do not duplicate JSX.
+
+---
+
+## TASK 3
+
+Move layout responsibility into Sections.
+
+Examples:
+
+Spacing
+
+Grid layout
+
+Responsive grouping
+
+Component ordering
+
+Business logic must remain inside hooks.
+
+---
+
+## TASK 4
+
+Update Home.tsx.
+
+Replace multiple component imports with Section imports.
+
+Reduce visual complexity.
+
+---
+
+## TASK 5
+
+Documentation
+
+Update:
+
+docs/Architecture.md
+
+Include:
+
+Section hierarchy
+
+Updated dependency graph
+
+Remaining migration work
+
+---
+
+## TASK 6
+
+Verification
+
+Confirm:
+
+✓ UI unchanged
+
+✓ Components unchanged
+
+✓ Hooks unchanged
+
+✓ No new TypeScript errors
+
+✓ Home.tsx imports significantly reduced
+
+---
+
+## CONSTRAINTS
+
+Do NOT modify business logic.
+
+Do NOT redesign the page.
+
+Do NOT move hooks.
+
+Do NOT move APIs.
+
+Only introduce the Section layer.
+
+---
+
+## DELIVERABLES
+
+Provide:
+
+1. Sections created
+
+2. Components grouped
+
+3. Home.tsx import reduction
+
+4. Remaining migration phases
+
+5. Verification summary
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ UI identical
+
+✓ Section architecture introduced
+
+✓ Home.tsx simpler
+
+✓ No regressions
+
+Stop after completion and wait for Chief Architect review.

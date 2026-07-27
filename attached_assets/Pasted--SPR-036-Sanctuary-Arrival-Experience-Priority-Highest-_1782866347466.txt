@@ -1,0 +1,252 @@
+# SPR-036 — Sanctuary Arrival Experience
+
+## Priority
+
+🟢 Highest Product Priority
+
+This sprint defines the first emotional impression users experience when entering the Memorial Sanctuary.
+
+No new features.
+
+Only experience refinement.
+
+---
+
+# Mission
+
+Transform the first 30 seconds inside SanctuaryWorld into a peaceful, intuitive, and emotionally meaningful arrival.
+
+The Sanctuary should immediately communicate:
+
+"You have entered a sacred place."
+
+---
+
+# User Journey
+
+HOME
+
+↓
+
+Memorial Sanctuary Card
+
+↓
+
+Memorial Hub
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+Fade In
+
+↓
+
+Front Gate
+
+↓
+
+Welcome Board
+
+↓
+
+Community Candle Board
+
+↓
+
+Visitor Guide
+
+↓
+
+Sacred Avenue
+
+↓
+
+Sanctuary Valley
+
+---
+
+# Phase 1 — Landing Position
+
+Spawn the visitor directly in front of the Memorial Gate.
+
+Requirements:
+
+✓ Face toward the valley.
+
+✓ Memorial Gate centered.
+
+✓ Welcome Board visible.
+
+✓ Community Candle Board visible.
+
+✓ Visitor Guide visible.
+
+✓ Sacred Avenue directly ahead.
+
+The visitor should never spawn facing a wall, mountain, or terrain.
+
+---
+
+# Phase 2 — Arrival Animation
+
+Refine the entrance sequence.
+
+Sequence:
+
+Black Fade
+
+↓
+
+Fade to Sanctuary
+
+↓
+
+Camera settles naturally
+
+↓
+
+Ambient audio begins softly
+
+↓
+
+Player gains control
+
+The transition should feel calm and respectful.
+
+---
+
+# Phase 3 — Entrance Boards
+
+Verify the three entrance boards.
+
+Welcome Board
+
+- Welcome message
+- Sanctuary purpose
+
+Community Candle Board
+
+- Recent candle offerings
+- Memorial names
+- Live community data
+
+Visitor Guide
+
+- Movement controls
+- Reflection etiquette
+- Sanctuary guidance
+
+All boards must be readable from the spawn point.
+
+---
+
+# Phase 4 — Camera
+
+Ensure the first camera view naturally frames:
+
+✓ Memorial Gate
+
+✓ Sacred Avenue
+
+✓ Valley
+
+✓ Tree of Remembrance (partially visible)
+
+No abrupt rotations.
+
+No disorientation.
+
+---
+
+# Phase 5 — Lighting
+
+The entrance should receive:
+
+- warm sunrise light
+- gentle bloom
+- visible volumetric rays
+- soft shadow contrast
+
+Avoid dark or flat lighting.
+
+---
+
+# Phase 6 — Atmosphere
+
+Refine:
+
+- fog density
+- bloom intensity
+- ambient color
+- sky warmth
+
+The Sanctuary should feel peaceful rather than dramatic.
+
+---
+
+# Phase 7 — Performance
+
+Maintain:
+
+Desktop
+
+≈60 FPS
+
+Average Android
+
+40–60 FPS
+
+Do not sacrifice smooth interaction for visual effects.
+
+---
+
+# Verification
+
+Confirm:
+
+✓ Correct spawn position
+
+✓ Correct camera direction
+
+✓ Gate visible
+
+✓ Boards visible
+
+✓ Smooth fade
+
+✓ Stable FPS
+
+✓ No navigation regressions
+
+✓ Candle lighting remains inside Sanctuary
+
+✓ Memorial profile remains inside Sanctuary
+
+---
+
+# Deliverables
+
+1. Arrival sequence verification.
+
+2. Updated camera placement.
+
+3. Entrance visual verification.
+
+4. Performance report.
+
+5. Screenshot of the first user view.
+
+---
+
+# Success Criteria
+
+A first-time visitor should immediately understand:
+
+"I have arrived at the Memorial Sanctuary."
+
+without needing to rotate the camera or search for the entrance.
+
+Stop after verification.

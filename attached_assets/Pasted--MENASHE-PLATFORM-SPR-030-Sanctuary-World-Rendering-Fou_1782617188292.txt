@@ -1,0 +1,353 @@
+# MENASHE PLATFORM
+
+# SPR-030 — Sanctuary World Rendering Foundation
+
+ROLE
+
+Act as a Principal Graphics Engineer, React Three Fiber Engineer, Three.js Architect, Performance Engineer, UX Architect, and Mobile Rendering Specialist.
+
+MISSION
+
+Transform the existing SanctuaryWorld from a functional 3D scene into a cinematic memorial environment with approximately 85–90% of the emotional impact of the approved visual reference.
+
+This is NOT a feature sprint.
+
+This is an environment-quality sprint.
+
+The goal is atmosphere, immersion, and performance.
+
+---
+
+## DESIGN PRINCIPLES
+
+The Sanctuary must feel like:
+
+• peaceful
+
+• sacred
+
+• timeless
+
+• warm
+
+• emotionally comforting
+
+The Three.js world is the product.
+
+The UI should complement it rather than dominate it.
+
+---
+
+# PHASE 1 — Scene Audit
+
+Before modifying anything:
+
+Inventory:
+
+* all meshes
+* all materials
+* all textures
+* all lights
+* camera
+* terrain
+* water
+* vegetation
+* particle systems
+* post-processing
+* environment maps
+
+Produce:
+
+docs/SanctuaryRenderingAudit.md
+
+Include:
+
+Current FPS
+
+Draw calls
+
+Triangle count
+
+Texture memory
+
+Largest performance bottlenecks
+
+Do not optimize yet.
+
+---
+
+# PHASE 2 — Lighting
+
+Replace flat lighting with cinematic lighting.
+
+Target:
+
+Directional sunlight
+
+Warm golden-hour colour
+
+Hemisphere ambient fill
+
+HDR environment lighting
+
+Soft shadow configuration
+
+PhysicallyCorrectLights
+
+ACES Filmic tone mapping
+
+Natural exposure
+
+No harsh lighting.
+
+Everything should feel warm.
+
+---
+
+# PHASE 3 — Environment
+
+Improve:
+
+Terrain
+
+Stone paths
+
+Ruins
+
+Trees
+
+Bushes
+
+Grass
+
+Lanterns
+
+Candle placement
+
+Rock variation
+
+Add depth.
+
+Avoid repetitive assets.
+
+---
+
+# PHASE 4 — Water
+
+Upgrade water.
+
+Requirements:
+
+Animated normals
+
+Soft reflections
+
+Flow movement
+
+Subtle ripples
+
+Edge blending
+
+Warm reflections from candles
+
+No bright cartoon blue.
+
+---
+
+# PHASE 5 — Atmosphere
+
+Introduce atmosphere using lightweight effects.
+
+Include:
+
+Distance fog
+
+Ground mist
+
+Dust particles
+
+Floating pollen
+
+Subtle drifting embers near candles
+
+Very light animated fog
+
+Avoid excessive particle counts.
+
+---
+
+# PHASE 6 — Sky
+
+Replace static sky.
+
+Use:
+
+Dynamic Sky shader
+
+Golden-hour sun
+
+Cloud layer
+
+Atmospheric gradient
+
+Subtle cloud motion
+
+No static JPEG backgrounds.
+
+---
+
+# PHASE 7 — Materials
+
+Replace flat materials with physically based materials.
+
+Prefer:
+
+MeshStandardMaterial
+
+MeshPhysicalMaterial
+
+Use:
+
+roughness
+
+metalness
+
+normal maps
+
+AO maps
+
+Avoid MeshPhongMaterial except where justified.
+
+---
+
+# PHASE 8 — Camera
+
+Improve camera composition.
+
+Requirements:
+
+Slight cinematic angle
+
+Better framing
+
+Smooth movement
+
+Gentle idle drift
+
+No dramatic camera motion.
+
+---
+
+# PHASE 9 — Post Processing
+
+Implement carefully.
+
+Priority:
+
+Bloom
+
+Tone Mapping
+
+FXAA
+
+Vignette (very subtle)
+
+Ambient Occlusion if affordable
+
+Avoid heavy effects that reduce FPS.
+
+---
+
+# PHASE 10 — Performance
+
+Target:
+
+Desktop
+
+60 FPS
+
+Android
+
+45–60 FPS
+
+Low-end Android
+
+30 FPS minimum
+
+Techniques:
+
+LOD
+
+GPU instancing
+
+Texture compression
+
+Lazy asset loading
+
+Frustum culling
+
+Adaptive quality
+
+Memoization
+
+Reuse geometries
+
+Reuse materials
+
+---
+
+# MOBILE FIRST
+
+The Sanctuary must run smoothly on:
+
+Android Chrome
+
+Samsung Internet
+
+Desktop Chrome
+
+Desktop Edge
+
+Touch interaction must remain fluid.
+
+---
+
+# DO NOT
+
+Do not redesign the UI.
+
+Do not add features.
+
+Do not modify backend APIs.
+
+Do not modify database schema.
+
+Do not introduce new gameplay.
+
+Focus entirely on rendering quality and performance.
+
+---
+
+# DELIVERABLES
+
+1. SanctuaryRenderingAudit.md
+
+2. Improved cinematic lighting
+
+3. Enhanced terrain and vegetation
+
+4. Upgraded water
+
+5. Atmospheric fog and particles
+
+6. Dynamic sky
+
+7. Better materials
+
+8. Optimized rendering pipeline
+
+9. Performance report
+
+10. Before/After screenshots
+
+Stop after implementation and verification.

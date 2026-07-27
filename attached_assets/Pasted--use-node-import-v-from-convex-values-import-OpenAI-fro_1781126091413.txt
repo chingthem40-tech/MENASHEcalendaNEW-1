@@ -1,0 +1,187 @@
+"use node"; 
+
+
+
+import { v } from "convex/values";
+
+import OpenAI from "openai";
+
+import { action } from "./_generated/server";
+
+import { internal } from "./_generated/api";
+
+
+
+const openai = new OpenAI({
+
+  baseURL: "https://ai-gateway.hercules.app/v1",
+
+  apiKey: process.env.HERCULES_API_KEY,
+
+});
+
+
+
+export type HolidayInsight = {
+
+  holidayName: string;
+
+  hebrewName: string;
+
+  overview: string;
+
+  observances: string;
+
+  spiritualTheme: string;
+
+  bneiManasheConnection: string;
+
+};
+
+
+
+export const getHolidayInsights = action({
+
+  args: {
+
+    holidayName: v.string(),
+
+    hebrewName: v.string(),
+
+    timing: v.string(),
+
+    category: v.string(),
+
+  },
+
+  handler: async (ctx, args): Promise<HolidayInsight> => {
+
+    // Check cache first
+
+    const cached = await ctx.runQuery(internal.torahCache.getCachedHolidayInsight, {
+
+      holidayName: args.holidayName,
+
+    });
+
+    if (cached) {
+
+      return {
+
+        holidayName: cached.holidayName,
+
+        hebrewName: cached.hebrewName,
+
+        overview: cached.overview,
+
+        observances: cached.observances,
+
+        spiritualTheme: cached.spiritualTheme,
+
+        bneiManasheConnection: cached.bneiManasheConnection,
+
+      };
+
+    }
+
+
+
+    const prompt = `You are a knowledgeable Jewish scholar providing holiday insights tailored for the Bnei Menashe community — the Jewish community from Northeast India (Manipur and Mizoram), descendants of the lost tribe of Menashe, who have made aliyah to Israel.
+
+
+
+Provide insights for the Jewish holiday: ${args.holidayName} (${args.hebrewName}), observed on ${args.timing}.
+
+
+
+Respond with a JSON object with exactly these fields:
+
+- overview: A 3-4 sentence description of the holiday's origins, significance, and place in the Jewish calendar
+
+- observances: The main mitzvot, customs, and rituals observed during this holiday (2-3 sentences)
+
+- spiritualTheme: The central spiritual message or lesson this holiday conveys (2-3 sentences)
+
+- bneiManasheConnection: How this holiday's themes uniquely resonate with the Bnei Menashe experience — their journey of return, tribal identity, aliyah, or life in Israel (2-3 sentences)
+
+
+
+Return only valid JSON.`;
+
+
+
+    try {
+
+      const response = await openai.chat.completions.create({
+
+        model: "openai/gpt-5-mini",
+
+        reasoning_effort: "minimal",
+
+        messages: [{ role: "user", content: prompt }],
+
+      });
+
+
+
+      const content = response.choices[0]?.message?.content ?? "{}";
+
+      const jsonMatch =
+
+        content.match(/```json\s*([\s\S]*?)```/) ??
+
+        content.match(/```\s*([\s\S]*?)```/);
+
+      const jsonStr = jsonMatch ? jsonMatch[1] : content;
+
+      const parsed = JSON.parse(jsonStr) as {
+
+        overview: string;
+
+        observances: string;
+
+        spiritualTheme: string;
+
+        bneiManasheConnection: string;
+
+      };
+
+
+
+      const result: HolidayInsight = {
+
+        holidayName: args.holidayName,
+
+        hebrewName: args.hebrewName,
+
+        overview: parsed.overview ?? "",
+
+        observances: parsed.observances ?? "",
+
+        spiritualTheme: parsed.spiritualTheme ?? "",
+
+        bneiManasheConnection: parsed.bneiManasheConnection ?? "",
+
+      };
+
+
+
+      await ctx.runMutation(internal.torahCache.cacheHolidayInsight, result);
+
+      return result;
+
+    } catch (error) {
+
+      if (error instanceof OpenAI.APIError) {
+
+        throw new Error(`AI Gateway Error: ${error.message}`);
+
+      }
+
+      throw new Error("Failed to generate holiday insights. Please try again.");
+
+    }
+
+  },
+
+});

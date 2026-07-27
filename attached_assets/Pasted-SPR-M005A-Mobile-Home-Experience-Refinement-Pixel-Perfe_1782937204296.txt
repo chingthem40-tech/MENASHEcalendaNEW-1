@@ -1,0 +1,449 @@
+SPR-M005A — Mobile Home Experience Refinement (Pixel-Perfect)
+
+Priority:
+🔴 Highest
+
+Chief Architect:
+Samuel & ChatGPT
+
+Version:
+Mobile V1.0
+
+Reference:
+The approved Mobile Home mockup is now the official design target.
+
+MISSION
+
+Update ONLY the Mobile Home screen so it matches the approved premium design as closely as possible.
+
+This is NOT a redesign.
+
+This is a UI refinement sprint.
+
+The approved mockup is now the design specification.
+
+DO NOT
+
+❌ Modify Web UI
+
+❌ Modify Web Components
+
+❌ Modify Web Navigation
+
+❌ Modify Shared Business Logic
+
+❌ Modify APIs
+
+❌ Modify Database
+
+❌ Modify Existing Mobile Architecture
+
+Reuse
+
+• MMDL Design System
+
+• Mobile Shell
+
+• Component Library
+
+• Shared Core
+
+--------------------------------------------------
+
+SECTION 1
+
+Header
+
+--------------------------------------------------
+
+Match the approved design.
+
+Include
+
+• Hamburger button
+
+• Menashe logo
+
+• "BNEI MENASHE"
+
+• Sacred Calendar subtitle
+
+• Location chip
+
+• Notification button
+
+Spacing should match the mockup.
+
+--------------------------------------------------
+
+SECTION 2
+
+Hero
+
+--------------------------------------------------
+
+Create a premium Hero section.
+
+Left side
+
+• Gregorian Date
+
+• Large Hebrew Date
+
+• Daily blessing
+
+Right side
+
+• Beautiful sanctuary artwork
+
+Bottom overlay
+
+Today's Zmanim
+
+Sunrise
+
+Sunset
+
+Nightfall
+
+Dark glass card
+
+Rounded
+
+Premium blur
+
+--------------------------------------------------
+
+SECTION 3
+
+Today's Focus
+
+--------------------------------------------------
+
+NEW
+
+Immediately below Hero.
+
+One dynamic card only.
+
+Examples
+
+Today's Candle Lighting
+
+Fast Tomorrow
+
+Holiday Tomorrow
+
+Parashah Today
+
+Only ONE focus.
+
+Automatically selected.
+
+--------------------------------------------------
+
+SECTION 4
+
+Shabbat Countdown
+
+--------------------------------------------------
+
+Premium card.
+
+Left
+
+Large countdown.
+
+Right
+
+Candle Lighting
+
+Havdalah
+
+Elegant typography.
+
+--------------------------------------------------
+
+SECTION 5
+
+Quick Actions
+
+--------------------------------------------------
+
+Replace existing layout.
+
+Use
+
+2 rows
+
+4 columns
+
+Large premium cards.
+
+Calendar
+
+Zmanim
+
+Sanctuary
+
+Study
+
+Daf Yomi
+
+Library
+
+Prayer Board
+
+More
+
+No tiny buttons.
+
+Minimum touch size 56dp.
+
+--------------------------------------------------
+
+SECTION 6
+
+Weekly Parashah
+
+--------------------------------------------------
+
+Premium card.
+
+Illustration.
+
+Hebrew.
+
+English.
+
+Summary button.
+
+--------------------------------------------------
+
+SECTION 7
+
+Today's Torah Insight
+
+--------------------------------------------------
+
+Premium inspirational card.
+
+Beautiful typography.
+
+Small illustration.
+
+Reflect button.
+
+--------------------------------------------------
+
+SECTION 8
+
+Daf Yomi
+
+--------------------------------------------------
+
+Premium study card.
+
+Reading progress.
+
+Open button.
+
+--------------------------------------------------
+
+SECTION 9
+
+Upcoming Holiday
+
+--------------------------------------------------
+
+Premium information card.
+
+Holiday
+
+Date
+
+CTA
+
+--------------------------------------------------
+
+SECTION 10
+
+Memorial Sanctuary
+
+--------------------------------------------------
+
+Full-width Hero Card.
+
+Beautiful candle artwork.
+
+Description
+
+CTA
+
+Open Sanctuary
+
+This is NOT a quick action.
+
+Treat Sanctuary as a flagship feature.
+
+--------------------------------------------------
+
+SECTION 11
+
+Rav Menashe AI
+
+--------------------------------------------------
+
+Full-width Hero Card.
+
+Blue sapphire artwork.
+
+Description.
+
+Ask Rav Menashe button.
+
+--------------------------------------------------
+
+SECTION 12
+
+Premium
+
+--------------------------------------------------
+
+Premium subscription card.
+
+Bottom of Home.
+
+--------------------------------------------------
+
+VISUAL DESIGN
+
+Everything must match the approved design.
+
+Warm parchment palette.
+
+Soft shadows.
+
+Rounded cards.
+
+Glass overlays.
+
+Apple-quality spacing.
+
+Consistent 24dp margins.
+
+No harsh borders.
+
+No visual clutter.
+
+--------------------------------------------------
+
+ANIMATIONS
+
+Fade
+
+Slide
+
+Scale
+
+Scroll reveal
+
+Hero parallax
+
+Header collapse
+
+60 FPS.
+
+--------------------------------------------------
+
+PERFORMANCE
+
+No unnecessary renders.
+
+Memoized sections.
+
+Lazy-load images.
+
+Virtualized scrolling where applicable.
+
+--------------------------------------------------
+
+ACCESSIBILITY
+
+VoiceOver
+
+TalkBack
+
+Dynamic Type
+
+Reduced Motion
+
+44dp minimum touch targets
+
+--------------------------------------------------
+
+VERIFY
+
+✅ Web untouched
+
+✅ Mobile Shell untouched
+
+✅ Design System reused
+
+✅ Component Library reused
+
+✅ Shared Core reused
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+--------------------------------------------------
+
+DELIVERABLES
+
+Provide
+
+Updated Home folder tree
+
+Screenshots
+
+Component usage
+
+Performance report
+
+Accessibility report
+
+Verification checklist
+
+--------------------------------------------------
+
+STOP
+
+Do NOT modify Calendar.
+
+Do NOT modify Sanctuary.
+
+Do NOT modify AI.
+
+Stop after Home refinement.
+
+--------------------------------------------------
+
+CHIEF ARCHITECT FINAL PRINCIPLE
+
+This Home screen is the flagship experience of the Menashe Mobile App.
+
+Do not merely recreate the layout.
+
+Recreate the feeling:
+
+Warm.
+
+Peaceful.
+
+Premium.
+
+Elegant.
+
+Every spacing decision, typography choice, animation, and card hierarchy should reflect a world-class mobile product while preserving the existing architecture.

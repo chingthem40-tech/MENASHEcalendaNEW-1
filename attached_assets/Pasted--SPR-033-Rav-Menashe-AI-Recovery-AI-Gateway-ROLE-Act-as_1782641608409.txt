@@ -1,0 +1,298 @@
+# SPR-033 — Rav Menashe AI Recovery & AI Gateway
+
+## ROLE
+
+Act as a Principal AI Architect, Senior Backend Engineer, React Architect, API Engineer, and Production Reliability Engineer.
+
+---
+
+# MISSION
+
+Recover Rav Menashe AI and make it the most reliable feature of the Menashe Platform.
+
+The current behaviour:
+
+> "Sorry, I can't reply."
+
+is unacceptable for Version 1.0.
+
+This sprint focuses on reliability, architecture, observability, and response quality.
+
+Do **NOT** add unrelated features.
+
+Do **NOT** redesign the UI.
+
+Do **NOT** modify Memorial Sanctuary.
+
+---
+
+# PHASE 1 — Full AI Audit
+
+Trace the complete request lifecycle.
+
+Document every step.
+
+React UI
+
+↓
+
+Chat Component
+
+↓
+
+API Route
+
+↓
+
+Authentication
+
+↓
+
+Prompt Builder
+
+↓
+
+AI Provider
+
+↓
+
+Streaming Response
+
+↓
+
+Frontend Rendering
+
+Identify exactly where failures occur.
+
+Do not guess.
+
+Create:
+
+docs/RavMenasheAIAudit.md
+
+Include:
+
+* request flow
+* provider flow
+* timeout points
+* environment dependencies
+* failure causes
+* current limitations
+
+---
+
+# PHASE 2 — Recovery
+
+Repair every identified issue.
+
+Possible causes include:
+
+* missing environment variables
+* invalid API keys
+* incorrect provider configuration
+* streaming failures
+* parsing failures
+* timeout handling
+* frontend rendering bugs
+* backend exceptions
+
+The AI must always return either:
+
+* a streamed answer
+
+or
+
+* a meaningful error message
+
+Never:
+
+> "Sorry, I can't reply."
+
+---
+
+# PHASE 3 — AI Gateway
+
+Replace direct provider calls with an AI Gateway.
+
+Architecture:
+
+Frontend
+
+↓
+
+AI Gateway
+
+↓
+
+OpenAI
+
+↓
+
+Grok
+
+↓
+
+Gemini
+
+The frontend must never know which provider generated the response.
+
+---
+
+# PHASE 4 — Automatic Fallback
+
+If one provider fails:
+
+OpenAI
+
+↓
+
+Timeout
+
+↓
+
+Grok
+
+↓
+
+Success
+
+↓
+
+User receives answer
+
+Users should not experience provider failures whenever possible.
+
+---
+
+# PHASE 5 — Prompt Builder
+
+Build a structured prompt pipeline.
+
+Instead of sending raw chat history:
+
+System Prompt
+
+*
+
+Conversation History
+
+*
+
+Hebrew Calendar Context
+
+*
+
+Community Context
+
+*
+
+Relevant App Data
+
+↓
+
+Model
+
+Prompt generation should be modular and reusable.
+
+---
+
+# PHASE 6 — Knowledge Integration
+
+Before sending a question to the LLM:
+
+Retrieve relevant platform data whenever available.
+
+Sources include:
+
+* Hebrew Calendar
+* Holidays
+* Parashah
+* Siddur
+* Torah references
+* Bnei Menashe community information
+* User context where appropriate
+
+Use retrieval first.
+
+Use the LLM primarily for reasoning and natural-language responses.
+
+---
+
+# PHASE 7 — Streaming
+
+Responses should stream naturally.
+
+Example:
+
+שלום...
+
+The Torah teaches...
+
+instead of waiting for the entire response before displaying it.
+
+Streaming failures must gracefully fall back to non-streaming responses.
+
+---
+
+# PHASE 8 — Observability
+
+Log:
+
+* provider used
+* latency
+* token usage
+* request success/failure
+* fallback events
+* timeout events
+
+Sensitive user content must not be logged.
+
+---
+
+# PHASE 9 — Verification
+
+Verify:
+
+✓ OpenAI
+
+✓ Grok
+
+✓ Gemini (if configured)
+
+✓ fallback routing
+
+✓ streaming
+
+✓ authentication
+
+✓ mobile
+
+✓ desktop
+
+✓ network interruption recovery
+
+✓ graceful error handling
+
+---
+
+# DELIVERABLES
+
+1. docs/RavMenasheAIAudit.md
+
+2. AI Gateway implementation
+
+3. Automatic provider fallback
+
+4. Prompt Builder
+
+5. Retrieval-first architecture
+
+6. Streaming recovery
+
+7. Structured logging
+
+8. Production verification report
+
+9. Zero "Sorry, I can't reply." failures under normal operating conditions.
+
+Stop after verification.

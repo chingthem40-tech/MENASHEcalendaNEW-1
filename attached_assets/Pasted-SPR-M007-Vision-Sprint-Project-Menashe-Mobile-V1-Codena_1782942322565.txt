@@ -1,0 +1,477 @@
+SPR-M007 — Vision Sprint
+Project: Menashe Mobile V1
+Codename: The First Impression
+
+Priority:
+🔴 EXECUTIVE PRIORITY
+
+Chief Architect:
+Samuel & ChatGPT
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Transform the current Mobile Home into the premium Menashe
+experience envisioned by the Chief Architect.
+
+This is NOT a redesign.
+
+This is NOT a feature sprint.
+
+This is a visual refinement sprint.
+
+The objective is to make the Home screen feel worthy of
+Version 1.0.
+
+------------------------------------------------------------
+OFFICIAL DESIGN REFERENCE
+------------------------------------------------------------
+
+Use the approved Chief Architect Home mockup image as the visual
+reference.
+
+The image defines:
+
+• Visual hierarchy
+
+• Card proportions
+
+• Typography scale
+
+• Section rhythm
+
+• White space
+
+• Hero composition
+
+• Overall premium feeling
+
+DO NOT recreate it as a bitmap.
+
+Build it using the existing
+
+MMDL
+
++
+
+Component Library
+
++
+
+Mobile Shell
+
++
+
+MEL
+
+Every element must remain responsive and reusable.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify Web Application
+
+❌ Modify Shared Core
+
+❌ Modify APIs
+
+❌ Modify Database
+
+❌ Duplicate Business Logic
+
+❌ Create one-off UI
+
+Everything must reuse
+
+Existing Components
+
+Existing Tokens
+
+Existing Architecture
+
+------------------------------------------------------------
+GOAL
+------------------------------------------------------------
+
+When opening the app, users should feel:
+
+Warm
+
+Peaceful
+
+Premium
+
+Spiritual
+
+Modern
+
+Minimal
+
+------------------------------------------------------------
+SECTION 1
+
+Premium Header
+
+------------------------------------------------------------
+
+Create a refined header.
+
+Large greeting.
+
+Hebrew date.
+
+Gregorian date.
+
+Location chip.
+
+Notification icon.
+
+Language switch.
+
+Spacing must breathe.
+
+------------------------------------------------------------
+SECTION 2
+
+Hero Experience
+
+------------------------------------------------------------
+
+Large cinematic artwork.
+
+Rounded 28dp.
+
+Glass overlay.
+
+Soft gradient.
+
+Large Hebrew Date.
+
+Large Gregorian Date.
+
+Current day.
+
+Sunrise.
+
+Sunset.
+
+Beautiful composition.
+
+Hero occupies approximately 30% of first screen.
+
+------------------------------------------------------------
+SECTION 3
+
+Today's Focus
+
+------------------------------------------------------------
+
+Immediately below Hero.
+
+Exactly ONE card.
+
+Dynamic.
+
+Examples
+
+• Candle Lighting Today
+
+• Fast Begins Tomorrow
+
+• Holiday Tomorrow
+
+• Weekly Parashah
+
+Highest priority only.
+
+------------------------------------------------------------
+SECTION 4
+
+Sacred Time
+
+------------------------------------------------------------
+
+Premium card.
+
+Prayer Times.
+
+Beautiful icons.
+
+Elegant spacing.
+
+Current prayer highlighted.
+
+------------------------------------------------------------
+SECTION 5
+
+Shabbat
+
+------------------------------------------------------------
+
+Countdown.
+
+Candle Lighting.
+
+Havdalah.
+
+Beautiful typography.
+
+Premium emphasis.
+
+------------------------------------------------------------
+SECTION 6
+
+Quick Actions
+
+------------------------------------------------------------
+
+Use 2 rows.
+
+4 columns.
+
+Large premium buttons.
+
+Generous spacing.
+
+Large icons.
+
+Cards.
+
+Not tiny shortcuts.
+
+------------------------------------------------------------
+SECTION 7
+
+Learning
+
+------------------------------------------------------------
+
+Parashah.
+
+Torah Insight.
+
+Daf Yomi.
+
+Three separate premium cards.
+
+Each with subtle artwork.
+
+------------------------------------------------------------
+SECTION 8
+
+Community
+
+------------------------------------------------------------
+
+Small preview.
+
+Not dominant.
+
+------------------------------------------------------------
+SECTION 9
+
+Memorial Sanctuary
+
+------------------------------------------------------------
+
+Make this a flagship Hero Card.
+
+Large illustration.
+
+Beautiful lighting.
+
+Short description.
+
+Large CTA
+
+"Enter Sanctuary"
+
+This should feel emotionally significant.
+
+------------------------------------------------------------
+SECTION 10
+
+Rav Menashe AI
+
+------------------------------------------------------------
+
+Premium sapphire card.
+
+Beautiful illustration.
+
+Conversation preview.
+
+Primary CTA.
+
+------------------------------------------------------------
+SECTION 11
+
+Premium Membership
+
+------------------------------------------------------------
+
+Elegant premium invitation.
+
+Never aggressive.
+
+------------------------------------------------------------
+VISUAL REFINEMENT
+------------------------------------------------------------
+
+Increase whitespace.
+
+Reduce visual noise.
+
+Create visual rhythm.
+
+Use larger cards.
+
+Cards should feel handcrafted.
+
+No harsh borders.
+
+No heavy shadows.
+
+Soft depth only.
+
+------------------------------------------------------------
+MICRO INTERACTIONS
+------------------------------------------------------------
+
+Hero fades in.
+
+Cards reveal while scrolling.
+
+Buttons gently scale on press.
+
+Header smoothly collapses.
+
+60 FPS.
+
+No distracting animation.
+
+------------------------------------------------------------
+ILLUSTRATIONS
+------------------------------------------------------------
+
+Use placeholders where necessary.
+
+All illustrations should follow MEL.
+
+Warm.
+
+Golden hour.
+
+Stone.
+
+Nature.
+
+Hope.
+
+Memory.
+
+Faith.
+
+------------------------------------------------------------
+PERFORMANCE
+------------------------------------------------------------
+
+No unnecessary renders.
+
+Memoize sections.
+
+Lazy load artwork.
+
+Reuse existing components.
+
+------------------------------------------------------------
+ACCESSIBILITY
+------------------------------------------------------------
+
+VoiceOver.
+
+TalkBack.
+
+Dynamic Type.
+
+Reduced Motion.
+
+Minimum 48dp touch targets.
+
+------------------------------------------------------------
+VERIFY
+------------------------------------------------------------
+
+Confirm
+
+✅ Web untouched
+
+✅ Shared Core untouched
+
+✅ Mobile Shell reused
+
+✅ MMDL reused
+
+✅ Component Library reused
+
+✅ MEL followed
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide
+
+• Before/After screenshots
+
+• Home screen hierarchy
+
+• Components reused
+
+• Animation summary
+
+• Accessibility report
+
+• Performance report
+
+• Verification checklist
+
+------------------------------------------------------------
+STOP
+------------------------------------------------------------
+
+Stop after Home refinement.
+
+Do NOT begin Calendar.
+
+Do NOT begin Community.
+
+Do NOT begin Sanctuary internals.
+
+Do NOT begin AI internals.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+This sprint is about emotion.
+
+A user should open Menashe Calendar and immediately feel:
+
+"This app was crafted with care."
+
+The Home screen should become the signature experience of the
+entire mobile platform.
+
+Do not merely match the reference.
+
+Surpass it while remaining faithful to the Menashe Experience
+Language.

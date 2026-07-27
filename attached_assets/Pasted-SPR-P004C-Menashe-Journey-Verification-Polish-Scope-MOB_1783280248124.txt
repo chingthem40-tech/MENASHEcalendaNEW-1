@@ -1,0 +1,162 @@
+SPR-P004C — Menashe Journey Verification & Polish
+
+Scope:
+📱 MOBILE ONLY
+
+Priority:
+Platform Integration
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+MISSION
+
+Verify and refine the Menashe Journey screen.
+
+Do NOT add new features.
+
+Do NOT add persistence.
+
+Do NOT add AsyncStorage.
+
+Do NOT add analytics.
+
+Do NOT modify Web.
+
+Do NOT modify APIs.
+
+==================================================
+
+VERIFY ONLY
+
+1.
+
+Navigation
+
+Confirm every "Continue" action opens the correct existing screen.
+
+Examples:
+
+• Calendar
+
+• Sacred Study
+
+• Sacred Memory
+
+• Sacred Wisdom
+
+• Community
+
+--------------------------------------------------
+
+2.
+
+Data Integrity
+
+Verify all displayed information comes from:
+
+✓ Shared Core
+
+✓ Existing APIs
+
+✓ Existing translation system
+
+No duplicated calculations.
+
+--------------------------------------------------
+
+3.
+
+Responsive Layout
+
+Check:
+
+• Small phones
+
+• Large phones
+
+• Tablets (layout should remain usable)
+
+Adjust spacing only if necessary.
+
+--------------------------------------------------
+
+4.
+
+Accessibility
+
+Verify:
+
+• Screen reader labels
+
+• Touch targets
+
+• Dynamic Type
+
+• Reading order
+
+• Contrast
+
+--------------------------------------------------
+
+5.
+
+Visual Polish
+
+Review only:
+
+• spacing
+
+• typography
+
+• card alignment
+
+• icon alignment
+
+• whitespace
+
+No redesign.
+
+==================================================
+
+DO NOT
+
+❌ Build new sections
+
+❌ Add storage
+
+❌ Add history
+
+❌ Add profile editing
+
+❌ Add settings
+
+❌ Modify business logic
+
+==================================================
+
+RETURN ONLY
+
+✓ Files modified
+
+✓ Verification completed
+
+✓ Any remaining Journey improvements
+
+Stop.
+
+Do NOT run production build.
+
+Do NOT inspect unrelated files.
+
+==================================================
+
+CHIEF ARCHITECT PRINCIPLE
+
+The Journey screen should become
+the most stable screen in the platform.
+
+It connects every experience,
+but owns almost no business logic.

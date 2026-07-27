@@ -1,0 +1,198 @@
+SPR-P006D — Community Census Step 2: Family Members
+
+Project:
+Menashe Platform
+
+Scope:
+📱 MOBILE ONLY
+
+Priority:
+Community Census Workflow
+
+Chief Architect:
+Samuel & ChatGPT
+
+==================================================
+
+EXECUTION CONTRACT
+
+Maximum files to READ:
+4
+
+Maximum files to MODIFY:
+4
+
+Maximum agent actions:
+20
+
+Stop immediately after completion.
+
+==================================================
+
+MISSION
+
+Build ONLY Step 2 of the Community Census workflow.
+
+Family Members.
+
+Do NOT modify Step 1.
+
+Do NOT build Review.
+
+Do NOT build Submission.
+
+==================================================
+
+READ ONLY
+
+1.
+
+app/census/family-head.tsx
+
+2.
+
+app/census/index.tsx
+
+3.
+
+lib/shared-core/src/census/types.ts
+
+4.
+
+lib/shared-core/src/census/labels.ts
+
+DO NOT READ ANY OTHER FILES.
+
+==================================================
+
+CREATE
+
+app/census/family-members.tsx
+
+==================================================
+
+SCREEN
+
+Title
+
+Family Members
+
+Subtitle
+
+Step 2 of 4
+
+Progress
+
+50%
+
+==================================================
+
+FUNCTIONALITY
+
+Allow users to add multiple family members.
+
+Each member uses the canonical
+
+FamilyMember
+
+model.
+
+==================================================
+
+Each member card includes
+
+Relation
+
+Surname
+
+Passport Name
+
+Hebrew Name
+
+Sex
+
+Marital Status
+
+Date of Birth
+
+Aliyah Status
+
+==================================================
+
+Buttons
+
+Add Member
+
+Remove Member
+
+==================================================
+
+BOTTOM BAR
+
+Previous
+
+Back to Family Head
+
+Next
+
+Continue to Review
+
+(The Review screen does not exist yet.)
+
+==================================================
+
+STATE
+
+Temporary in-memory state only.
+
+No API.
+
+No AsyncStorage.
+
+No submission.
+
+==================================================
+
+REUSE
+
+✓ Shared Census types
+
+✓ Shared labels
+
+✓ Shared enums
+
+✓ Existing design system
+
+==================================================
+
+DO NOT
+
+❌ Build Review
+
+❌ Build Submit
+
+❌ Modify Shared Core
+
+❌ Modify API
+
+❌ Modify Community
+
+❌ Modify Journey
+
+❌ Modify Web
+
+==================================================
+
+RETURN ONLY
+
+✓ Files modified
+
+✓ Step 2 completed
+
+Stop.
+
+No TypeScript.
+
+No build.
+
+No verification.

@@ -1,0 +1,299 @@
+# PHASE 2 — AAA Environment Reconstruction
+
+## OBJECTIVE
+
+Do NOT redesign the application.
+
+Do NOT modify the memorial system.
+
+Do NOT change routing, authentication, Supabase integration, or UI logic.
+
+This phase is ONLY about rebuilding the 3D environment to production quality.
+
+Use the uploaded reference image as the primary artistic direction.
+
+The goal is to transform the current low-poly prototype into a realistic, cinematic Community Memorial Sanctuary.
+
+---
+
+# TERRAIN
+
+Delete the current flat terrain.
+
+Create a sculpted memorial valley with natural elevation.
+
+Include:
+
+* rolling hills
+* gentle slopes
+* cliffs
+* terraces
+* natural depressions
+* stone retaining walls
+* landscaped memorial gardens
+
+Terrain should feel handcrafted instead of procedural.
+
+---
+
+# ENVIRONMENT LAYOUT
+
+Rebuild the valley similar to the uploaded reference.
+
+Include:
+
+• Central memorial sanctuary
+
+• Multiple terraces
+
+• Stone bridges
+
+• Reflection pools
+
+• Flowing rivers
+
+• Waterfalls
+
+• Olive groves
+
+• Prayer gardens
+
+• Candle gathering areas
+
+• Scenic viewpoints
+
+Everything should guide visitors naturally through the sanctuary.
+
+---
+
+# ARCHITECTURE
+
+Replace placeholder buildings.
+
+Use realistic Jerusalem limestone architecture.
+
+Include:
+
+* limestone walls
+* arches
+* columns
+* stairways
+* prayer terraces
+* memorial courtyards
+* stone pavilions
+* elegant gateways
+
+Avoid castles or fantasy structures.
+
+The architecture should feel timeless and sacred.
+
+---
+
+# OLIVE TREES
+
+Delete every low-poly tree.
+
+Replace them with realistic mature olive trees.
+
+Requirements:
+
+* twisted trunks
+* dense foliage
+* natural size variation
+* random rotation
+* subtle wind animation
+
+Scatter trees naturally throughout the valley.
+
+---
+
+# VEGETATION
+
+Add Mediterranean landscaping.
+
+Include:
+
+* lavender
+* white flowers
+* grass variation
+* shrubs
+* cypress trees
+* native plants
+
+Avoid repetitive placement.
+
+---
+
+# WATER SYSTEM
+
+Replace all existing water.
+
+Create:
+
+* flowing rivers
+* realistic waterfalls
+* reflection pools
+* animated water shaders
+* soft ripples
+* natural riverbanks
+
+Use reflective water materials with realistic lighting.
+
+---
+
+# PATHWAYS
+
+Replace existing paths.
+
+Use:
+
+Jerusalem limestone paving
+
+Natural stone stairs
+
+Garden walkways
+
+Small bridges
+
+Curved paths
+
+Everything should encourage exploration.
+
+---
+
+# MEMORIAL ZONES
+
+Create designated memorial candle areas.
+
+Each zone should contain:
+
+stone flooring
+
+garden edges
+
+olive trees
+
+flower beds
+
+warm lighting
+
+The environment should feel peaceful rather than crowded.
+
+---
+
+# MATERIAL QUALITY
+
+Do not use flat colors.
+
+Every major surface must use high-quality PBR materials.
+
+Examples:
+
+Grass
+
+Stone
+
+Limestone
+
+Wood
+
+Marble
+
+Soil
+
+Rock
+
+Water
+
+Each material should support:
+
+* Albedo
+* Normal
+* Roughness
+* Ambient Occlusion
+
+---
+
+# LIGHTING
+
+Continue using the Phase 1 rendering pipeline.
+
+Adjust lighting to resemble:
+
+Golden hour in Jerusalem.
+
+Requirements:
+
+Warm sunlight
+
+Soft shadows
+
+Volumetric light
+
+Natural ambient lighting
+
+No harsh white lighting.
+
+---
+
+# ATMOSPHERE
+
+Add:
+
+soft fog
+
+dust particles
+
+floating pollen
+
+light breeze
+
+gentle cloud movement
+
+Everything should enhance serenity.
+
+---
+
+# PERFORMANCE
+
+Maintain excellent performance.
+
+Use:
+
+* Instanced vegetation
+* Level of Detail (LOD)
+* Frustum culling
+* Lazy loading
+* Compressed textures
+* Optimized GLB models
+
+Target:
+
+Desktop: 60 FPS
+
+Modern Mobile: 45–60 FPS
+
+---
+
+# DO NOT
+
+Do not add placeholder cubes.
+
+Do not create low-poly trees.
+
+Do not use primitive cylinders for architecture.
+
+Do not regenerate existing memorial functionality.
+
+Do not redesign the UI.
+
+---
+
+# SUCCESS CRITERIA
+
+By the end of Phase 2:
+
+* The valley closely resembles the uploaded reference image.
+* The environment feels handcrafted and premium.
+* Visitors immediately experience a peaceful, sacred atmosphere.
+* The sanctuary no longer looks like a prototype and is ready for Phase 3 (interactive effects, candle animations, advanced atmosphere, and world polish).

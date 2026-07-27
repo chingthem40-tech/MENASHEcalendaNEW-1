@@ -1,0 +1,106 @@
+Build a premium interactive Community Memorial Sanctuary.
+
+Vision:
+A sacred digital remembrance world where families honor loved ones by lighting candles and sharing memories.
+
+Environment:
+
+* Infinite peaceful sanctuary landscape.
+* White stone pathways.
+* Memorial gardens.
+* Reflection pools.
+* Trees of reBuild a premium interactive Community Memorial Sanctuary.
+
+  Vision:
+  A sacred digital remembrance world where families honor loved ones by lighting candles and sharing memories.
+
+  Environment:
+
+  * Infinite peaceful sanctuary landscape.
+  * White stone pathways.
+  * Memorial gardens.
+  * Reflection pools.
+  * Trees of remembrance.
+  * Thousands of glowing candles.
+  * Warm golden sunset lighting.
+  * Soft floating lanterns.
+  * Gentle ambient atmosphere.
+    Interactions:
+  * Smooth drag-to-explore movement.
+  * Pinch-to-zoom.
+  * Click any candle to open a memorial profile.
+  * Light a new candle.
+  * Leave flowers and messages.
+  * Search memorials by name.
+  * Filter by family, community, year, or category.
+    Memorial Card:
+  * Photo.
+  * Full name.
+  * Memorial message.
+  * Birth date.
+  * Remembrance date.
+  * Family tributes.
+  * Candle count.
+  * Visitor count.
+    Visual Style:
+  * Apple-level design quality.
+  * Cinematic and realistic.
+  * Soft depth and lighting.
+  * Premium glass panels.
+  * Elegant typography.
+  * Mobile and desktop optimized.
+    Technology:
+  * React.
+  * TypeScript.
+  * Tailwind CSS.
+  * Framer Motion.
+  * Supabase backend.
+  * Progressive Web App support.
+    Goal:
+    Create an emotional, beautiful, and respectful sanctuary that feels alive and timeless, where every candle represents a real person remembered by the community.embrance.
+* Thousands of glowing candles.
+* Warm golden sunset lighting.
+* Soft floating lanterns.
+* Gentle ambient atmosphere.
+
+Interactions:
+
+* Smooth drag-to-explore movement.
+* Pinch-to-zoom.
+* Click any candle to open a memorial profile.
+* Light a new candle.
+* Leave flowers and messages.
+* Search memorials by name.
+* Filter by family, community, year, or category.
+
+Memorial Card:
+
+* Photo.
+* Full name.
+* Memorial message.
+* Birth date.
+* Remembrance date.
+* Family tributes.
+* Candle count.
+* Visitor count.
+
+Visual Style:
+
+* Apple-level design quality.
+* Cinematic and realistic.
+* Soft depth and lighting.
+* Premium glass panels.
+* Elegant typography.
+* Mobile and desktop optimized.
+
+Technology:
+
+* React.
+* TypeScript.
+* Tailwind CSS.
+* Framer Motion.
+* Supabase backend.
+* Progressive Web App support.
+
+Goal:
+Create an emotional, beautiful, and respectful sanctuary that feels alive and timeless, where every candle represents a real person remembered by the community.

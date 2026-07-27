@@ -1,0 +1,475 @@
+SPR-M003 — Menashe Mobile Component Library
+
+Priority:
+🔴 CRITICAL
+
+Chief Architect:
+Samuel & ChatGPT
+
+Platform:
+Menashe Calendar Mobile V2
+
+Version:
+1.0
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Build the complete reusable Menashe Mobile Component Library.
+
+This is NOT a screen-building sprint.
+
+This sprint creates the reusable UI components that every future
+mobile screen will use.
+
+All components MUST consume the Menashe Mobile Design Language
+(MMDL) created in SPR-M002.
+
+No hardcoded styles.
+
+No duplicated UI.
+
+No business logic.
+
+Presentation only.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify any Web UI
+
+❌ Modify Web Components
+
+❌ Modify Web Navigation
+
+❌ Modify Existing Business Logic
+
+❌ Build Home Screen
+
+❌ Build Calendar Screen
+
+❌ Build Sanctuary Screen
+
+❌ Build AI Screen
+
+❌ Duplicate shared components
+
+Everything belongs ONLY inside
+
+src/mobile/
+
+The Web Application remains production frozen.
+
+------------------------------------------------------------
+COMPONENT ARCHITECTURE
+------------------------------------------------------------
+
+Create
+
+src/mobile/components/
+
+Organize by category.
+
+Example
+
+components/
+
+foundation/
+
+navigation/
+
+cards/
+
+inputs/
+
+feedback/
+
+layout/
+
+display/
+
+------------------------------------------------------------
+FOUNDATION COMPONENTS
+------------------------------------------------------------
+
+Build
+
+MenasheSurface
+
+MenasheCard
+
+MenasheButton
+
+MenasheIconButton
+
+MenasheDivider
+
+MenasheChip
+
+MenasheBadge
+
+MenasheAvatar
+
+Requirements
+
+Use Design Tokens
+
+Support
+
+Light
+
+Dark
+
+Dynamic Theme
+
+Pressed
+
+Disabled
+
+Loading
+
+Accessibility
+
+Memoization
+
+------------------------------------------------------------
+LAYOUT COMPONENTS
+------------------------------------------------------------
+
+Build
+
+ScreenLayout
+
+ScrollLayout
+
+SafeAreaLayout
+
+KeyboardAvoidLayout
+
+Section
+
+Spacer
+
+Container
+
+ContentWidth
+
+------------------------------------------------------------
+HEADER COMPONENTS
+------------------------------------------------------------
+
+Build
+
+MenasheHeader
+
+HeaderTitle
+
+HeaderSubtitle
+
+HeaderAction
+
+HeaderSearch
+
+LargeHeader
+
+CollapsibleHeader (foundation only)
+
+------------------------------------------------------------
+DISPLAY COMPONENTS
+------------------------------------------------------------
+
+Build
+
+DateCard
+
+PrayerCard
+
+HolidayCard
+
+ParashaCard
+
+StatisticCard
+
+QuickToolCard
+
+CountdownCard
+
+InformationCard
+
+SectionTitle
+
+LabelValue
+
+HeroCard
+
+These are reusable.
+
+No business logic.
+
+Dummy props only.
+
+------------------------------------------------------------
+INPUT COMPONENTS
+------------------------------------------------------------
+
+Build
+
+SearchBar
+
+SearchField
+
+TextField
+
+SelectField
+
+SegmentedControl
+
+Switch
+
+Checkbox
+
+Radio
+
+FilterChip
+
+InputRow
+
+------------------------------------------------------------
+NAVIGATION COMPONENTS
+------------------------------------------------------------
+
+Build
+
+BottomNavigation
+
+BottomNavigationItem
+
+FloatingActionButton
+
+TabIndicator
+
+NavigationBadge
+
+NavigationContainer
+
+------------------------------------------------------------
+FEEDBACK COMPONENTS
+------------------------------------------------------------
+
+Build
+
+LoadingState
+
+SkeletonCard
+
+EmptyState
+
+ErrorState
+
+Toast
+
+Banner
+
+Snackbar
+
+BottomSheet
+
+Dialog
+
+ProgressIndicator
+
+------------------------------------------------------------
+VISUAL RULES
+------------------------------------------------------------
+
+Everything must use
+
+MMDL tokens.
+
+NO
+
+magic numbers.
+
+NO
+
+inline colors.
+
+NO
+
+inline spacing.
+
+NO
+
+inline radius.
+
+Everything from Design Tokens.
+
+------------------------------------------------------------
+COMPONENT API
+------------------------------------------------------------
+
+Every component must support
+
+variant
+
+size
+
+disabled
+
+loading
+
+selected
+
+style override
+
+testID
+
+accessibilityLabel
+
+children
+
+theme
+
+------------------------------------------------------------
+PERFORMANCE
+------------------------------------------------------------
+
+Memoize appropriate components.
+
+Avoid unnecessary renders.
+
+Prepare for virtualization.
+
+No unnecessary Context usage.
+
+------------------------------------------------------------
+ACCESSIBILITY
+------------------------------------------------------------
+
+Every interactive component
+
+Minimum touch target
+
+48dp
+
+ARIA equivalents
+
+Screen reader labels
+
+Reduced motion compatibility
+
+Keyboard navigation ready
+
+------------------------------------------------------------
+DOCUMENTATION
+------------------------------------------------------------
+
+For every component include
+
+Purpose
+
+Props
+
+Variants
+
+Usage
+
+Accessibility
+
+Example
+
+Future extension notes
+
+------------------------------------------------------------
+SHOWCASE
+------------------------------------------------------------
+
+Create
+
+ComponentGallery
+
+inside
+
+src/mobile/dev/
+
+Display every component
+
+using dummy data.
+
+This gallery is ONLY for development.
+
+It is NOT connected to production.
+
+------------------------------------------------------------
+VERIFICATION
+------------------------------------------------------------
+
+Verify
+
+✅ Existing Web untouched
+
+✅ Existing Mobile Foundation untouched
+
+✅ Design Tokens used everywhere
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+✅ Component Gallery renders
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide
+
+Component Inventory
+
+Folder Structure
+
+Gallery Screenshot
+
+API Documentation
+
+Accessibility Report
+
+Performance Notes
+
+Verification Checklist
+
+------------------------------------------------------------
+STOP POINT
+------------------------------------------------------------
+
+STOP after the Component Library.
+
+DO NOT begin Home Screen.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+Components are the language.
+
+Screens are sentences.
+
+If the language is elegant,
+
+every screen built afterward will naturally become elegant.
+
+Build components once.
+
+Reuse forever.
+
+The Menashe Mobile App should feel handcrafted,
+
+calm,
+
+premium,
+
+and timeless.

@@ -1,0 +1,186 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-006 — Home Migration (H-002)
+
+ROLE
+
+Act as a Senior React Architect and Senior TypeScript Engineer.
+
+Continue executing the approved Home Migration Blueprint.
+
+This sprint focuses ONLY on extracting pure utility functions from Home.tsx.
+
+Do not move components.
+
+Do not move hooks.
+
+Do not modify rendering logic.
+
+---
+
+## OBJECTIVE
+
+Reduce Home.tsx complexity by extracting reusable, pure utility functions into a dedicated utils layer.
+
+All extracted functions must remain behaviorally identical.
+
+---
+
+## TASK 1
+
+Inventory every pure utility function inside Home.tsx.
+
+Examples:
+
+* Date formatting
+* Holiday formatting
+* Text formatting
+* Notification helpers
+* Sorting helpers
+* Mapping helpers
+* String helpers
+* Calculation helpers
+
+Do NOT move any function that depends on React state or hooks.
+
+---
+
+## TASK 2
+
+Create:
+
+src/pages/home/utils/
+
+Suggested files:
+
+dateUtils.ts
+
+holidayUtils.ts
+
+notificationUtils.ts
+
+formatUtils.ts
+
+stringUtils.ts
+
+index.ts
+
+Group utilities logically.
+
+---
+
+## TASK 3
+
+Replace local utility implementations with imports.
+
+Keep function names stable unless a clearer name significantly improves readability.
+
+---
+
+## TASK 4
+
+Verify every extracted utility is:
+
+* Pure
+* Side-effect free
+* Independently reusable
+* Fully typed
+
+---
+
+## TASK 5
+
+Update Home.tsx.
+
+Remove duplicated implementations.
+
+Import from the new utils modules.
+
+No JSX changes.
+
+No behavioral changes.
+
+---
+
+## TASK 6
+
+Update documentation.
+
+Append H-002 to:
+
+docs/Architecture.md
+
+Document:
+
+* Utilities extracted
+* Line reduction
+* Remaining migration phases
+* Recommended future shared utilities
+
+---
+
+## TASK 7
+
+Verification
+
+Confirm:
+
+✓ Home renders correctly.
+
+✓ Utility outputs are identical.
+
+✓ No TypeScript errors introduced.
+
+✓ No runtime regressions.
+
+✓ No visual changes.
+
+---
+
+## CONSTRAINTS
+
+Do NOT extract React components.
+
+Do NOT modify hooks.
+
+Do NOT change APIs.
+
+Do NOT alter routing.
+
+Do NOT modify state management.
+
+Only extract pure utilities.
+
+---
+
+## DELIVERABLES
+
+Provide:
+
+1. Files created
+
+2. Files modified
+
+3. Utility inventory
+
+4. Estimated Home.tsx reduction
+
+5. Remaining migration phases
+
+6. Verification summary
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Home behaves identically.
+
+✓ Utilities centralized.
+
+✓ Home.tsx reduced further.
+
+✓ No regressions.
+
+Stop after H-002 and wait for Chief Architect review.

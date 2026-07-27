@@ -1,0 +1,135 @@
+Redesign the Community Memorial page into a premium memorial sanctuary experience.
+
+Current Problems:
+- Feels like a standard modal dialog.
+- Too much empty dark space.
+- No emotional connection.
+- No sense of place.
+- Does not feel sacred or memorable.
+
+Design Goal:
+Create a beautiful Jerusalem-inspired Community Memorial experience inside Menashe Calendar.
+
+Visual Style:
+- Premium
+- Elegant
+- Spiritual
+- Peaceful
+- Modern Jewish design
+- Soft gold accents
+- Glassmorphism panels
+- Gentle animations
+
+Page Structure:
+
+━━━━━━━━━━━━━━━━━━
+COMMUNITY MEMORIAL
+יהי זכרם ברוך
+May Their Memory Be A Blessing
+━━━━━━━━━━━━━━━━━━
+
+Hero Background:
+Use a rotating slideshow every 6 seconds.
+
+Images:
+- Peaceful Jerusalem valley
+- Olive groves
+- Memorial garden
+- Stone pathways
+- Golden sunrise
+- Soft clouds
+- Heavenly atmosphere
+
+Overlay:
+Dark transparent gradient for readability.
+
+Stats Section:
+
+Total Memorial Candles
+Total Memorial Names Remembered
+Candles Lit This Week
+
+Display in elegant glass cards.
+
+Main Action:
+
+Large glowing button:
+
+🕯 Light Memorial Candle
+
+Gold gradient button
+Soft pulse animation
+
+When clicked:
+
+Open memorial form.
+
+Form Fields:
+
+Name
+Hebrew Name
+Date of Passing
+Memorial Message
+
+Button:
+
+Light Candle
+
+After submission:
+
+Show animated candle appearing.
+
+Memorial Wall:
+
+Display memorial candles in a masonry grid.
+
+Each card contains:
+
+🕯 Candle
+Name
+Hebrew Name
+Memorial Message
+Date
+
+Hover Effect:
+
+Soft golden glow.
+
+Empty State:
+
+Instead of:
+"No memorial candles yet."
+
+Show:
+
+"Light the first candle and help build a living memorial for our community."
+
+Visual Illustration:
+Small glowing candle with gentle animation.
+
+Background Effects:
+
+Moving clouds.
+Floating particles.
+Soft sunlight rays.
+Very subtle motion.
+
+Mobile Optimization:
+
+Full responsive layout.
+No modal feeling.
+Feels like a dedicated page.
+
+Footer:
+
+יהי זכרם ברוך
+
+May Their Memory Be A Blessing
+
+Every candle represents a life remembered.
+
+Design Reference:
+
+Apple-level polish.
+Premium memorial website.
+Modern Jewish heritage application.

@@ -1,0 +1,263 @@
+# PHASE 3 — Living Memorial Sanctuary
+
+## OBJECTIVE
+
+Do not redesign the environment created in Phase 2.
+
+Instead, transform it into a living, breathing sanctuary.
+
+The visitor should feel like they have entered a peaceful place of remembrance rather than a static 3D scene.
+
+Maintain all existing functionality.
+
+Preserve performance.
+
+---
+
+# CANDLE SYSTEM
+
+Upgrade every memorial candle.
+
+Each candle must have:
+
+* realistic wax material
+* physically inspired flame
+* soft flickering animation
+* warm point light
+* subtle glow
+* gentle smoke particles
+* random flicker timing
+
+When a new candle is lit:
+
+* smooth placement animation
+* soft golden pulse
+* gentle camera focus
+* warm sound effect
+* nearby candles subtly react
+
+Thousands of candles should be rendered efficiently using instancing.
+
+---
+
+# WATER
+
+Bring the water to life.
+
+Requirements:
+
+* flowing rivers
+* animated waterfalls
+* moving surface ripples
+* reflections
+* shoreline animation
+* mist around waterfalls
+* soft water sounds
+
+---
+
+# TREES
+
+Olive trees should gently move.
+
+Requirements:
+
+* wind animation
+* subtle branch movement
+* leaf motion
+* randomized movement
+
+Avoid exaggerated motion.
+
+---
+
+# FLOWERS AND GRASS
+
+Animate vegetation.
+
+Requirements:
+
+* grass swaying
+* flowers moving gently
+* natural wind variation
+
+---
+
+# SKY
+
+Create a living sky.
+
+Include:
+
+* moving clouds
+* changing sunlight direction
+* subtle atmospheric haze
+* birds occasionally flying overhead
+
+Do not use storm effects.
+
+---
+
+# LIGHTING
+
+Enhance atmosphere.
+
+Requirements:
+
+* volumetric sunlight
+* bloom around candles
+* warm evening light
+* realistic soft shadows
+* subtle god rays through trees
+* gentle fog
+
+Everything should feel peaceful.
+
+---
+
+# MEMORIAL INTERACTION
+
+Clicking a candle should:
+
+* smoothly move the camera
+* softly highlight the candle
+* open the memorial profile
+* dim the background slightly
+* emphasize the selected memorial
+
+Closing the profile should smoothly restore the scene.
+
+---
+
+# CAMERA
+
+Improve movement.
+
+Requirements:
+
+* cinematic easing
+* inertia
+* smooth pan
+* smooth zoom
+* no sudden jumps
+
+Camera should feel premium.
+
+---
+
+# AMBIENT LIFE
+
+Add subtle environmental life.
+
+Include:
+
+* birds
+* butterflies
+* drifting leaves
+* floating pollen
+* soft dust particles
+
+Do not add human characters or animals that distract from remembrance.
+
+---
+
+# AUDIO
+
+Create a peaceful soundscape.
+
+Include:
+
+* flowing water
+* birdsong
+* gentle wind
+* soft piano
+* light orchestral ambience
+
+Music should never overpower the environment.
+
+---
+
+# MEMORIAL PROFILE
+
+Upgrade the experience.
+
+Profile should animate smoothly.
+
+Include:
+
+* premium glass panel
+* soft background blur
+* elegant transitions
+* smooth fade in/out
+* high-quality typography
+* candle count
+* flower count
+* visitor count
+* remembrance message
+
+---
+
+# MICRO ANIMATIONS
+
+Every interaction should feel polished.
+
+Examples:
+
+* button hover animations
+* soft icon animations
+* candle glow pulses
+* panel transitions
+* subtle UI motion
+
+Avoid flashy effects.
+
+---
+
+# PERFORMANCE
+
+Maintain smooth rendering.
+
+Requirements:
+
+* GPU instancing
+* Level of Detail
+* Frustum culling
+* Lazy asset loading
+* Efficient particle systems
+
+Targets:
+
+Desktop: 60 FPS
+
+Modern Mobile: 45–60 FPS
+
+---
+
+# DO NOT
+
+Do not redesign the layout.
+
+Do not replace the environment again.
+
+Do not add fantasy elements.
+
+Do not create a game.
+
+Do not add combat, scores, or unnecessary effects.
+
+The focus must remain on peace, remembrance, and spirituality.
+
+---
+
+# SUCCESS CRITERIA
+
+By the end of Phase 3:
+
+* The sanctuary feels alive.
+* Candles flicker naturally.
+* Rivers and waterfalls flow continuously.
+* Trees and vegetation move gently.
+* The sky evolves subtly.
+* Camera movement feels cinematic.
+* Every interaction feels calm and respectful.
+* Visitors experience an emotional, immersive place of remembrance rather than a typical website.

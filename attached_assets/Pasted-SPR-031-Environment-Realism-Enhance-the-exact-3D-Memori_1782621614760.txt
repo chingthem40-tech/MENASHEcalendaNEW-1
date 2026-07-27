@@ -1,0 +1,192 @@
+SPR-031 — Environment Realism
+Enhance the exact 3D Memorial Sanctuary scene in the attached image to maximum browser Three.js visual quality.
+Current from image: low-poly rounded green trees on floating islands, central blue speckled structure on wooden platform with small lit candle, beige domed building behind, floating glowing lanterns & particles, pinkish sky with light rays, golden hour glow, exact UI layout (search bar, side menu, bottom nav Valley selected + Garden/Waterfall/Sanctuary/Sunset, mini map with candle).
+Target: push to highest quality possible — detailed PBR materials on blue structure & wood, advanced dynamic lighting with soft shadows & god rays, richer emissive particle systems for realistic candle flame + floating embers/lanterns, higher detail & better textures, post-processing bloom + depth of field, volumetric atmosphere. Keep identical camera angle, composition, low-poly tree style, color palette, and all UI elements. Optimize performance. Update the live scene.
+
+Make the Sanctuary feel handcrafted rather than procedurally assembled.
+
+1. Terrain
+
+Current:
+
+mostly flat
+repetitive
+
+Upgrade:
+
+rolling hills
+rocky cliffs
+elevation variation
+small valleys
+
+The terrain should naturally guide the eye.
+
+2. Tree System
+
+Instead of repeating one tree:
+
+Build a small ecosystem.
+
+olive trees
+cedar trees
+cypress trees
+flowering trees
+young saplings
+
+Randomize:
+
+scale
+rotation
+spacing
+density
+
+No two areas should look identical.
+
+3. Stone Architecture
+
+Current:
+
+Simple bridges and walls.
+
+Upgrade:
+
+weathered stone
+moss
+broken columns
+carved memorial walls
+small arches
+ancient pathways
+
+It should feel like it has existed for generations.
+
+4. Candle Ecology
+
+Right now candles are objects.
+
+I want them to become living memorials.
+
+Variation:
+
+tall candles
+short candles
+grouped candles
+memorial lanterns
+eternal flame bowls
+
+Different flame sizes.
+
+Different brightness.
+
+Different wax colors.
+
+5. Reflection Pond
+
+Water should become emotional.
+
+Add:
+
+shoreline stones
+lilies
+gentle ripples
+candle reflections
+soft fog
+6. Sanctuary Landmarks
+
+Every memorable world has landmarks.
+
+I would add:
+
+Memorial Gate
+
+Arrival point.
+
+Tree of Remembrance
+
+Large ancient tree.
+
+Users naturally gather here.
+
+Prayer Pavilion
+
+Quiet resting area.
+
+Eternal Flame
+
+Always burning.
+
+Visible from anywhere.
+
+Stone Bridge
+
+Connects sections naturally.
+
+Reflection Garden
+
+Flowers and candles.
+
+Quiet area.
+
+7. Path System
+
+Paths should invite exploration.
+
+Instead of straight routes:
+
+winding paths
+branching trails
+small stone steps
+8. Vegetation
+
+Increase variety:
+
+lavender
+wildflowers
+grass patches
+moss
+shrubs
+
+Not everywhere.
+
+Just enough.
+
+9. Sky Improvement
+
+Keep Golden Hour.
+
+Improve:
+
+cloud layers
+atmospheric haze
+sun glow
+distant mountains
+10. Performance Budget
+
+Every visual improvement must stay within budget.
+
+Desktop:
+
+60 FPS
+
+Android:
+
+45–60 FPS
+
+Low-end Android:
+
+30 FPS minimum
+
+No compromise.
+
+Deliverables
+
+At the end of SPR-031 I expect:
+
+Better terrain
+Better trees
+Better water
+Better candles
+Better landmarks
+Better paths
+Better vegetation
+Better atmosphere
+Same or better FPS

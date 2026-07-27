@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/shared-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./calendar": "./src/calendar/hebrewCalendar.ts",
+    "./zmanim": "./src/zmanim/zmanim.ts",
+    "./locations": "./src/locations/locations.ts",
+    "./utils": "./src/utils/lang.ts",
+    "./translations": "./src/translations/translations.ts",
+    "./parasha": "./src/parasha/parasha.ts",
+    "./aliyot": "./src/parasha/aliyot.ts",
+    "./census": "./src/census/index.ts"
+  },
+  "dependencies": {
+    "@hebcal/core": "^6.5.2",
+    "suncalc": "^1.9.0",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/suncalc": "^1.9.2",
+    "typescript": "^5.8.3"
+  }
+}

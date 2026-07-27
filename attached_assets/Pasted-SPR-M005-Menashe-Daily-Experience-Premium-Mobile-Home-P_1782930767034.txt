@@ -1,0 +1,445 @@
+SPR-M005 — Menashe Daily Experience (Premium Mobile Home)
+
+Priority:
+🔴 HIGHEST PRIORITY
+
+Chief Architect:
+Samuel & ChatGPT
+
+Platform:
+Menashe Calendar Mobile V2
+
+Version:
+1.0
+
+------------------------------------------------------------
+MISSION
+------------------------------------------------------------
+
+Build the official Menashe Mobile Home Experience.
+
+This is NOT a copy of the Web Home.
+
+This is a completely new Mobile-first experience.
+
+The Home screen should answer one question:
+
+"What does the user need today?"
+
+Everything else is secondary.
+
+------------------------------------------------------------
+NON-NEGOTIABLE RULES
+------------------------------------------------------------
+
+DO NOT
+
+❌ Modify Web UI
+
+❌ Modify Web Components
+
+❌ Modify Web Navigation
+
+❌ Modify Web Theme
+
+❌ Modify Existing Business Logic
+
+❌ Duplicate APIs
+
+❌ Duplicate Services
+
+❌ Duplicate Calendar Engine
+
+❌ Duplicate Memorial Engine
+
+❌ Duplicate AI
+
+Reuse the existing shared platform.
+
+The Web application must remain completely untouched.
+
+------------------------------------------------------------
+DESIGN PHILOSOPHY
+------------------------------------------------------------
+
+The Home screen should feel like:
+
+Opening a beautifully crafted Jewish journal.
+
+Warm.
+
+Peaceful.
+
+Premium.
+
+Modern.
+
+Minimal.
+
+Every card should breathe.
+
+No clutter.
+
+No information overload.
+
+------------------------------------------------------------
+SCREEN STRUCTURE
+------------------------------------------------------------
+
+Safe Area
+
+↓
+
+Large Greeting
+
+↓
+
+Hero Card
+
+↓
+
+Today's Hebrew Date
+
+↓
+
+Prayer Times
+
+↓
+
+Shabbat Countdown
+
+↓
+
+Weekly Parashah
+
+↓
+
+Today's Torah Insight
+
+↓
+
+Quick Actions
+
+↓
+
+Community
+
+↓
+
+Memorial Sanctuary
+
+↓
+
+Rav Menashe AI
+
+↓
+
+Bottom Navigation
+
+------------------------------------------------------------
+SECTION 1
+Greeting
+------------------------------------------------------------
+
+Dynamic greeting.
+
+Examples
+
+Good Morning
+
+Good Afternoon
+
+Good Evening
+
+Show
+
+User Name
+
+Hebrew Date
+
+Gregorian Date
+
+Animated fade-in.
+
+------------------------------------------------------------
+SECTION 2
+Hero Card
+------------------------------------------------------------
+
+Large immersive artwork.
+
+Use premium imagery placeholder.
+
+Rounded.
+
+Glass overlay.
+
+Large Hebrew date.
+
+Large Gregorian date.
+
+Weather support reserved for future.
+
+------------------------------------------------------------
+SECTION 3
+Today's Prayer
+------------------------------------------------------------
+
+Beautiful card.
+
+Display
+
+Sunrise
+
+Sunset
+
+Candle Lighting
+
+Havdalah
+
+Current prayer period.
+
+Use existing shared calculations.
+
+------------------------------------------------------------
+SECTION 4
+Shabbat Countdown
+------------------------------------------------------------
+
+Live countdown.
+
+Elegant typography.
+
+Automatic updates.
+
+Shared engine only.
+
+------------------------------------------------------------
+SECTION 5
+Weekly Parashah
+------------------------------------------------------------
+
+Large premium card.
+
+Display
+
+Parashah Name
+
+Hebrew
+
+Short summary
+
+"Continue Reading"
+
+Use shared Parashah service.
+
+------------------------------------------------------------
+SECTION 6
+Today's Torah Insight
+------------------------------------------------------------
+
+One inspirational teaching.
+
+Beautiful typography.
+
+Expandable.
+
+Prepared for future AI commentary.
+
+------------------------------------------------------------
+SECTION 7
+Quick Actions
+------------------------------------------------------------
+
+Grid.
+
+Examples
+
+Calendar
+
+Prayer
+
+Study
+
+Sanctuary
+
+AI
+
+Community
+
+Settings
+
+Premium cards.
+
+------------------------------------------------------------
+SECTION 8
+Community
+------------------------------------------------------------
+
+Announcements preview.
+
+Future-ready.
+
+No duplicated logic.
+
+------------------------------------------------------------
+SECTION 9
+Memorial Sanctuary
+------------------------------------------------------------
+
+Premium preview card.
+
+Beautiful illustration.
+
+Entry point only.
+
+Do not recreate Sanctuary.
+
+------------------------------------------------------------
+SECTION 10
+Rav Menashe AI
+------------------------------------------------------------
+
+Conversation preview.
+
+Welcome message.
+
+Quick suggestions.
+
+Enter AI.
+
+Reuse existing AI gateway.
+
+------------------------------------------------------------
+SCROLL EXPERIENCE
+------------------------------------------------------------
+
+Large header.
+
+Header collapses gracefully.
+
+Cards fade.
+
+Parallax hero.
+
+Smooth motion.
+
+Never distracting.
+
+------------------------------------------------------------
+VISUAL RULES
+------------------------------------------------------------
+
+Only use MMDL.
+
+Only use reusable components.
+
+No inline styles.
+
+No hardcoded spacing.
+
+No hardcoded typography.
+
+No magic numbers.
+
+------------------------------------------------------------
+PERFORMANCE
+------------------------------------------------------------
+
+Lazy image loading.
+
+Virtualized scrolling.
+
+Memoized sections.
+
+Minimal rerenders.
+
+60 FPS target.
+
+------------------------------------------------------------
+ACCESSIBILITY
+------------------------------------------------------------
+
+VoiceOver
+
+TalkBack
+
+Dynamic Type
+
+Reduced Motion
+
+High Contrast
+
+44dp minimum targets
+
+------------------------------------------------------------
+DELIVERABLES
+------------------------------------------------------------
+
+Provide
+
+Home Folder Tree
+
+Screen Architecture
+
+Component Usage Map
+
+Animation Summary
+
+Accessibility Report
+
+Performance Notes
+
+Verification Checklist
+
+Screenshot of complete Home screen
+
+------------------------------------------------------------
+VERIFICATION
+------------------------------------------------------------
+
+Verify
+
+✅ Web untouched
+
+✅ Shared Core reused
+
+✅ Mobile Shell reused
+
+✅ Component Library reused
+
+✅ MMDL tokens used
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+------------------------------------------------------------
+STOP POINT
+------------------------------------------------------------
+
+STOP after Home Screen.
+
+Do NOT begin Calendar.
+
+Do NOT begin Sanctuary.
+
+Do NOT begin AI.
+
+------------------------------------------------------------
+CHIEF ARCHITECT FINAL PRINCIPLE
+------------------------------------------------------------
+
+The Home screen is not a dashboard.
+
+It is the user's daily companion.
+
+When someone opens Menashe Calendar every morning,
+they should immediately feel peace,
+clarity,
+purpose,
+and connection.
+
+This screen defines the emotional identity of the entire Mobile App.
+
+Build it with craftsmanship worthy of Version 1.0.

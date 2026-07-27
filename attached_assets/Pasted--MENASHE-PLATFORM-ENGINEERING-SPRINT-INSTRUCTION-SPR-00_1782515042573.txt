@@ -1,0 +1,182 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-005 — Home Migration (H-001)
+
+ROLE
+
+Act as a Senior React Architect and Senior TypeScript Engineer.
+
+This sprint is the first execution phase of the approved Home Architecture Blueprint.
+
+Do NOT redesign Home.
+
+Do NOT change any user-visible behavior.
+
+Do NOT introduce new features.
+
+---
+
+## OBJECTIVE
+
+Extract all static data, constants, configuration objects, and static arrays from Home.tsx into dedicated modules under the approved Home architecture.
+
+The purpose is to reduce file complexity while preserving identical runtime behavior.
+
+---
+
+## TASK 1
+
+Identify every static constant inside Home.tsx.
+
+Examples include:
+
+* Torah thought collections
+* Holiday emoji maps
+* Holiday themes
+* AI prompt templates
+* Quick action definitions
+* Local storage key constants
+* Static configuration objects
+* Display labels
+* Static lookup tables
+
+Do not move dynamic state.
+
+---
+
+## TASK 2
+
+Create the approved directory:
+
+src/pages/home/data/
+
+Suggested files:
+
+torahThoughts.ts
+
+holidayThemes.ts
+
+holidayEmoji.ts
+
+quickActions.ts
+
+aiPrompts.ts
+
+constants.ts
+
+index.ts
+
+Group related data logically.
+
+---
+
+## TASK 3
+
+Replace inline constants inside Home.tsx with imports from the new data modules.
+
+Keep exported names descriptive.
+
+Avoid changing object structures unless required for organization.
+
+---
+
+## TASK 4
+
+Verify every imported value produces identical UI output.
+
+Examples:
+
+* Calendar widgets
+* Holiday cards
+* AI suggestions
+* Quick actions
+* Theme selection
+
+No visual differences are acceptable.
+
+---
+
+## TASK 5
+
+Update documentation.
+
+Append to:
+
+docs/Architecture.md
+
+Include:
+
+* Files extracted
+* Line count reduction
+* Remaining migration phases
+* New data module layout
+
+---
+
+## TASK 6
+
+Run verification.
+
+Confirm:
+
+✓ Home renders correctly.
+
+✓ No missing imports.
+
+✓ No TypeScript errors introduced.
+
+✓ No runtime errors.
+
+✓ No visual regressions.
+
+---
+
+## CONSTRAINTS
+
+Do NOT extract React components.
+
+Do NOT move hooks.
+
+Do NOT modify state management.
+
+Do NOT alter JSX.
+
+Do NOT change routing.
+
+Do NOT modify API calls.
+
+Do NOT change business logic.
+
+Only move static data.
+
+---
+
+## DELIVERABLES
+
+Provide:
+
+1. Files created
+
+2. Files modified
+
+3. Estimated Home.tsx line reduction
+
+4. Remaining Home migration phases
+
+5. Verification summary
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ User experience unchanged.
+
+✓ Home.tsx is smaller.
+
+✓ Static data centralized.
+
+✓ Architecture follows the approved blueprint.
+
+Stop after completing H-001 and wait for Chief Architect review before starting H-002.

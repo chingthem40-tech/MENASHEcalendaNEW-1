@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en" class="ui-mobile">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="theme-color" content="#41bedd" />
+  <title>My Mikvah Calendar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: "#eefbfe",
+              100: "#d7f4fb",
+              200: "#ade7f5",
+              300: "#77d6ee",
+              400: "#41bedd",
+              500: "#2aa6c7",
+              600: "#1f86a2",
+              700: "#1e6b82",
+              800: "#1f5666",
+              900: "#1d4956"
+            }
+          },
+          boxShadow: {
+            soft: "0 20px 60px rgba(15, 23, 42, 0.12)"
+          },
+          keyframes: {
+            floaty: {
+              "0%,100%": { transform: "translateY(0px)" },
+              "50%": { transform: "translateY(-10px)" }
+            },
+            fadeUp: {
+              "0%": { opacity: 0, transform: "translateY(16px)" },
+              "100%": { opacity: 1, transform: "translateY(0px)" }
+            }
+          },
+          animation: {
+            floaty: "floaty 6s ease-in-out infinite",
+            fadeUp: "fadeUp 0.7s ease-out both"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --brand: #41bedd;
+      --brand-dark: #1f86a2;
+      --bg: #f3fbfd;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(65,190,221,.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(31,134,162,.12), transparent 30%),
+        linear-gradient(180deg, #f7fdff 0%, #eefbfe 45%, #ffffff 100%);
+    }
+    .glass {
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.6);
+    }
+    .calendar-grid td {
+      position: relative;
+      transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+    .calendar-grid td:hover {
+      transform: translateY(-2px);
+      box-shadow: inset 0 0 0 999px rgba(65,190,221,.06);
+    }
+    .day-pill {
+      background: linear-gradient(180deg, rgba(65,190,221,.12), rgba(65,190,221,.04));
+      border: 1px solid rgba(65,190,221,.18);
+    }
+    .mini-card {
+      background: linear-gradient(180deg, #ffffff, #f7fdff);
+      border: 1px solid rgba(148,163,184,.18);
+    }
+    .navlink {
+      transition: all .2s ease;
+    }
+    .navlink:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.16);
+    }
+    .section-hidden { display: none; }
+    .section-active { display: block; animation: fadeUp .55s ease both; }
+    .check-item input:checked + span {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+    .check-item input:checked ~ .check-mark {
+      background: #41bedd;
+      border-color: #41bedd;
+      color: white;
+    }
+    .scrollbar::-webkit-scrollbar { width: 10px; }
+    .scrollbar::-webkit-scrollbar-thumb { background: rgba(100,116,139,.3); border-radius: 999px; }
+  </style>
+</head>
+<body class="min-h-screen text-slate-800">
+  <header class="sticky top-0 z-50 border-b border-white/60 bg-white/70 backdrop-blur-xl">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between py-4">
+        <div class="flex items-center gap-3">
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-400 text-white shadow-soft">
+            <svg viewBox="0 0 24 24" class="h-6 w-6 fill-current"><path d="M12 2c3.3 3.5 5 6.7 5 9.5A5 5 0 1 1 7 11.5C7 8.7 8.7 5.5 12 2Zm0 20c5 0 9-3.9 9-8.8 0-2.4-1-4.8-2.8-6.8-.5 3.7-2.7 6.7-6.2 8.8-3.5-2.1-5.7-5.1-6.2-8.8C4 8.4 3 10.8 3 13.2 3 18.1 7 22 12 22Z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-lg font-extrabold tracking-tight text-slate-900">My Mikvah Calendar</h1>
+            <p class="text-sm text-slate-500">A polished, responsive dashboard inspired by the original app</p>
+          </div>
+        </div>
+        <div class="hidden md:flex items-center gap-2">
+          <button onclick="showSection('calendar')" class="navlink rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Calendar</button>
+          <button onclick="showSection('checklist')" class="navlink rounded-full px-4 py-2 text-sm font-semibold text-slate-700">Checklist</button>
+          <button onclick="showSection('ask')" class="navlink rounded-full px-4 py-2 text-sm font-semibold text-slate-700">Ask a Rabbi</button>
+          <button onclick="showSection('settings')" class="navlink rounded-full px-4 py-2 text-sm font-semibold text-slate-700">Settings</button>
+        </div>
+      </div>
+      <div class="pb-4 md:hidden flex gap-2 overflow-x-auto">
+        <button onclick="showSection('calendar')" class="whitespace-nowrap rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Calendar</button>
+        <button onclick="showSection('checklist')" class="whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">Checklist</button>
+        <button onclick="showSection('ask')" class="whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">Ask a Rabbi</button>
+        <button onclick="showSection('settings')" class="whitespace-nowrap rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">Settings</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+    <section class="mb-6 grid gap-4 lg:grid-cols-3">
+      <div class="glass animate-fadeUp rounded-3xl p-6 shadow-soft lg:col-span-2">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Today’s overview</p>
+            <h2 class="mt-2 text-3xl font-black text-slate-900">Tammuz 5786</h2>
+            <p class="mt-2 max-w-2xl text-slate-600">Track dates, reminders, checklists, trips, memos, and settings in one elegant interface.</p>
+          </div>
+          <div class="rounded-2xl bg-brand-400/10 p-4 text-center">
+            <div class="text-sm font-semibold text-brand-800">Next Mikvah Night</div>
+            <div class="mt-1 text-3xl font-black text-slate-900">Jun 24</div>
+            <div class="text-sm text-slate-600">Suggested reminder: 12 hours before</div>
+          </div>
+        </div>
+        <div class="mt-6 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <div class="text-sm text-slate-500">Open flows</div>
+            <div class="mt-1 text-2xl font-extrabold">1</div>
+          </div>
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <div class="text-sm text-slate-500">Upcoming reminders</div>
+            <div class="mt-1 text-2xl font-extrabold">4</div>
+          </div>
+          <div class="rounded-2xl bg-slate-50 p-4">
+            <div class="text-sm text-slate-500">Checklist progress</div>
+            <div class="mt-1 text-2xl font-extrabold" id="checkProgress">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass animate-fadeUp rounded-3xl p-6 shadow-soft">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-bold text-slate-900">Quick actions</h3>
+          <span class="rounded-full bg-brand-400/15 px-3 py-1 text-xs font-bold text-brand-800">Ready</span>
+        </div>
+        <div class="mt-4 grid gap-3">
+          <button onclick="showSection('newFlow')" class="rounded-2xl bg-brand-500 px-4 py-3 text-left font-semibold text-white shadow-soft transition hover:bg-brand-600">Add New Flow</button>
+          <button onclick="showSection('newMemo')" class="rounded-2xl bg-slate-900 px-4 py-3 text-left font-semibold text-white transition hover:bg-slate-800">Add Memo</button>
+          <button onclick="showSection('newTrip')" class="rounded-2xl bg-white px-4 py-3 text-left font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50">Add Trip</button>
+          <button onclick="showSection('renew')" class="rounded-2xl bg-amber-400 px-4 py-3 text-left font-semibold text-slate-900 transition hover:bg-amber-300">Renew Account</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="calendar" class="section-active">
+      <div class="grid gap-6 xl:grid-cols-12">
+        <div class="glass rounded-3xl p-4 shadow-soft xl:col-span-9">
+          <div class="flex flex-col gap-3 border-b border-slate-200/70 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-2xl font-black text-slate-900">June / July 2026</h2>
+              <p class="text-sm text-slate-500">Interactive monthly calendar view</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="toast('Previous month')" class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">←</button>
+              <button onclick="toast('Next month')" class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700">→</button>
+              <button onclick="toast('Toggle view')" class="rounded-full bg-brand-400 px-4 py-2 text-sm font-semibold text-white">Grid</button>
+            </div>
+          </div>
+
+          <div class="mt-4 overflow-x-auto scrollbar">
+            <table class="calendar-grid min-w-[900px] w-full border-separate border-spacing-2 text-center">
+              <thead>
+                <tr class="text-xs font-bold uppercase tracking-wide text-slate-500">
+                  <th class="p-2">Sat. Night</th>
+                  <th class="p-2">Sun. Night</th>
+                  <th class="p-2">Mon. Night</th>
+                  <th class="p-2">Tue. Night</th>
+                  <th class="p-2">Wed. Night</th>
+                  <th class="p-2">Thu. Night</th>
+                  <th class="p-2">Fri. Night</th>
+                </tr>
+              </thead>
+              <tbody id="calendarBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <aside class="xl:col-span-3 space-y-6">
+          <div class="glass rounded-3xl p-5 shadow-soft">
+            <h3 class="text-lg font-black text-slate-900">Mini Months</h3>
+            <div class="mt-4 grid gap-4">
+              <div class="mini-card rounded-2xl p-4">
+                <div class="mb-3 text-sm font-bold text-slate-700">Last Month: Sivan</div>
+                <div class="grid grid-cols-7 gap-1 text-xs">
+                  <div class="rounded-lg bg-slate-100 p-2">1</div><div class="rounded-lg bg-slate-100 p-2">2</div><div class="rounded-lg bg-slate-100 p-2">3</div><div class="rounded-lg bg-slate-100 p-2">4</div><div class="rounded-lg bg-slate-100 p-2">5</div><div class="rounded-lg bg-slate-100 p-2">6</div><div class="rounded-lg bg-slate-100 p-2">7</div>
+                  <div class="rounded-lg bg-slate-100 p-2">8</div><div class="rounded-lg bg-slate-100 p-2">9</div><div class="rounded-lg bg-slate-100 p-2">10</div><div class="rounded-lg bg-slate-100 p-2">11</div><div class="rounded-lg bg-slate-100 p-2">12</div><div class="rounded-lg bg-slate-100 p-2">13</div><div class="rounded-lg bg-slate-100 p-2">14</div>
+                </div>
+              </div>
+              <div class="mini-card rounded-2xl p-4">
+                <div class="mb-3 text-sm font-bold text-slate-700">Next Month: Av</div>
+                <div class="grid grid-cols-7 gap-1 text-xs">
+                  <div class="rounded-lg bg-slate-100 p-2"></div><div class="rounded-lg bg-slate-100 p-2"></div><div class="rounded-lg bg-slate-100 p-2"></div><div class="rounded-lg bg-slate-100 p-2">1</div><div class="rounded-lg bg-slate-100 p-2">2</div><div class="rounded-lg bg-slate-100 p-2">3</div><div class="rounded-lg bg-slate-100 p-2">4</div>
+                  <div class="rounded-lg bg-slate-100 p-2">5</div><div class="rounded-lg bg-slate-100 p-2">6</div><div class="rounded-lg bg-slate-100 p-2">7</div><div class="rounded-lg bg-slate-100 p-2">8</div><div class="rounded-lg bg-amber-200 p-2 font-bold">9</div><div class="rounded-lg bg-slate-100 p-2">10</div><div class="rounded-lg bg-slate-100 p-2">11</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass rounded-3xl p-5 shadow-soft">
+            <h3 class="text-lg font-black text-slate-900">Legends</h3>
+            <div class="mt-4 space-y-3 text-sm">
+              <div class="flex items-center gap-3"><span class="h-4 w-4 rounded bg-gradient-to-r from-rose-200 to-rose-100"></span> Flow</div>
+              <div class="flex items-center gap-3"><span class="h-4 w-4 rounded bg-gradient-to-r from-amber-200 to-amber-100"></span> Separation Onot</div>
+              <div class="flex items-center gap-3"><span class="h-4 w-4 rounded bg-gradient-to-r from-cyan-200 to-cyan-100"></span> Mikvah Night</div>
+              <div class="flex items-center gap-3"><span class="h-4 w-4 rounded bg-gradient-to-r from-emerald-200 to-emerald-100"></span> Allowed</div>
+              <div class="flex items-center gap-3"><span class="h-4 w-4 rounded bg-gradient-to-r from-slate-200 to-slate-100"></span> Preparatory</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="checklist" class="section-hidden">
+      <div class="glass rounded-3xl p-6 shadow-soft">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-700">Prep checklist</p>
+            <h2 class="text-3xl font-black text-slate-900">Mikvah Prep Checklist</h2>
+            <p class="mt-2 text-slate-600">Track completion across the full preparation process.</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="resetChecklist()" class="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Reset Checklist</button>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 lg:grid-cols-2" id="checklistContainer"></div>
+      </div>
+    </section>
+
+    <section id="ask" class="section-hidden">
+      <div class="grid gap-6 lg:grid-cols-5">
+        <div class="glass rounded-3xl p-6 shadow-soft lg:col-span-3">
+          <h2 class="text-3xl font-black text-slate-900">Ask a Rabbi</h2>
+          <p class="mt-2 text-slate-600">Send your question with relevant details. This mockup keeps the experience polished and private-looking.</p>
+
+          <div class="mt-6 grid gap-4 sm:grid-cols-2">
+            <label class="block">
+              <span class="mb-2 block text-sm font-semibold text-slate-700">Send Question to</span>
+              <select class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none ring-brand-400 focus:ring-2">
+                <option>Rabbi Sholom Ber Chaikin (Cleveland)</option>
+                <option>Rabbi Yossi Chaikin (So Africa)</option>
+                <option>Rabbi Menachem M. Gluckowsky (Israel)</option>
+                <option>Dayan Levi Raskin (London)</option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-semibold text-slate-700">My Email</span>
+              <input type="email" placeholder="name@example.com" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none ring-brand-400 focus:ring-2" />
+            </label>
+            <label class="block">
+              <span class="mb-2 block text-sm font-semibold text-slate-700">My Phone</span>
+              <input type="text" placeholder="5551234567" class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none ring-brand-400 focus:ring-2" />
+            </label>
+            <label class="block sm:col-span-2">
+              <span class="mb-2 block text-sm font-semibold text-slate-700">My Question</span>
+              <textarea rows="6" placeholder="Write your question here..." class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 outline-none ring-brand-400 focus:ring-2"></textarea>
+            </label>
+          </div>
+
+          <div class="mt-4 rounded-2xl border border-brand-200 bg-brand-50 p-4 text-sm text-slate-700">
+            It is very important to realize that the rabbi is here for your benefit. The laws of Family Sanctity are sacred and complex, and the rabbi is there to guide you.
+          </div>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button onclick="toast('Question prepared for sending')" class="rounded-full bg-brand-500 px-5 py-3 font-semibold text-white transition hover:bg-brand-600">Send Question</button>
+            <button onclick="showSection('calendar')" class="rounded-full bg-white px-5 py-3 font-semibold text-slate-700 ring-1 ring-slate-200 transition hover:bg-slate-50">Cancel</button>
+          </div>
+        </div>
+
+        <div class="glass rounded-3xl p-6 shadow-soft lg:col-span-2">
+          <h3 class="text-lg font-black text-slate-900">Helpful note</h3>
+          <p class="mt-3 text-sm leading-6 text-slate-600">
+            Consider including the exact date, time, location, and any relevant background. This improves clarity and makes follow-up easier.
+          </p>
+          <div class="mt-6 rounded-2xl bg-slate-50 p-4">
+            <div class="text-sm font-semibold text-slate-500">Private status</div>
+            <div class="mt-1 text-2xl font-black text-slate-900">Draft only</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="section-hidden">
+      <div class="glass rounded-3xl p-6 shadow-soft">
+        <h2 class="text-3xl font-black text-slate-900">Settings</h2>
+        <p class="mt-2 text-slate-600">General preferences, reminders, and halachic settings.</p>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+          <div class="rounded-3xl border border-slate-200 bg-white p-5">
+            <h3 class="text-lg font-bold">General</h3>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <label class="block">
+                <span class="mb-2 block text-sm font-semibold text-slate-700">Email</span>
+                <input type="email" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400" />
+              </label>
+              <label class="block">
+                <span class="mb-2 block text-sm font-semibold text-slate-700">Language</span>
+                <select class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+                  <option>English</option>
+                  <option>עברית</option>
+                  <option>Русский</option>
+                  <option>Español</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-white p-5">
+            <h3 class="text-lg font-bold">Reminders</h3>
+            <div class="mt-4 grid gap-3">
+              <label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+                <input type="checkbox" checked class="h-4 w-4 accent-brand-500" />
+                <span>Preparatory days</span>
+              </label>
+              <label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+                <input type="checkbox" checked class="h-4 w-4 accent-brand-500" />
+                <span>Mikvah nights</span>
+              </label>
+              <label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+                <input type="checkbox" class="h-4 w-4 accent-brand-500" />
+                <span>Onahs</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button onclick="toast('Settings saved')" class="rounded-full bg-brand-500 px-5 py-3 font-semibold text-white">Save Changes</button>
+          <button onclick="toast('Account renewal flow opened')" class="rounded-full bg-white px-5 py-3 font-semibold text-slate-700 ring-1 ring-slate-200">Renew your Account</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="newFlow" class="section-hidden">
+      <div class="glass rounded-3xl p-6 shadow-soft">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-3xl font-black text-slate-900">Add a New Flow</h2>
+            <p class="mt-2 text-slate-600">A streamlined form for entering flow details.</p>
+          </div>
+          <button onclick="showSection('calendar')" class="rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">Back to Calendar</button>
+        </div>
+
+        <div class="mt-6 grid gap-4 lg:grid-cols-3">
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Date</span>
+            <input type="date" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Hour</span>
+            <input type="number" min="1" max="12" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Minute</span>
+            <input type="number" min="0" max="59" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+          <label class="block lg:col-span-2">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Location</span>
+            <input type="text" placeholder="City or zip code" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Cause</span>
+            <select class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+              <option>Start of menstrual cycle</option>
+              <option>Stain found on garment/body</option>
+              <option>Medical procedure</option>
+              <option>Birth of a son</option>
+              <option>Birth of a daughter</option>
+              <option>Miscarriage</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button onclick="toast('Flow added')" class="rounded-full bg-brand-500 px-5 py-3 font-semibold text-white">Add Flow</button>
+          <button onclick="showSection('calendar')" class="rounded-full bg-white px-5 py-3 font-semibold text-slate-700 ring-1 ring-slate-200">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="newMemo" class="section-hidden">
+      <div class="glass rounded-3xl p-6 shadow-soft">
+        <h2 class="text-3xl font-black text-slate-900">Add a New Memo</h2>
+        <div class="mt-6 grid gap-4">
+          <input type="text" placeholder="Memo title" class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          <textarea rows="5" placeholder="Write your memo..." class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400"></textarea>
+        </div>
+        <div class="mt-6 flex gap-3">
+          <button onclick="toast('Memo saved')" class="rounded-full bg-brand-500 px-5 py-3 font-semibold text-white">Add Memo</button>
+          <button onclick="showSection('calendar')" class="rounded-full bg-white px-5 py-3 font-semibold text-slate-700 ring-1 ring-slate-200">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="newTrip" class="section-hidden">
+      <div class="glass rounded-3xl p-6 shadow-soft">
+        <h2 class="text-3xl font-black text-slate-900">Add a New Trip</h2>
+        <div class="mt-6 grid gap-4 lg:grid-cols-2">
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Departure</span>
+            <input type="date" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Return</span>
+            <input type="date" class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+          <label class="block lg:col-span-2">
+            <span class="mb-2 block text-sm font-semibold text-slate-700">Destination</span>
+            <input type="text" placeholder="Select a city..." class="w-full rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          </label>
+        </div>
+        <div class="mt-6 flex gap-3">
+          <button onclick="toast('Trip added')" class="rounded-full bg-brand-500 px-5 py-3 font-semibold text-white">Add Trip</button>
+          <button onclick="showSection('calendar')" class="rounded-full bg-white px-5 py-3 font-semibold text-slate-700 ring-1 ring-slate-200">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="renew" class="section-hidden">
+      <div class="glass rounded-3xl p-6 shadow-soft">
+        <h2 class="text-3xl font-black text-slate-900">Renew your Account</h2>
+        <p class="mt-2 text-slate-600">Mock renewal page for premium feature access.</p>
+        <div class="mt-6 grid gap-4 md:grid-cols-2">
+          <input type="text" placeholder="Card number" class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          <input type="text" placeholder="CVV" class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          <input type="text" placeholder="First name" class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          <input type="text" placeholder="Last name" class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          <input type="text" value="25.00" class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+          <select class="rounded-2xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-brand-400">
+            <option>Expiration Month</option>
+            <option>01 - January</option>
+            <option>02 - February</option>
+            <option>03 - March</option>
+            <option>04 - April</option>
+            <option>05 - May</option>
+            <option>06 - June</option>
+            <option>07 - July</option>
+            <option>08 - August</option>
+            <option>09 - September</option>
+            <option>10 - October</option>
+            <option>11 - November</option>
+            <option>12 - December</option>
+          </select>
+        </div>
+        <div class="mt-6 flex gap-3">
+          <button onclick="toast('Subscription renewed')" class="rounded-full bg-amber-400 px-5 py-3 font-semibold text-slate-900">Renew Subscription</button>
+          <button onclick="showSection('calendar')" class="rounded-full bg-white px-5 py-3 font-semibold text-slate-700 ring-1 ring-slate-200">Cancel</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 hidden -translate-x-1/2 rounded-full bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-soft"></div>
+
+  <script>
+    const checklistGroups = [
+      {
+        title: "Basic Prep",
+        items: [
+          "Ask yourself: Have I made a Hefsek Taharah at least one week ago?",
+          "Have I made at least one bedikah on day 1 and day 7?",
+          "Remove all jewelry, elastics, clips and pins",
+          "Remove false teeth and removable dental apparatus",
+          "Remove false eyelashes and false nails",
+          "Remove band-aids",
+          "Remove all make-up",
+          "Remove all skin lotions"
+        ]
+      },
+      {
+        title: "Detailed Attention",
+        items: [
+          "Brush teeth; no particles of food should remain",
+          "Wash the entire body thoroughly",
+          "Ears and earring holes",
+          "Nose",
+          "Navel",
+          "Genital area – also within the folds",
+          "Underarms",
+          "Back",
+          "Between fingers/toes",
+          "The soles of feet",
+          "Wash hair with shampoo, without conditioners",
+          "Comb all hair while still wet"
+        ]
+      }
+    ];
+
+    const checklistState = {};
+
+    function renderCalendar() {
+      const body = document.getElementById("calendarBody");
+      const weeks = [
+        ["", "", "1", "2", "3", "4", "5"],
+        ["6", "7", "8", "9", "10", "11", "12"],
+        ["13", "14", "15", "16", "17", "18", "19"],
+        ["20", "21", "22", "23", "24", "25", "26"],
+        ["27", "28", "29", "", "", "", ""]
+      ];
+      body.innerHTML = weeks.map((week, wi) => `
+        <tr>
+          ${week.map((day, di) => `
+            <td class="day-pill h-24 rounded-2xl p-2 ${day ? "" : "opacity-30"}">
+              <div class="flex h-full flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] font-bold text-slate-500">${["Sat","Sun","Mon","Tue","Wed","Thu","Fri"][di]}</span>
+                  ${day === "9" ? '<span class="rounded-full bg-amber-300 px-2 py-1 text-[10px] font-black text-slate-900">Today</span>' : ""}
+                </div>
+                <div class="text-left">
+                  <div class="text-2xl font-black text-slate-900">${day || "&nbsp;"}</div>
+                  <div class="mt-1 text-[11px] text-slate-600">${day ? "Tammuz" : ""}</div>
+                </div>
+              </div>
+            </td>
+          `).join("")}
+        </tr>
+      `).join("");
+    }
+
+    function renderChecklist() {
+      const wrap = document.getElementById("checklistContainer");
+      wrap.innerHTML = checklistGroups.map((group, gi) => `
+        <div class="rounded-3xl border border-slate-200 bg-white p-5">
+          <h3 class="text-lg font-black text-slate-900">${group.title}</h3>
+          <div class="mt-4 space-y-3">
+            ${group.items.map((item, i) => {
+              const id = `c_${gi}_${i}`;
+              return `
+                <label class="check-item flex items-start gap-3 rounded-2xl bg-slate-50 p-3 transition hover:bg-slate-100">
+                  <input type="checkbox" class="mt-1 h-4 w-4 accent-brand-500" onchange="updateProgress()" id="${id}">
+                  <span class="flex-1 text-sm text-slate-700">${item}</span>
+                  <span class="check-mark mt-0.5 flex h-5 w-5 items-center justify-center rounded-full border border-slate-300 text-[10px] font-black text-transparent">✓</span>
+                </label>
+              `;
+            }).join("")}
+          </div>
+        </div>
+      `).join("");
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const boxes = [...document.querySelectorAll("#checklistContainer input[type='checkbox']")];
+      const checked = boxes.filter(b => b.checked).length;
+      const pct = boxes.length ? Math.round((checked / boxes.length) * 100) : 0;
+      document.getElementById("checkProgress").textContent = pct + "%";
+    }
+
+    function resetChecklist() {
+      document.querySelectorAll("#checklistContainer input[type='checkbox']").forEach(b => b.checked = false);
+      updateProgress();
+      toast("Checklist reset");
+    }
+
+    function showSection(id) {
+      document.querySelectorAll("main section").forEach(s => {
+        s.classList.remove("section-active");
+        s.classList.add("section-hidden");
+      });
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove("section-hidden");
+        el.classList.add("section-active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    let toastTimer;
+    function toast(message) {
+      const t = document.getElementById("toast");
+      t.textContent = message;
+      t.classList.remove("hidden");
+      t.style.opacity = "1";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        t.style.opacity = "0";
+        setTimeout(() => t.classList.add("hidden"), 180);
+      }, 1800);
+    }
+
+    function getChecklist() {
+      return {
+        "Basic Prep": [
+          "Ask yourself: Have I made a Hefsek Taharah at least one week ago?",
+          "Have I made at least one bedikah on day 1 and day 7?",
+          "Remove all jewelry, elastics, clips and pins",
+          "Remove false teeth and removable dental apparatus",
+          "Remove false eyelashes and false nails",
+          "Remove band-aids",
+          "Remove all make-up",
+          "Remove all skin lotions"
+        ],
+        "Detailed Attention": [
+          "Brush teeth; no particles of food should remain",
+          "Wash the entire body thoroughly",
+          "Ears and earring holes",
+          "Nose",
+          "Navel",
+          "Genital area – also within the folds",
+          "Underarms",
+          "Back",
+          "Between fingers/toes",
+          "The soles of feet",
+          "Wash hair with shampoo, without conditioners",
+          "Comb all hair while still wet"
+        ]
+      };
+    }
+
+    const store = window.store || {
+      enabled: true,
+      data: {},
+      get(k) { return this.data[k]; },
+      set(k, v) { this.data[k] = v; }
+    };
+
+    const Settings = {
+      getInstance() {
+        return {
+          _email1: "user@example.com",
+          _email2: "",
+          _phone: "5551234567",
+          _phone2: "",
+          _explain: false,
+          _language: "english",
+          _delay: 12,
+          _carry_chodesh: false
+        };
+      }
+    };
+
+    function is24hrs() { return false; }
+
+    function reminder_checkboxes() {
+      return `
+        <label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+          <input type="checkbox" class="h-4 w-4 accent-brand-500" />
+          <span>Remind me 12 hours before</span>
+        </label>
+        <label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+          <input type="checkbox" class="h-4 w-4 accent-brand-500" />
+          <span>Remind me 24 hours before</span>
+        </label>
+      `;
+    }
+
+    function filterCityList(element) {
+      return element;
+    }
+
+    const _RABBIS_ = [
+      ["Rabbi Sholom Ber Chaikin", "Cleveland"],
+      ["Rabbi Yossi Chaikin", "So Africa"],
+      ["Rabbi Menachem M. Gluckowsky", "Israel"],
+      ["Dayan Levi Raskin", "London"]
+    ];
+
+    const cal = { _selected_offset: 0 };
+
+    function initializeFlowBindings() {
+      const checklist = getChecklist();
+      let checklist_html = '';
+      let counter = 0;
+      for (let i in checklist) {
+        if (isNaN(parseInt(i))) checklist_html += '<h3 class="text-xl font-bold text-slate-900 mb-3">' + i + '</h3>';
+        checklist_html += '<fieldset class="mb-5 space-y-2">';
+        for (let j in checklist[i]) {
+          checklist_html += '<label class="flex items-center gap-3 rounded-2xl bg-slate-50 p-3"><input type="checkbox" id="checkbox-' + counter + '" class="custom prepCheckbox h-4 w-4 accent-brand-500" /><span class="text-sm text-slate-700">' + checklist[i][j] + '</span></label>';
+          counter++;
+        }
+        checklist_html += '</fieldset>';
+      }
+      const checklistForm = document.querySelector('#checklist form');
+      if (checklistForm) checklistForm.innerHTML = checklist_html;
+
+      const rabbis = _RABBIS_;
+      let rabbis_html = '<option></option>';
+      for (let i in rabbis) rabbis_html += '<option value="' + rabbis[i][0] + '">' + rabbis[i][0] + '</option>';
+      const rabbi = document.getElementById('rabbi');
+      if (rabbi) rabbi.innerHTML = rabbis_html;
+
+      const email = Settings.getInstance()._email1.includes('@') ? Settings.getInstance()._email1 : (Settings.getInstance()._email2.includes('@') ? Settings.getInstance()._email2 : '');
+      const askEmail = document.getElementById('ask_email');
+      if (askEmail) askEmail.value = email;
+      const askPhone = document.getElementById('ask_phone');
+      if (askPhone) askPhone.value = Settings.getInstance()._phone;
+
+      const email1 = document.getElementById('email1');
+      if (email1) email1.value = Settings.getInstance()._email1;
+
+      const expiryDate = document.getElementById('expiry_date');
+      const settings = store.get('mmcSettings') || { expired: 0, expiry: '' };
+      if (expiryDate) {
+        if (settings.expired > 0) expiryDate.style.color = '#400023', expiryDate.innerHTML = "<b>" + settings.expiry + "</b>";
+        else expiryDate.textContent = settings.expiry;
+      }
+
+      const explain = document.getElementById('explain');
+      if (explain && Settings.getInstance()._explain) explain.checked = true;
+
+      const languages = [{key:'russian',value:'Русский'},{key:'hebrew',value:'עברית'},{key:'english',value:'English'},{key:'spanish',value:'Español'}];
+      let language_html = '';
+      for (let i in languages) language_html += '<option value="' + languages[i].key + '" ' + (languages[i].key == Settings.getInstance()._language ? 'selected' : '') + '>' + languages[i].value + '</option>';
+      const language = document.getElementById('language');
+      if (language) language.innerHTML = language_html;
+
+      filterCityList(element = {data : {cityText: "#move_city", lat: '#MovelatitudeVal', long: '#MovelongitudeVal', parent: "#settings"}});
+
+      const delay = document.getElementById('delay');
+      if (delay) delay.value = Settings.getInstance()._delay;
+
+      const email2 = document.getElementById('email2');
+      const phone = document.getElementById('phone');
+      const phone2 = document.getElementById('phone2');
+      if (email2) email2.value = Settings.getInstance()._email2;
+      if (phone) phone.value = Settings.getInstance()._phone;
+      if (phone2) phone2.value = Settings.getInstance()._phone2;
+
+      const reminder = document.getElementById('reminder_checkboxes');
+      if (reminder) reminder.innerHTML = reminder_checkboxes();
+
+      const carryit = document.getElementById('carryit');
+      const dontcarry = document.getElementById('dontcarry');
+      if (Settings.getInstance()._carry_chodesh) {
+        if (carryit) carryit.checked = true;
+      } else {
+        if (dontcarry) dontcarry.checked = true;
+      }
+    }
+
+    renderCalendar();
+    renderChecklist();
+    initializeFlowBindings();
+  </script>
+</body>
+</html>

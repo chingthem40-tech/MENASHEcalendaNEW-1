@@ -1,0 +1,442 @@
+# MENASHE PLATFORM
+
+# SPR-035 — MENASHE EXPERIENCE UNIFICATION
+
+## Engineering Sprint Instruction (ESI)
+
+### Role
+
+Act as:
+
+* Principal Product Designer
+* Principal UX Architect
+* Senior React Architect
+* Senior Mobile UX Engineer
+* Three.js Experience Designer
+* Design System Architect
+* Performance Engineer
+* Accessibility Engineer
+
+This is a **product unification sprint**, not a feature sprint.
+
+---
+
+# Mission
+
+Transform the Menashe Platform into one unified experience.
+
+The objective is that every screen feels like it belongs to the same application.
+
+Users should never feel they are moving between disconnected tools.
+
+Instead they should feel they are journeying through one living platform.
+
+This sprint focuses entirely on experience quality.
+
+Do NOT introduce unrelated features.
+
+Do NOT redesign backend architecture.
+
+Do NOT modify database schemas unless required to fix an existing UX defect.
+
+---
+
+# Part 1 — Home Experience
+
+## Goal
+
+Redesign the Home experience without rebuilding the application.
+
+Preserve existing functionality.
+
+Reorganize presentation and hierarchy.
+
+---
+
+## Desired User Journey
+
+Greeting
+
+↓
+
+Today's Hebrew Date
+
+↓
+
+Today's Learning
+
+↓
+
+Today's Community
+
+↓
+
+Enter Memorial Sanctuary
+
+↓
+
+Recent Activity
+
+---
+
+## Design Principles
+
+Remove dashboard clutter.
+
+Reduce the number of competing cards.
+
+Use generous spacing.
+
+One primary action per viewport.
+
+Use progressive disclosure instead of showing everything immediately.
+
+Every section should naturally lead to the next.
+
+The Home page should feel calm, welcoming and spiritual.
+
+---
+
+# Part 2 — Memorial Sanctuary Experience
+
+Use the completed Sanctuary audit as the implementation reference.
+
+Improve the existing SanctuaryWorld.
+
+Do NOT create a second implementation.
+
+Enhance the current production implementation only.
+
+---
+
+## Required Improvements
+
+### Truth & Trust
+
+Remove fabricated activity notifications.
+
+Remove fabricated statistics.
+
+Never display fictional users.
+
+Never display fictional memorial activity.
+
+If real data is unavailable, display:
+
+"No recent activity yet."
+
+Truth is preferred over simulated engagement.
+
+---
+
+### Memorial Presentation
+
+Display real memorial photos whenever available.
+
+Fallback order:
+
+1. Memorial photo
+2. Initials avatar
+3. Memorial icon
+
+Never default directly to emoji.
+
+---
+
+### Typography
+
+Raise all text below accessibility standards.
+
+Minimum readable size:
+
+11px
+
+Improve spacing and hierarchy.
+
+Reduce visual density.
+
+---
+
+### Mobile
+
+All forms must remain usable while the keyboard is open.
+
+Prevent keyboard overlap.
+
+Respect safe areas.
+
+Support 320–480px widths gracefully.
+
+No clipped panels.
+
+No overlapping layouts.
+
+---
+
+### Internationalization
+
+Every visible Sanctuary string must use the translation system.
+
+No hardcoded English.
+
+Support:
+
+English
+
+Thadou Kuki
+
+Future Hebrew additions
+
+---
+
+### Performance
+
+Reduce unnecessary re-renders.
+
+Memoize expensive panels where appropriate.
+
+Extract inline styles into reusable CSS where practical.
+
+Maintain smooth frame rates.
+
+---
+
+# Part 3 — Mobile Experience Unification
+
+The mobile application should feel like one premium product.
+
+Not a collection of utilities.
+
+---
+
+## Standardize
+
+Spacing
+
+Typography
+
+Corner radius
+
+Button hierarchy
+
+Icon style
+
+Card style
+
+Glass surfaces
+
+Shadows
+
+Transitions
+
+Loading states
+
+Empty states
+
+Error states
+
+Search bars
+
+Bottom sheets
+
+Floating buttons
+
+Navigation patterns
+
+---
+
+## Animation
+
+Subtle.
+
+Purposeful.
+
+Fast.
+
+No decorative animations.
+
+Respect prefers-reduced-motion.
+
+---
+
+# Part 4 — Shared Design System
+
+Consolidate visual language.
+
+There must be only one source of truth.
+
+---
+
+## Colors
+
+One primary gold.
+
+One accent palette.
+
+One neutral palette.
+
+One semantic success color.
+
+One warning color.
+
+One error color.
+
+Remove duplicate gold definitions.
+
+---
+
+## Typography
+
+One heading scale.
+
+One body scale.
+
+One caption scale.
+
+Consistent line heights.
+
+Consistent font weights.
+
+---
+
+## Components
+
+One button system.
+
+One card system.
+
+One glassmorphism style.
+
+One loading skeleton.
+
+One badge system.
+
+One input system.
+
+One modal system.
+
+One spacing scale.
+
+One elevation system.
+
+---
+
+## Design Tokens
+
+Move repeated values into shared design tokens.
+
+Avoid hardcoded visual values wherever possible.
+
+---
+
+# Part 5 — Truth & Trust
+
+This is the highest priority of the sprint.
+
+The Menashe Platform represents a real community.
+
+Never fabricate community activity.
+
+Never fabricate memorial statistics.
+
+Never fabricate user names.
+
+Never fabricate engagement.
+
+If information is unavailable:
+
+Show an honest empty state.
+
+Users trust honesty more than artificial activity.
+
+---
+
+# Version 1 Experience Principles
+
+Every improvement must reinforce these five values:
+
+Beautiful
+
+Fast
+
+Honest
+
+Stable
+
+Emotional
+
+If a proposed change does not strengthen at least one of these values, it should not be implemented in this sprint.
+
+---
+
+# Constraints
+
+Do NOT add unrelated features.
+
+Do NOT redesign business logic.
+
+Do NOT modify APIs unless required by UX improvements.
+
+Do NOT introduce duplicate components.
+
+Reuse existing architecture whenever possible.
+
+Preserve existing functionality.
+
+Improve presentation, consistency, accessibility, responsiveness, and usability.
+
+---
+
+# Deliverables
+
+Produce:
+
+1. Unified Home experience
+
+2. Unified Memorial Sanctuary experience
+
+3. Unified mobile design language
+
+4. Shared design system improvements
+
+5. Accessibility improvements
+
+6. Performance optimizations
+
+7. Updated documentation:
+
+* docs/ExperienceGuidelines.md
+* docs/DesignSystem.md
+* docs/SPR-035-Implementation.md
+
+---
+
+# Success Criteria
+
+✅ One cohesive visual language across the platform
+
+✅ Home page feels calm and intentional
+
+✅ Sanctuary feels sacred and trustworthy
+
+✅ Mobile layouts work correctly on 320–480px devices
+
+✅ No fabricated activity or statistics remain
+
+✅ Consistent typography, spacing, colors, and components
+
+✅ No duplicate implementations
+
+✅ No TypeScript errors
+
+✅ No performance regressions
+
+✅ Existing functionality preserved
+
+---
+
+# Stop Condition
+
+Complete implementation, verify functionality, update documentation, and stop.
+
+Do not begin the next sprint until SPR-035 has been reviewed and approved.

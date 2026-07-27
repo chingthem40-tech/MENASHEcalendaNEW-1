@@ -1,0 +1,220 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-008 — Home Migration (H-004)
+
+ROLE
+
+Act as a Senior React Architect and Senior Frontend Engineer.
+
+Continue executing the approved Home Migration Blueprint.
+
+This sprint begins the first visual component extraction.
+
+Do NOT redesign the UI.
+
+Do NOT modify business logic.
+
+Do NOT change APIs.
+
+---
+
+# OBJECTIVE
+
+Extract only PRESENTATIONAL components from Home.tsx.
+
+Business logic must remain inside the custom hooks created during H-003.
+
+Home.tsx should become thinner without changing application behavior.
+
+---
+
+# TASK 1
+
+Identify purely visual sections.
+
+Candidates include:
+
+* Greeting banner
+* Welcome card
+* Calendar summary card
+* Holiday information card
+* Torah thought card
+* Quick action grid
+* Glass information cards
+* Empty states
+* Loading placeholders
+
+Do NOT extract components that own complex state.
+
+---
+
+# TASK 2
+
+Create:
+
+src/pages/home/components/
+
+Suggested structure:
+
+cards/
+
+sections/
+
+widgets/
+
+shared/
+
+index.ts
+
+Organize components by responsibility.
+
+---
+
+# TASK 3
+
+Extract the safest components first.
+
+Priority:
+
+1. Pure display cards
+
+2. Static information panels
+
+3. Reusable glass cards
+
+4. Empty states
+
+5. Loading skeletons
+
+Leave interactive components inside Home.tsx for now.
+
+---
+
+# TASK 4
+
+Props
+
+Every extracted component must:
+
+Receive typed props.
+
+Avoid unnecessary prop drilling.
+
+Never directly access global contexts unless required.
+
+Prefer receiving data from Home.tsx.
+
+---
+
+# TASK 5
+
+Styling
+
+Do NOT modify styling.
+
+Keep existing Tailwind classes.
+
+Maintain identical appearance.
+
+---
+
+# TASK 6
+
+Update Home.tsx
+
+Replace extracted JSX with component imports.
+
+Do NOT move business logic.
+
+Do NOT move API calls.
+
+Do NOT move hooks.
+
+Home.tsx remains the orchestrator.
+
+---
+
+# TASK 7
+
+Documentation
+
+Update:
+
+docs/Architecture.md
+
+Document:
+
+* Components extracted
+* Responsibilities
+* Estimated remaining extractions
+* Component hierarchy
+
+---
+
+# TASK 8
+
+Verification
+
+Confirm:
+
+✓ UI identical
+
+✓ No visual regressions
+
+✓ Components fully typed
+
+✓ No new TypeScript errors
+
+✓ Home still orchestrates data only
+
+---
+
+# CONSTRAINTS
+
+Do NOT redesign Home.
+
+Do NOT modify APIs.
+
+Do NOT move business logic.
+
+Do NOT change routing.
+
+Do NOT modify authentication.
+
+Do NOT modify Memorial Sanctuary.
+
+Only presentation extraction.
+
+---
+
+# DELIVERABLES
+
+Provide:
+
+1. Components created
+
+2. Files modified
+
+3. Home.tsx line reduction
+
+4. Remaining extraction candidates
+
+5. Verification summary
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✓ UI unchanged
+
+✓ Business logic remains inside hooks
+
+✓ Components reusable
+
+✓ Home.tsx significantly smaller
+
+✓ No regressions
+
+Stop after completing H-004 and wait for Chief Architect review.

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Menashe Calendar"
+version = "1.0.0"
+id = "artifacts/menashe-calendar"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21636
+
+[services.development]
+run = "pnpm --filter @workspace/menashe-calendar run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/menashe-calendar", "run", "build" ]
+publicDir = "artifacts/menashe-calendar/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21636"
+BASE_PATH = "/"

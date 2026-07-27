@@ -1,0 +1,187 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-018 — Premium Mobile UX Renaissance
+
+ROLE
+
+Act as a Senior UX Architect, Senior Product Designer, Senior React Engineer, and Mobile Experience Specialist.
+
+This sprint is entirely focused on improving the user experience of the Memorial Sanctuary.
+
+No backend work.
+
+No database work.
+
+No new APIs.
+
+No new domain models.
+
+No new business features.
+
+Refine what already exists.
+
+---
+
+## OBJECTIVE
+
+Transform the Memorial Sanctuary from a functional prototype into a premium mobile-first experience.
+
+Every design decision must reduce cognitive load and increase feelings of peace, clarity, and respect.
+
+---
+
+## TASK 1 — Layout Audit
+
+Audit every visible UI element.
+
+Classify each as:
+
+Required
+
+Helpful
+
+Optional
+
+Remove anything that distracts from remembrance.
+
+---
+
+## TASK 2 — Visual Hierarchy
+
+Establish one clear reading order.
+
+Recommended flow:
+
+Header
+
+Hero
+
+Search
+
+Featured Memorial
+
+Primary Actions
+
+World Preview
+
+Recent Activity
+
+Bottom Navigation
+
+---
+
+## TASK 3 — Spacing System
+
+Adopt a consistent spacing scale.
+
+Increase whitespace.
+
+Avoid crowded cards.
+
+Maintain generous margins.
+
+---
+
+## TASK 4 — Typography
+
+Create a clear hierarchy.
+
+Large title.
+
+Readable body.
+
+Consistent button labels.
+
+Accessible line heights.
+
+---
+
+## TASK 5 — Navigation
+
+Simplify.
+
+Reduce simultaneous navigation options.
+
+Avoid duplicated actions.
+
+---
+
+## TASK 6 — World Integration
+
+Treat the current 3D valley as a background experience.
+
+Do not let it dominate the interface.
+
+Create a viewport that previews the sanctuary instead of filling the entire screen.
+
+---
+
+## TASK 7 — Mobile Optimization
+
+Every screen must feel designed specifically for one-handed mobile use.
+
+Buttons must be comfortably reachable.
+
+Cards must adapt cleanly to narrow displays.
+
+---
+
+## TASK 8 — Motion
+
+Reduce unnecessary movement.
+
+Animations should communicate state changes, not attract attention.
+
+Keep transitions subtle.
+
+---
+
+## TASK 9 — Accessibility
+
+Improve contrast.
+
+Increase tap targets.
+
+Support larger text.
+
+Preserve RTL compatibility.
+
+---
+
+## TASK 10 — Documentation
+
+Create:
+
+docs/MobileUXGuidelines.md
+
+Include:
+
+Layout principles
+
+Spacing system
+
+Typography scale
+
+Component rules
+
+Future design language
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Cleaner interface
+
+✓ Better mobile usability
+
+✓ Strong visual hierarchy
+
+✓ Improved accessibility
+
+✓ Existing features preserved
+
+No new business features.
+
+Stop after completion.

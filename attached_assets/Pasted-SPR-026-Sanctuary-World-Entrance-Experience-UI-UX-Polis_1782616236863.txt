@@ -1,0 +1,260 @@
+SPR-026 — Sanctuary World Entrance Experience (UI/UX Polish)
+ROLE
+
+Act as a Senior Product Designer, React UI Architect, Mobile UX Engineer, and Frontend Refactoring Engineer.
+
+MISSION
+
+Redesign the entrance experience of the existing SanctuaryWorld (MemorialSanctuaryModal) so it feels like entering a sacred memorial garden instead of opening a control panel.
+
+Do NOT redesign the backend.
+
+Do NOT change APIs.
+
+Do NOT change database models.
+
+This is a presentation-layer sprint only.
+
+DESIGN PHILOSOPHY
+
+The Sanctuary should feel like:
+
+entering sacred ground
+peaceful
+emotional
+elegant
+premium
+respectful
+uncluttered
+
+The UI must complement the 3D valley instead of hiding it.
+
+The Three.js world is the hero.
+
+The UI supports it.
+
+1. Replace the Welcome Panel
+
+The current left-side Welcome panel permanently blocks too much of the 3D world.
+
+Replace it with a collapsible Entrance Card.
+
+Requirements:
+
+compact by default
+expands only when tapped
+can be dismissed
+remembers its collapsed state
+never permanently blocks the 3D scene
+
+Collapsed example:
+
+🕊 Memorial Sanctuary
+A Valley of Remembrance
+
+▼ Tap to Open
+
+Expanded:
+
+welcome message
+short description
+daily intention
+today's Hebrew date
+Enter Sanctuary button
+
+NOT:
+
+giant statistics
+oversized cards
+excessive text
+2. Hero Background
+
+Do NOT use a static image.
+
+Instead:
+
+Use the existing live Three.js valley as the background.
+
+The UI should float above it using:
+
+glassmorphism
+blur
+translucent panels
+subtle gold borders
+
+The world should always remain visible.
+
+3. Search
+
+Move Search to the top center.
+
+Large.
+
+Floating.
+
+Always accessible.
+
+Use rounded premium styling.
+
+4. Statistics
+
+The current large statistic blocks dominate the screen.
+
+Replace them with subtle chips.
+
+Example:
+
+🕯 24,832 Candles
+
+🌸 1,454 Flowers
+
+👥 18,338 Visitors
+
+These should occupy one horizontal row.
+
+5. Collections
+
+Replace large vertical lists with elegant horizontal portrait strips.
+
+Sections:
+
+Recently Remembered
+
+Recently Lit
+
+Upcoming Yahrzeit
+
+Most Visited
+
+Community Picks
+
+Each portrait card should feel like a framed memorial.
+
+6. Light a Candle
+
+Integrate the existing donation flow.
+
+Do NOT create a new backend.
+
+Reuse existing APIs.
+
+Inside the Candle panel include:
+
+Name
+
+Message
+
+Anonymous toggle
+
+Donation options:
+
+○ Free / Donate Later
+
+○ ₹108 — Tikkun Olam
+
+○ ₹360 — Zecher Livracha
+
+○ ₹1080 — Eternal Light
+
+Large gold confirmation button.
+
+7. Mobile Optimization
+
+Priority target:
+
+320–480px
+
+No horizontal scrolling.
+
+44px minimum touch targets.
+
+Safe-area support.
+
+Keyboard never covers inputs.
+
+8. Performance
+
+Do NOT reduce FPS.
+
+Do NOT rerender Three.js unnecessarily.
+
+Memoize expensive components.
+
+Lazy-load portrait strips.
+
+Avoid unnecessary React renders.
+
+9. Accessibility
+
+Maintain:
+
+ARIA labels
+
+Keyboard navigation
+
+Reduced motion support
+
+RTL compatibility
+
+High contrast text
+
+10. Preserve Existing Features
+
+Do NOT remove:
+
+3D Valley
+
+Candles
+
+Flowers
+
+Music
+
+Tributes
+
+Search
+
+Memorial Browser
+
+Memorial Profile
+
+Backend integrations
+
+11. Refactoring Rules
+
+Do NOT create another giant component.
+
+Extract reusable UI components where appropriate.
+
+Avoid duplicated JSX.
+
+Avoid duplicated state.
+
+Reuse existing hooks.
+
+12. Success Criteria
+
+The Sanctuary should feel like:
+
+entering sacred ground
+premium mobile experience
+emotionally welcoming
+visually calm
+faster
+cleaner
+easier to navigate
+
+The UI must reveal the beauty of the 3D valley instead of covering it.
+
+Deliverables
+Redesigned Sanctuary entrance
+Collapsible Welcome panel
+Floating premium search
+Integrated donation card
+Improved mobile layout
+Updated architecture documentation
+Before/After screenshots
+Performance verification
+Zero regressions
+
+Stop after implementation and verification.

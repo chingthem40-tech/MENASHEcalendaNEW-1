@@ -1,0 +1,164 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-002 — Authentication Security Hardening
+
+ROLE
+
+Act as a Senior Security Engineer and Senior Full Stack Engineer.
+
+The goal is to strengthen authentication and authorization without changing the application's appearance or normal user experience.
+
+---
+
+## IMPORTANT
+
+Do NOT redesign the UI.
+
+Do NOT modify the Memorial Sanctuary.
+
+Do NOT modify Hebrew Calendar logic.
+
+Do NOT modify Zmanim.
+
+Do NOT change the database schema unless absolutely required for secure authorization.
+
+Do NOT introduce breaking API changes.
+
+Preserve backward compatibility for legitimate users.
+
+---
+
+# OBJECTIVE
+
+Replace insecure administrator authentication with proper Clerk-based authorization while maintaining existing administrator functionality.
+
+---
+
+# TASK 1
+
+Locate every use of:
+
+* hardcoded admin PIN
+* admin bypass logic
+* environment PIN fallback
+* admin helper utilities
+
+Generate a complete inventory before making changes.
+
+---
+
+# TASK 2
+
+Replace PIN-based administrator authorization with Clerk authentication.
+
+Administrator routes must require:
+
+* authenticated Clerk session
+* administrator role or permission
+* centralized authorization middleware
+
+Avoid duplicated authorization logic.
+
+---
+
+# TASK 3
+
+Create a reusable authorization layer.
+
+Example responsibilities:
+
+* require authenticated user
+* require administrator
+* future support for moderator roles
+* future support for community administrators
+
+Keep authorization logic centralized.
+
+---
+
+# TASK 4
+
+Audit every administrator endpoint.
+
+Verify each endpoint correctly enforces authorization.
+
+Document any endpoint that cannot yet be secured because of architectural limitations.
+
+---
+
+# TASK 5
+
+Create an Audit Log interface.
+
+Do NOT implement storage yet.
+
+Prepare a reusable interface that future sprints can connect to persistent storage.
+
+Audit events should include examples such as:
+
+* administrator login
+* administrator action
+* permission denied
+* role verification
+
+---
+
+# TASK 6
+
+Remove obsolete authentication code.
+
+Delete unused PIN validation helpers only after confirming they are no longer referenced.
+
+Do not remove unrelated utilities.
+
+---
+
+# TASK 7
+
+Testing
+
+Verify:
+
+✓ Normal users continue to function.
+
+✓ Administrators retain access.
+
+✓ Unauthorized users cannot access administrator functionality.
+
+✓ Existing authentication continues to work.
+
+✓ No regressions.
+
+---
+
+# DELIVERABLES
+
+Provide:
+
+1. Files modified
+
+2. Authorization architecture summary
+
+3. Remaining security risks
+
+4. Recommended next sprint
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✓ No hardcoded administrator PIN remains.
+
+✓ All administrator routes require authenticated authorization.
+
+✓ Authorization logic is centralized.
+
+✓ Existing users are unaffected.
+
+✓ No UI changes.
+
+✓ No feature regressions.
+
+When complete, stop and wait for Chief Architect review before making additional security changes.

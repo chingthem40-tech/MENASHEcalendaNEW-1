@@ -1,0 +1,170 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-010 — Platform Hardening (API Security)
+
+ROLE
+
+Act as a Senior Backend Security Engineer.
+
+This sprint focuses ONLY on API security.
+
+Do NOT redesign UI.
+
+Do NOT modify Home.
+
+Do NOT change Memorial Sanctuary.
+
+Do NOT introduce new features.
+
+---
+
+## OBJECTIVE
+
+Audit and secure every backend API endpoint.
+
+Authentication is already centralized.
+
+Now ensure authorization, validation, and error handling are consistently enforced.
+
+---
+
+## TASK 1
+
+Inventory every API endpoint.
+
+Classify:
+
+* Public
+* Authenticated
+* Admin
+* Community Admin
+* Internal
+
+Produce an updated endpoint registry.
+
+---
+
+## TASK 2
+
+Verify authorization.
+
+Every endpoint must explicitly declare its authorization requirements.
+
+Remove any implicit assumptions.
+
+---
+
+## TASK 3
+
+Input validation.
+
+Review request bodies, params, and query strings.
+
+Use existing validation patterns where available.
+
+Identify any missing validation and implement it consistently.
+
+---
+
+## TASK 4
+
+Standardize API error responses.
+
+Adopt a consistent response structure for:
+
+* Validation errors
+* Unauthorized
+* Forbidden
+* Not found
+* Internal errors
+
+Do not change successful response payloads.
+
+---
+
+## TASK 5
+
+Rate limiting review.
+
+Document endpoints requiring rate limiting.
+
+Implement only where straightforward and low-risk.
+
+Document remaining recommendations.
+
+---
+
+## TASK 6
+
+Update documentation.
+
+Append to:
+
+docs/SecurityChecklist.md
+
+Include:
+
+* Endpoint classification
+* Authorization summary
+* Remaining security risks
+* Recommended follow-up work
+
+---
+
+## TASK 7
+
+Verification
+
+Confirm:
+
+✓ Existing clients still function.
+
+✓ No API regressions.
+
+✓ Authentication unchanged.
+
+✓ UI unaffected.
+
+---
+
+## CONSTRAINTS
+
+Do NOT modify frontend.
+
+Do NOT redesign APIs.
+
+Do NOT change database schema.
+
+Do NOT introduce breaking changes.
+
+Stay focused on security hardening.
+
+---
+
+## DELIVERABLES
+
+1. Endpoint inventory
+
+2. Files modified
+
+3. Security improvements
+
+4. Remaining risks
+
+5. Verification summary
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ API behavior preserved.
+
+✓ Authorization consistent.
+
+✓ Validation improved.
+
+✓ Documentation updated.
+
+Stop after completion and wait for Chief Architect review.

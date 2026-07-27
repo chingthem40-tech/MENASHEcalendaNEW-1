@@ -1,0 +1,265 @@
+# MENASHE PLATFORM
+
+## ENGINEERING SPRINT INSTRUCTION
+
+### SPR-004 — Home Architecture Blueprint
+
+ROLE
+
+Act as a Senior Product Architect, UX Architect, and React Architect.
+
+This sprint is for architecture only.
+
+Do NOT redesign the interface.
+
+Do NOT move components yet.
+
+Do NOT create new features.
+
+---
+
+## OBJECTIVE
+
+Analyze the existing Home.tsx (~5200 lines) and produce a production-ready modular blueprint.
+
+The goal is to define the future component architecture before any refactoring begins.
+
+---
+
+## TASK 1
+
+Analyze Home.tsx completely.
+
+Identify every major responsibility.
+
+Examples:
+
+* Header
+* Welcome section
+* Calendar
+* Quick Actions
+* Memorial preview
+* Community feed
+* Torah section
+* Holiday widgets
+* AI Rav entry
+* Settings entry
+* Navigation helpers
+* Floating Action Buttons
+* Dialog triggers
+* State management
+* Data loading
+
+Document each responsibility.
+
+---
+
+## TASK 2
+
+Create a proposed component hierarchy.
+
+Example:
+
+Home/
+
+HomeLayout
+
+HomeHeader
+
+HomeHero
+
+QuickActions
+
+Today's Calendar
+
+Upcoming Holidays
+
+Memorial Preview
+
+Community Preview
+
+Learning Center
+
+Bottom Navigation
+
+Shared Widgets
+
+Hooks
+
+Services
+
+State
+
+Utilities
+
+Keep responsibilities small and cohesive.
+
+---
+
+## TASK 3
+
+Identify reusable widgets.
+
+Examples:
+
+Cards
+
+Lists
+
+Buttons
+
+Glass panels
+
+Statistics
+
+Preview cards
+
+Search components
+
+Action rows
+
+Empty states
+
+Loading states
+
+---
+
+## TASK 4
+
+Identify state ownership.
+
+Determine:
+
+Which state belongs:
+
+Inside component
+
+Shared hook
+
+Global context
+
+Server state
+
+Document every recommendation.
+
+---
+
+## TASK 5
+
+Create a dependency graph.
+
+Show:
+
+Which components depend on others.
+
+Avoid circular dependencies.
+
+---
+
+## TASK 6
+
+Create a migration plan.
+
+Do NOT move code.
+
+Instead describe:
+
+Phase 1
+
+Phase 2
+
+Phase 3
+
+Estimated effort
+
+Rollback strategy
+
+Risk level
+
+---
+
+## TASK 7
+
+Identify performance opportunities.
+
+Examples:
+
+Lazy loading
+
+Memoization
+
+Code splitting
+
+Virtualization
+
+Context splitting
+
+Bundle optimization
+
+Do NOT implement them.
+
+Only document.
+
+---
+
+## TASK 8
+
+Update:
+
+docs/Architecture.md
+
+Include the new Home Architecture Blueprint.
+
+---
+
+## CONSTRAINTS
+
+NO UI changes.
+
+NO routing changes.
+
+NO feature additions.
+
+NO database changes.
+
+NO API changes.
+
+NO component extraction.
+
+Architecture only.
+
+---
+
+## DELIVERABLES
+
+Provide:
+
+1. Component hierarchy
+
+2. State ownership map
+
+3. Dependency graph
+
+4. Migration roadmap
+
+5. Reusable widget inventory
+
+6. Performance opportunities
+
+7. Estimated future file structure
+
+---
+
+## ACCEPTANCE CRITERIA
+
+✓ Application behaves exactly the same.
+
+✓ No files moved.
+
+✓ No features added.
+
+✓ No UI modified.
+
+✓ Architecture blueprint completed.
+
+When finished, stop and wait for Chief Architect review.

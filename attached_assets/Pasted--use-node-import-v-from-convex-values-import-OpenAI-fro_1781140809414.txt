@@ -1,0 +1,103 @@
+"use node";
+
+import { v } from "convex/values";
+import OpenAI from "openai";
+import { action } from "./_generated/server";
+import { internal } from "./_generated/api";
+
+const openai = new OpenAI({
+  baseURL: "https://ai-gateway.hercules.app/v1",
+  apiKey: process.env.HERCULES_API_KEY,
+});
+
+export type ParshaInsight = {
+  parshaName: string;
+  hebrewName: string;
+  summary: string;
+  keyTheme: string;
+  didYouKnow: string;
+  bneiManasheConnection: string;
+  bookName: string;
+  chaptersRange: string;
+};
+
+// Public action: get insights for a parsha, using cache if available
+export const getParshaInsights = action({
+  args: {
+    parshaName: v.string(),
+    hebrewName: v.string(),
+    bookName: v.string(),
+    chaptersRange: v.string(),
+  },
+  handler: async (ctx, args): Promise<ParshaInsight> => {
+    // Check cache first
+    const cached = await ctx.runQuery(internal.torahCache.getCachedInsight, {
+      parshaName: args.parshaName,
+    });
+    if (cached) {
+      return {
+        parshaName: cached.parshaName,
+        hebrewName: cached.hebrewName,
+        summary: cached.summary,
+        keyTheme: cached.keyTheme,
+        didYouKnow: cached.didYouKnow,
+        bneiManasheConnection: cached.bneiManasheConnection,
+        bookName: cached.bookName,
+        chaptersRange: cached.chaptersRange,
+      };
+    }
+
+    const prompt = `You are a knowledgeable Jewish scholar providing Torah insights specifically relevant to the Bnei Menashe community - the Jewish community from Northeast India (Manipur and Mizoram) who are descendants of the lost tribe of Menashe and have made aliyah to Israel.
+
+Provide insights for Parashat ${args.parshaName} (${args.hebrewName}), ${args.bookName} ${args.chaptersRange}.
+
+Respond with a JSON object with exactly these fields:
+- summary: A 3-4 sentence overview of the parsha's main narrative and themes
+- keyTheme: One central spiritual or ethical lesson from this parsha (2-3 sentences)
+- didYouKnow: An interesting or lesser-known fact about this parsha (1-2 sentences)
+- bneiManasheConnection: How this parsha's themes resonate with the Bnei Menashe journey - their identity, aliyah, return to their people, connection to Israel, or their unique spiritual journey (2-3 sentences)
+
+Return only valid JSON.`;
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "openai/gpt-5-mini",
+        reasoning_effort: "minimal",
+        messages: [{ role: "user", content: prompt }],
+      });
+
+      const content = response.choices[0]?.message?.content ?? "{}";
+      const jsonMatch =
+        content.match(/```json\s*([\s\S]*?)```/) ??
+        content.match(/```\s*([\s\S]*?)```/);
+      const jsonStr = jsonMatch ? jsonMatch[1] : content;
+      const parsed = JSON.parse(jsonStr) as {
+        summary: string;
+        keyTheme: string;
+        didYouKnow: string;
+        bneiManasheConnection: string;
+      };
+
+      const result: ParshaInsight = {
+        parshaName: args.parshaName,
+        hebrewName: args.hebrewName,
+        summary: parsed.summary ?? "",
+        keyTheme: parsed.keyTheme ?? "",
+        didYouKnow: parsed.didYouKnow ?? "",
+        bneiManasheConnection: parsed.bneiManasheConnection ?? "",
+        bookName: args.bookName,
+        chaptersRange: args.chaptersRange,
+      };
+
+      // Cache for future use
+      await ctx.runMutation(internal.torahCache.cacheInsight, result);
+
+      return result;
+    } catch (error) {
+      if (error instanceof OpenAI.APIError) {
+        throw new Error(`AI Gateway Error: ${error.message}`);
+      }
+      throw new Error("Failed to generate Torah insights. Please try again.");
+    }
+  },
+});

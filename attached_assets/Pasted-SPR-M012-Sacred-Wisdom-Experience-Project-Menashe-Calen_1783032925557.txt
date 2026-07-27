@@ -1,0 +1,366 @@
+SPR-M012 — Sacred Wisdom Experience
+Project: Menashe Calendar Platform
+Platform: Mobile V1
+Version: 1.0
+
+Priority:
+🔴 PLATFORM FLAGSHIP
+
+Chief Architect:
+Samuel & ChatGPT
+
+=========================================================
+MISSION
+=========================================================
+
+Build the official Sacred Wisdom experience.
+
+This is NOT a chatbot.
+
+This is NOT ChatGPT inside Menashe.
+
+This is Rav Menashe.
+
+A trusted learning companion that helps users
+understand,
+discover,
+and continue learning.
+
+The experience should feel calm,
+wise,
+respectful,
+and deeply connected to the rest of the platform.
+
+=========================================================
+PLATFORM PRINCIPLE
+=========================================================
+
+Rav Menashe never replaces Rabbis.
+
+Rav Menashe never gives final Halachic rulings.
+
+Rav Menashe teaches.
+
+Explains.
+
+Guides.
+
+Encourages study.
+
+Always points users toward learning.
+
+=========================================================
+ARCHITECTURE
+=========================================================
+
+Reuse without modification:
+
+✓ Existing AI APIs
+
+✓ Shared Core
+
+✓ Mobile Shell
+
+✓ MMDL
+
+✓ MEL
+
+✓ Component Library
+
+✓ Authentication
+
+✓ Existing Chat Infrastructure
+
+Do NOT duplicate AI logic.
+
+=========================================================
+DO NOT
+=========================================================
+
+❌ Modify Web Application
+
+❌ Modify AI backend
+
+❌ Modify Streaming APIs
+
+❌ Duplicate Conversation Logic
+
+❌ Modify Database
+
+❌ Create Separate AI System
+
+=========================================================
+SECTION 1
+
+Hero
+
+---------------------------------------------------------
+
+Warm sapphire artwork.
+
+Title:
+
+Rav Menashe
+
+Subtitle:
+
+"Learn.
+Ask.
+Discover."
+
+Friendly but respectful.
+
+=========================================================
+SECTION 2
+
+Suggested Questions
+
+---------------------------------------------------------
+
+Beautiful cards.
+
+Examples:
+
+What is today's Parashah?
+
+Explain today's Daf Yomi.
+
+When is candle lighting?
+
+What is the meaning of this prayer?
+
+Tell me about this holiday.
+
+No empty chat screen.
+
+=========================================================
+SECTION 3
+
+Conversation
+
+---------------------------------------------------------
+
+Premium conversation UI.
+
+Excellent typography.
+
+Comfortable spacing.
+
+Readable bubbles.
+
+Markdown rendering.
+
+Source references if available.
+
+=========================================================
+SECTION 4
+
+Learning Suggestions
+
+---------------------------------------------------------
+
+After every response,
+
+suggest:
+
+Related Parashah
+
+Related Siddur
+
+Related Calendar
+
+Related Holiday
+
+Related Daf Yomi
+
+Encourage exploration.
+
+=========================================================
+SECTION 5
+
+Continue Learning
+
+---------------------------------------------------------
+
+Recent conversations.
+
+Resume.
+
+Delete.
+
+Pin important chats.
+
+=========================================================
+SECTION 6
+
+Learning Library
+
+---------------------------------------------------------
+
+Suggested topics.
+
+Judaism
+
+Hebrew
+
+Prayer
+
+Torah
+
+Bnei Menashe
+
+Calendar
+
+History
+
+=========================================================
+SECTION 7
+
+Reflection
+
+---------------------------------------------------------
+
+One thoughtful quotation.
+
+No clutter.
+
+Quiet ending.
+
+=========================================================
+VISUAL LANGUAGE
+=========================================================
+
+Follow MEL.
+
+Warm sapphire palette.
+
+Subtle gradients.
+
+Large whitespace.
+
+Readable typography.
+
+Premium cards.
+
+=========================================================
+INTERACTION
+=========================================================
+
+Streaming messages.
+
+Typing indicator.
+
+Gentle message appearance.
+
+No flashy effects.
+
+Reduced Motion respected.
+
+=========================================================
+ACCESSIBILITY
+=========================================================
+
+VoiceOver.
+
+TalkBack.
+
+Dynamic Type.
+
+48dp targets.
+
+Readable markdown.
+
+=========================================================
+PERFORMANCE
+=========================================================
+
+Virtualize long conversations.
+
+Memoize message rows.
+
+Lazy-load history.
+
+Maintain 60 FPS.
+
+=========================================================
+DELIVERABLES
+=========================================================
+
+Provide:
+
+• Folder Tree
+
+• Screen Architecture
+
+• Component Reuse Map
+
+• AI Flow Diagram
+
+• Accessibility Report
+
+• Animation Summary
+
+• Performance Report
+
+• Screenshots
+
+• Verification Checklist
+
+=========================================================
+VERIFY
+=========================================================
+
+Confirm:
+
+✅ Web untouched
+
+✅ Existing AI backend reused
+
+✅ Shared Core reused
+
+✅ Mobile Shell reused
+
+✅ MMDL followed
+
+✅ MEL followed
+
+✅ Component Library reused
+
+✅ TypeScript passes
+
+✅ Production build passes
+
+=========================================================
+STOP
+=========================================================
+
+Stop after Sacred Wisdom.
+
+Do NOT begin:
+
+Community
+
+Identity
+
+Settings
+
+Notifications
+
+Widgets
+
+=========================================================
+CHIEF ARCHITECT FINAL PRINCIPLE
+=========================================================
+
+Rav Menashe should feel like a trusted guide.
+
+The goal is not to answer every question.
+
+The goal is to encourage understanding,
+curiosity,
+and continued learning.
+
+Users should leave conversations
+better informed,
+more confident,
+and inspired to continue their Jewish journey.
