@@ -1,0 +1,281 @@
+Chief Architect
+
+MEP-604
+
+MISSION
+
+Prepare the Menashe Platform for Version 1.0 production launch.
+
+This is a RELEASE READINESS sprint.
+
+DO NOT add new features.
+
+DO NOT redesign the UI.
+
+DO NOT introduce new libraries unless required to resolve a verified production blocker.
+
+DO NOT modify database schemas unless fixing a launch blocker.
+
+==================================================
+
+OBJECTIVE
+
+Verify that the application is stable, secure, performant, and ready for real users.
+
+==================================================
+
+PHASE 1 — RELEASE BLOCKERS
+
+Resolve every remaining launch blocker.
+
+1.
+
+Object Storage ACL
+
+Implement ownership enforcement for private objects.
+
+Requirements:
+
+✓ Verify requesting user owns the object
+
+✓ Return 403 for unauthorized access
+
+✓ Preserve public object access
+
+✓ Prevent path guessing attacks
+
+--------------------------------------------------
+
+2.
+
+TypeScript
+
+Achieve a clean production typecheck.
+
+Fix remaining issues.
+
+If an issue cannot be fixed:
+
+Document why.
+
+--------------------------------------------------
+
+3.
+
+Production Secrets
+
+Verify every required environment variable exists.
+
+Authentication
+
+AI
+
+Razorpay
+
+Push Notifications
+
+Storage
+
+Email
+
+Report any missing secrets.
+
+==================================================
+
+PHASE 2 — END-TO-END VERIFICATION
+
+Verify complete user journeys.
+
+AUTHENTICATION
+
+✓ Sign Up
+
+✓ Sign In
+
+✓ Session persistence
+
+✓ Password reset
+
+✓ Email verification
+
+✓ Logout
+
+--------------------------------------------------
+
+PREMIUM
+
+✓ Upgrade
+
+✓ Payment success
+
+✓ Payment failure
+
+✓ Premium activation
+
+✓ Premium persistence
+
+✓ Restore purchase (where supported)
+
+--------------------------------------------------
+
+AI
+
+✓ Sacred Wisdom
+
+✓ Streaming
+
+✓ Error handling
+
+✓ Missing-key behaviour
+
+✓ Timeout behaviour
+
+--------------------------------------------------
+
+CALENDAR
+
+✓ Hebrew dates
+
+✓ Zmanim
+
+✓ Holiday calculations
+
+✓ Torah readings
+
+✓ Offline behaviour (if implemented)
+
+--------------------------------------------------
+
+COMMUNITY
+
+✓ Prayer requests
+
+✓ Memorials
+
+✓ Sacred Memory
+
+✓ Notifications
+
+==================================================
+
+PHASE 3 — PERFORMANCE
+
+Measure:
+
+✓ Initial load
+
+✓ Navigation latency
+
+✓ Bundle size
+
+✓ Lazy loading
+
+✓ Duplicate API requests
+
+✓ Memory leaks
+
+✓ Unnecessary re-renders
+
+Report optimisation opportunities.
+
+==================================================
+
+PHASE 4 — RELEASE QUALITY
+
+Verify:
+
+✓ No placeholder screens
+
+✓ No dead-end navigation
+
+✓ No broken routes
+
+✓ No console errors
+
+✓ No unhandled promise rejections
+
+✓ No exposed stack traces
+
+✓ Responsive layouts
+
+✓ Dark mode consistency
+
+✓ Accessibility labels on interactive controls
+
+==================================================
+
+PHASE 5 — BUILD VERIFICATION
+
+Verify:
+
+✓ Web production build
+
+✓ API server build
+
+✓ Expo development build
+
+✓ Expo production build configuration
+
+✓ Environment configuration
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Launch Readiness Score (0–100)
+
+2.
+
+Critical blockers
+
+3.
+
+High-priority issues
+
+4.
+
+Medium-priority issues
+
+5.
+
+Low-priority issues
+
+6.
+
+Performance summary
+
+7.
+
+Security summary
+
+8.
+
+Production configuration summary
+
+9.
+
+Release recommendation:
+
+READY
+
+or
+
+NOT READY
+
+10.
+
+Recommended next milestone.
+
+IMPORTANT
+
+This sprint is VERIFICATION ONLY.
+
+No feature development.
+
+No visual redesign.
+
+No architecture changes beyond resolving verified launch blockers.
+
+STOP.
