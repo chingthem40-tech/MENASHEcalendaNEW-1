@@ -120,7 +120,7 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
   const selectedDayData = selectedDay !== null ? days.find(d => d.gregorianDay === selectedDay) : null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div className="screen-enter" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
 
       {/* ── App Header ── */}
       <div className="app-header">
@@ -162,13 +162,8 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
           }}>
             <button
               onClick={prevMonth}
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: "rgba(0,0,0,0.18)", border: "1px solid rgba(0,0,0,0.25)",
-                cursor: "pointer", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 20, lineHeight: 1, fontWeight: 300,
-              }}
+              className="cal-month-nav-btn"
+              aria-label="Previous month"
             >‹</button>
 
             <div style={{ textAlign: "center", flex: 1 }}>
@@ -190,13 +185,8 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
 
             <button
               onClick={nextMonth}
-              style={{
-                width: 32, height: 32, borderRadius: 8,
-                background: "rgba(0,0,0,0.18)", border: "1px solid rgba(0,0,0,0.25)",
-                cursor: "pointer", color: "#fff",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 20, lineHeight: 1, fontWeight: 300,
-              }}
+              className="cal-month-nav-btn"
+              aria-label="Next month"
             >›</button>
           </div>
 
@@ -283,6 +273,7 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
                 <div
                   key={i}
                   onClick={() => handleDayClick(day.gregorianDay)}
+                  className={isSelected && !day.isToday ? "cal-cell-selected" : ""}
                   style={{
                     minHeight: 66,
                     padding: "5px 5px 4px",
@@ -294,9 +285,7 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
                     flexDirection: "column",
                     alignItems: "flex-start",
                     position: "relative",
-                    outline: isSelected && !day.isToday ? "2px solid #d4a843" : "none",
-                    outlineOffset: "-2px",
-                    transition: "background 0.12s",
+                    transition: "background 0.14s ease, box-shadow 0.14s ease",
                   }}
                 >
                   {/* Candle icon for Fridays */}
@@ -449,12 +438,7 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
             </div>
             <button
               onClick={() => { setMonth(today.getMonth()); setYear(today.getFullYear()); setSelectedDay(null); }}
-              style={{
-                padding: "5px 13px", borderRadius: 99,
-                background: "rgba(212,168,67,0.15)", border: "1px solid rgba(212,168,67,0.4)",
-                cursor: "pointer", color: "#d4a843",
-                fontSize: 10, fontWeight: 800, letterSpacing: "0.08em",
-              }}
+              className="cal-today-btn"
             >TODAY</button>
           </div>
         </div>

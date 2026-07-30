@@ -1,0 +1,279 @@
+Chief Architect
+
+PEP-701
+
+MISSION
+
+The Menashe Platform engineering phase is complete.
+
+This sprint begins PRODUCT EXCELLENCE.
+
+Your objective is NOT to add features.
+
+Your objective is to make every existing screen feel polished, premium, calm and joyful.
+
+Think like:
+
+Apple
+
+Linear
+
+Notion
+
+Arc Browser
+
+Raycast
+
+The app should feel crafted.
+
+==================================================
+
+DO NOT
+
+❌ Add features
+
+❌ Change database
+
+❌ Change APIs
+
+❌ Change authentication
+
+❌ Change navigation structure
+
+❌ Change business logic
+
+==================================================
+
+OBJECTIVE
+
+Audit EVERY existing screen.
+
+Improve only presentation and interaction quality.
+
+==================================================
+
+CHECKLIST
+
+HOME
+
+Improve:
+
+✓ spacing
+
+✓ visual hierarchy
+
+✓ card rhythm
+
+✓ typography
+
+✓ breathing room
+
+✓ premium empty states
+
+✓ loading skeletons
+
+✓ subtle animations
+
+==================================================
+
+CALENDAR
+
+Polish:
+
+✓ date transitions
+
+✓ holiday cards
+
+✓ event badges
+
+✓ prayer times
+
+✓ scroll behaviour
+
+✓ selection animations
+
+==================================================
+
+TORAH
+
+Polish:
+
+✓ Parasha cards
+
+✓ reading progress
+
+✓ completion states
+
+✓ study streak visuals
+
+✓ loading states
+
+==================================================
+
+MEMORIAL
+
+Polish:
+
+✓ candle interactions
+
+✓ peaceful atmosphere
+
+✓ transitions
+
+✓ typography
+
+✓ memory cards
+
+✓ loading experience
+
+==================================================
+
+COMMUNITY
+
+Polish:
+
+✓ Prayer Board
+
+✓ Discussions
+
+✓ Empty states
+
+✓ Success confirmations
+
+✓ Error states
+
+==================================================
+
+SETTINGS
+
+Polish:
+
+✓ spacing
+
+✓ section grouping
+
+✓ icons
+
+✓ toggles
+
+✓ premium feel
+
+==================================================
+
+GLOBAL
+
+Improve:
+
+Animations
+
+✓ page transitions
+
+✓ modal transitions
+
+✓ button press
+
+✓ hover
+
+✓ focus
+
+✓ loading
+
+✓ shimmer skeletons
+
+==================================================
+
+MICROINTERACTIONS
+
+Improve:
+
+✓ pull to refresh
+
+✓ swipe
+
+✓ success animation
+
+✓ copy confirmation
+
+✓ bookmark confirmation
+
+✓ save confirmation
+
+✓ delete confirmation
+
+==================================================
+
+VISUAL CONSISTENCY
+
+Ensure:
+
+✓ identical corner radius
+
+✓ identical spacing scale
+
+✓ identical shadows
+
+✓ identical icon sizing
+
+✓ identical typography hierarchy
+
+✓ identical button behaviour
+
+==================================================
+
+ACCESSIBILITY
+
+Improve:
+
+✓ touch targets
+
+✓ focus visibility
+
+✓ keyboard navigation
+
+✓ aria labels
+
+✓ screen reader support
+
+==================================================
+
+PERFORMANCE
+
+Do not reduce performance.
+
+No animation should block interaction.
+
+Respect prefers-reduced-motion.
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Screens polished
+
+2.
+
+Visual improvements
+
+3.
+
+Interaction improvements
+
+4.
+
+Accessibility improvements
+
+5.
+
+Performance impact
+
+6.
+
+Design Consistency Score
+
+7.
+
+Overall Product Polish Score
+
+STOP.

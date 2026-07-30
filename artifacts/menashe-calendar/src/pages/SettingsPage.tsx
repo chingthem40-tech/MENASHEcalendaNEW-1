@@ -227,21 +227,25 @@ const SettingsPage = memo(function SettingsPage({
   function Toggle({ on, onToggle, disabled }: { on: boolean; onToggle: () => void; disabled?: boolean }) {
     return (
       <div
+        role="switch"
+        aria-checked={on}
+        tabIndex={disabled ? -1 : 0}
         onClick={disabled ? undefined : onToggle}
+        onKeyDown={disabled ? undefined : (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); onToggle(); } }}
+        className="settings-toggle-track"
         style={{
-          width: 44, height: 26, borderRadius: 13,
           background: disabled ? "var(--elevated)" : on ? "var(--gold)" : "var(--elevated)",
-          position: "relative", cursor: disabled ? "not-allowed" : "pointer",
-          transition: "background 0.2s", border: "1px solid var(--border)",
+          cursor: disabled ? "not-allowed" : "pointer",
           opacity: disabled ? 0.5 : 1,
         }}
       >
-        <div style={{
-          position: "absolute", top: 3, left: on ? 21 : 3, width: 18, height: 18,
-          borderRadius: "50%",
-          background: disabled ? "var(--text-muted)" : on ? "#1a0f00" : "var(--text-muted)",
-          transition: "left 0.2s",
-        }} />
+        <div
+          className="settings-toggle-thumb"
+          style={{
+            left: on ? 21 : 3,
+            background: disabled ? "var(--text-muted)" : on ? "#1a0f00" : "var(--text-muted)",
+          }}
+        />
       </div>
     );
   }
@@ -250,11 +254,16 @@ const SettingsPage = memo(function SettingsPage({
     return (
       <div
         onClick={onClick}
-        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", cursor: onClick ? "pointer" : "default" }}
+        className={onClick ? "settings-row settings-row-clickable" : "settings-row"}
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "14px 16px", cursor: onClick ? "pointer" : "default",
+          transition: "background 0.15s",
+        }}
       >
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>{label}</div>
-          {sub && <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{sub}</div>}
+          {sub && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{sub}</div>}
         </div>
         {right}
       </div>
@@ -596,7 +605,7 @@ const SettingsPage = memo(function SettingsPage({
   }
 
   return (
-    <div style={{ padding: "0 0 4px" }}>
+    <div className="screen-enter" style={{ padding: "0 0 4px" }}>
 
       <div className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

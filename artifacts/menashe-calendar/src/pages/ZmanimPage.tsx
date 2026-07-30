@@ -171,7 +171,7 @@ const ZmanimPage = memo(function ZmanimPage({ location, onInfo, onLocationClick,
   ];
 
   return (
-    <div style={{ padding: "0 0 4px" }}>
+    <div className="screen-enter" style={{ padding: "0 0 4px" }}>
       {/* Header */}
       <div className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

@@ -23,13 +23,13 @@ export default function QuickActionGrid({
   return (
     <div className="quick-action-grid" style={{ marginBottom: 12 }}>
       {/* Holidays */}
-      <div className="quick-action" onClick={onShowHolidays}>
+      <div className="quick-action stagger-item" onClick={onShowHolidays}>
         <div className="quick-action-icon" style={{ background: "rgba(59,130,246,0.13)", border: "1px solid rgba(59,130,246,0.18)", borderRadius: 12 }}>📅</div>
         <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)", lineHeight: 1.3 }}>Holidays {hebrewYear}</div>
       </div>
 
       {/* Daf Yomi */}
-      <div className="quick-action" onClick={isPremium ? onShowDafYomi : onShowPremium} style={{ position: "relative" }}>
+      <div className="quick-action stagger-item" onClick={isPremium ? onShowDafYomi : onShowPremium} style={{ position: "relative" }}>
         <div style={{ position: "relative", display: "inline-block" }}>
           <div
             className="quick-action-icon"
@@ -60,7 +60,7 @@ export default function QuickActionGrid({
       </div>
 
       {/* More Tools */}
-      <div className="quick-action" onClick={onMoreTools}>
+      <div className="quick-action stagger-item" onClick={onMoreTools}>
         <div className="quick-action-icon" style={{ background: "rgba(168,85,247,0.13)", border: "1px solid rgba(168,85,247,0.18)", borderRadius: 12 }}>🔧</div>
         <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)", lineHeight: 1.3 }}>{t.homeMoreTools}</div>
       </div>

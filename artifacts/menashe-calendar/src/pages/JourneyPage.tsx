@@ -276,7 +276,7 @@ const JourneyPage = memo(function JourneyPage({
   }
 
   return (
-    <div style={{ padding: "16px 16px 100px", maxWidth: 600, margin: "0 auto" }}>
+    <div className="screen-enter" style={{ padding: "16px 16px 100px", maxWidth: 600, margin: "0 auto" }}>
 
       {/* ── ① Profile Hero ─────────────────────────────────────────────── */}
       <div style={{

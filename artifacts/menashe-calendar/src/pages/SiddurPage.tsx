@@ -89,7 +89,7 @@ const SiddurPage = memo(function SiddurPage({ onReadBook, onAdmin, refreshKey, i
   const premiumBookCount = books.filter(b => b.isPremium).length;
 
   return (
-    <div style={{ padding: "0 0 4px" }}>
+    <div className="screen-enter" style={{ padding: "0 0 4px" }}>
       <style>{`
         @keyframes siddurLockPulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0); }
@@ -154,10 +154,10 @@ const SiddurPage = memo(function SiddurPage({ onReadBook, onAdmin, refreshKey, i
 
       <div style={{ padding: "16px 16px 0" }}>
         {/* Hero */}
-        <div style={{ background: "linear-gradient(135deg, #0f1e38, #1a2a4a)", borderRadius: 16, padding: 18, marginBottom: 14, border: "1px solid rgba(212,168,67,0.2)" }}>
-          <div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontSize: 22, color: GOLD, marginBottom: 4 }}>סִפְרִיַּת הַסִּדּוּר</div>
-          <div style={{ fontSize: 18, fontWeight: 800, color: "white", marginBottom: 6 }}>Siddur Library</div>
-          <div style={{ fontSize: 13, color: "#94a3b8" }}>Sacred texts, prayers & community publications for Bnei Menashe</div>
+        <div className="siddur-hero stagger-item">
+          <div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontSize: 24, color: GOLD, marginBottom: 4, lineHeight: 1.2 }}>סִפְרִיַּת הַסִּדּוּר</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 6 }}>Siddur Library</div>
+          <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>Sacred texts, prayers &amp; community publications for Bnei Menashe</div>
         </div>
 
         {/* Ask Rav Menashe — AI Torah companion */}
@@ -312,24 +312,29 @@ const SiddurPage = memo(function SiddurPage({ onReadBook, onAdmin, refreshKey, i
 
         {/* Books grid */}
         {loading ? (
-          <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>📚</div>
-            <div style={{ fontSize: 13 }}>Loading library…</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[1, 2, 3, 4].map(i => <BookCardSkeleton key={i} />)}
           </div>
         ) : filteredBooks.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 40, color: "var(--text-muted)" }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>📭</div>
-            <div style={{ fontSize: 13 }}>No books in this category yet</div>
+          <div className="card empty-state-premium">
+            <div className="esp-icon">📭</div>
+            <div className="esp-title">No books here yet</div>
+            <div className="esp-sub">
+              {activeCategory === "All"
+                ? "The library is empty. Check back soon for new sacred texts."
+                : `No books in "${activeCategory}" yet. Try another category.`}
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {filteredBooks.map(book => (
+            {filteredBooks.map((book, idx) => (
               <BookCard
                 key={book.id}
                 book={book}
                 userIsPremium={isPremium}
                 onRead={() => onReadBook(book)}
                 onShowPremium={onShowPremium}
+                animationDelay={Math.min(idx * 45, 340)}
               />
             ))}
           </div>
@@ -343,23 +348,43 @@ const SiddurPage = memo(function SiddurPage({ onReadBook, onAdmin, refreshKey, i
 
 export default SiddurPage;
 
+function BookCardSkeleton() {
+  return (
+    <div className="card" style={{ padding: 16, display: "flex", gap: 14, alignItems: "flex-start" }}>
+      <div className="skeleton-shimmer" style={{ width: 60, height: 80, borderRadius: 8, flexShrink: 0 }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 9 }}>
+        <div className="skeleton-shimmer" style={{ height: 16, borderRadius: 6, width: "72%" }} />
+        <div style={{ display: "flex", gap: 6 }}>
+          <div className="skeleton-shimmer" style={{ height: 20, borderRadius: 99, width: 64 }} />
+          <div className="skeleton-shimmer" style={{ height: 20, borderRadius: 99, width: 48 }} />
+        </div>
+        <div className="skeleton-shimmer" style={{ height: 11, borderRadius: 5, width: "90%" }} />
+        <div className="skeleton-shimmer" style={{ height: 11, borderRadius: 5, width: "65%" }} />
+        <div className="skeleton-shimmer" style={{ height: 32, borderRadius: 8, width: 110, marginTop: 2 }} />
+      </div>
+    </div>
+  );
+}
+
 function BookCard({
-  book, userIsPremium, onRead, onShowPremium,
+  book, userIsPremium, onRead, onShowPremium, animationDelay = 0,
 }: {
   book: Book;
   userIsPremium: boolean;
   onRead: () => void;
   onShowPremium: () => void;
+  animationDelay?: number;
 }) {
   const locked = book.isPremium && !userIsPremium;
 
   return (
     <div
-      className="card"
+      className="card stagger-item"
       style={{
         padding: 16, display: "flex", gap: 14, alignItems: "flex-start",
         border: locked ? "1px solid rgba(212,168,67,0.22)" : undefined,
         background: locked ? "rgba(212,168,67,0.03)" : undefined,
+        animationDelay: `${animationDelay}ms`,
       }}
     >
       {/* Cover */}
@@ -450,12 +475,13 @@ function BookCard({
         {locked ? (
           <button
             onClick={onShowPremium}
+            className="book-read-btn"
             style={{
-              padding: "7px 18px", borderRadius: 8, cursor: "pointer",
               background: "linear-gradient(90deg, #6b4800, #b8860b, #d4a843, #b8860b, #6b4800)",
               backgroundSize: "200% auto",
-              color: "#1a0f00", fontSize: 12, fontWeight: 800,
-              border: "none", display: "flex", alignItems: "center", gap: 6,
+              color: "#1a0f00",
+              border: "none",
+              display: "flex", alignItems: "center", gap: 6,
             }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a0f00" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -467,11 +493,10 @@ function BookCard({
         ) : (
           <button
             onClick={onRead}
+            className="book-read-btn"
             style={{
-              padding: "7px 18px", borderRadius: 8, cursor: "pointer",
               background: book.isPremium ? "linear-gradient(135deg, #b8860b, #d4a843)" : "var(--elevated)",
               color: book.isPremium ? "#1a0f00" : "var(--text-primary)",
-              fontSize: 12, fontWeight: 700,
               border: book.isPremium ? "none" : "1px solid var(--border)",
             }}
           >

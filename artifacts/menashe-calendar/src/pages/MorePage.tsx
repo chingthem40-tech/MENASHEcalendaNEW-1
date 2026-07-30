@@ -296,6 +296,7 @@ export default function MorePage({
 
   return (
     <div
+      className="screen-enter"
       style={{
         minHeight: "100dvh",
         background: "var(--bg-primary)",
