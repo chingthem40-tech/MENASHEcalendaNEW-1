@@ -46,7 +46,14 @@ function getAppName() {
 }
 
 function serveManifest(platform, res) {
-  const manifestPath = path.join(STATIC_ROOT, platform, "manifest.json");
+  // Caller already restricts platform to "ios" | "android"; resolve + containment
+  // check here is defence-in-depth against any future call-site change.
+  const manifestPath = path.resolve(STATIC_ROOT, platform, "manifest.json");
+  if (!manifestPath.startsWith(STATIC_ROOT + path.sep)) {
+    res.writeHead(403, { "content-type": "text/plain" });
+    res.end("Forbidden");
+    return;
+  }
 
   if (!fs.existsSync(manifestPath)) {
     res.writeHead(404, { "content-type": "application/json" });
@@ -82,17 +89,34 @@ function serveLandingPage(req, res, landingPageTemplate, appName) {
 }
 
 function serveStaticFile(urlPath, res) {
-  const safePath = path.normalize(urlPath).replace(/^(\.\.(\/|\\|$))+/, "");
-  const filePath = path.join(STATIC_ROOT, safePath);
+  // Reject double-encoded traversal attempts (e.g. %252e%252e) that survive
+  // the URL parser's single-pass decode. new URL() already normalises
+  // single-encoded sequences, so a second decodeURIComponent catches the rest.
+  let decoded;
+  try {
+    decoded = decodeURIComponent(urlPath);
+  } catch {
+    res.writeHead(403, { "content-type": "text/plain" });
+    res.end("Forbidden");
+    return;
+  }
 
-  if (!filePath.startsWith(STATIC_ROOT)) {
-    res.writeHead(403);
+  // Strip ALL leading separators so path.resolve anchors at STATIC_ROOT, then
+  // resolve to an absolute path. path.resolve handles ../, ./, and
+  // absolute-path inputs uniformly — no manual regex stripping needed.
+  const relative = decoded.replace(/^[/\\]+/, "");
+  const filePath = path.resolve(STATIC_ROOT, relative);
+
+  // Containment check with path.sep boundary prevents prefix-sibling attacks
+  // (e.g. a directory /static-build-evil/ matching startsWith(/static-build)).
+  if (!filePath.startsWith(STATIC_ROOT + path.sep)) {
+    res.writeHead(403, { "content-type": "text/plain" });
     res.end("Forbidden");
     return;
   }
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-    res.writeHead(404);
+    res.writeHead(404, { "content-type": "text/plain" });
     res.end("Not Found");
     return;
   }

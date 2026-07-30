@@ -1,0 +1,227 @@
+Chief Architect
+
+MEP-603E
+
+MISSION
+
+Prepare the Menashe Platform for secure production deployment.
+
+This sprint is SECURITY ONLY.
+
+Do NOT redesign the UI.
+
+Do NOT add new features.
+
+Do NOT modify business logic.
+
+Do NOT change database schemas unless required for security.
+
+Do NOT modify authentication flows unless fixing a verified security issue.
+
+==================================================
+
+PRIORITY P0 (Production Blockers)
+
+1.
+
+Fix BOTH Path Traversal findings.
+
+Files:
+
+artifacts/menashe-mobile/server/serve.js
+
+Reported locations:
+
+• Line ~59
+
+• Line ~102
+
+Requirements:
+
+✓ Use path.resolve()
+
+✓ Normalize requested paths
+
+✓ Restrict access to one approved root directory
+
+✓ Reject any path escaping that root
+
+✓ Reject encoded traversal attempts
+
+✓ Return HTTP 403 for invalid paths
+
+✓ Preserve existing valid behaviour
+
+==================================================
+
+2.
+
+Review every file-serving endpoint.
+
+Verify:
+
+• No arbitrary file reads
+
+• No directory traversal
+
+• No unrestricted downloads
+
+• No unintended filesystem exposure
+
+==================================================
+
+PRIORITY P1
+
+Dependency Review
+
+Current finding:
+
+brace-expansion 2.1.4
+
+Do NOT blindly upgrade to v5.
+
+Instead:
+
+• Identify every dependent package.
+
+• Determine whether upgrading is safe.
+
+• If safe:
+
+Upgrade.
+
+If not:
+
+Document why 2.1.4 remains.
+
+Never introduce breaking changes solely to satisfy a scanner.
+
+==================================================
+
+PRIORITY P2
+
+Weak Hash Review
+
+File:
+
+.agents/skills/brainstorming/scripts/server.cjs
+
+Determine whether MD5/SHA-1 is used for:
+
+• Security
+
+• Authentication
+
+• Passwords
+
+• Tokens
+
+OR
+
+Only cache/build tooling.
+
+If security-related:
+
+Replace with SHA-256.
+
+If development-only:
+
+Document and leave unchanged.
+
+==================================================
+
+SECURITY VERIFICATION
+
+Verify:
+
+✓ Authentication middleware
+
+✓ Authorization guards
+
+✓ Input validation
+
+✓ File serving
+
+✓ Object storage access
+
+✓ Environment variable handling
+
+✓ Secrets are never logged
+
+✓ Admin routes remain protected
+
+==================================================
+
+QUALITY RULES
+
+Never reduce functionality.
+
+Never expose filesystem paths.
+
+Never expose stack traces.
+
+Never expose secrets.
+
+Keep all existing APIs compatible.
+
+==================================================
+
+TESTING
+
+Run:
+
+• TypeScript
+
+• Security scan
+
+• Expo
+
+• Web
+
+• API server
+
+Verify:
+
+No regressions.
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Files modified
+
+2.
+
+Security issues fixed
+
+3.
+
+Security issues intentionally deferred
+
+4.
+
+Dependency review result
+
+5.
+
+Hash review result
+
+6.
+
+TypeScript status
+
+7.
+
+Production security score
+
+8.
+
+Remaining production blockers
+
+9.
+
+Is MEP-603E COMPLETE?
+
+STOP.
