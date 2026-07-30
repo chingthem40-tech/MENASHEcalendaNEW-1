@@ -1,0 +1,185 @@
+Chief Architect
+
+MEP-604B
+
+MISSION
+
+The Menashe Platform has completed all code-side production hardening.
+
+Production secrets have now been configured.
+
+This sprint is VERIFICATION ONLY.
+
+Do NOT redesign UI.
+
+Do NOT add features.
+
+Do NOT refactor code unless a verified production failure is discovered.
+
+==================================================
+
+OBJECTIVE
+
+Certify the Menashe Platform for Version 1.0 Release.
+
+==================================================
+
+VERIFY
+
+AUTHENTICATION
+
+✓ Clerk initializes
+
+✓ Sign Up
+
+✓ Sign In
+
+✓ Logout
+
+✓ Session persistence
+
+✓ Protected routes
+
+✓ Admin routes
+
+--------------------------------------------------
+
+AI
+
+Verify:
+
+✓ Provider connection
+
+✓ Streaming
+
+✓ Error handling
+
+✓ Timeout recovery
+
+✓ User-friendly failures
+
+--------------------------------------------------
+
+PAYMENTS
+
+Verify:
+
+✓ Razorpay config
+
+✓ Order creation
+
+✓ Payment success
+
+✓ Payment cancellation
+
+✓ Signature verification
+
+✓ Premium activation
+
+✓ Premium persistence
+
+--------------------------------------------------
+
+PUSH
+
+Verify:
+
+✓ Subscription
+
+✓ Permission request
+
+✓ Broadcast
+
+✓ Individual notification
+
+✓ Delivery
+
+--------------------------------------------------
+
+OBJECT STORAGE
+
+Verify:
+
+✓ Public objects
+
+✓ Private objects
+
+✓ Unauthorized access returns 403
+
+==================================================
+
+PERFORMANCE
+
+Measure:
+
+✓ Initial load
+
+✓ Route transitions
+
+✓ Bundle size
+
+✓ API latency
+
+✓ Lazy loading
+
+✓ Memory usage
+
+==================================================
+
+QUALITY
+
+Verify:
+
+✓ No console errors
+
+✓ No promise rejections
+
+✓ No broken routes
+
+✓ No placeholder actions
+
+✓ Accessibility
+
+==================================================
+
+BUILD
+
+Verify:
+
+✓ Web Production Build
+
+✓ API Build
+
+✓ Expo Build
+
+✓ Environment configuration
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Production Verification Report
+
+2.
+
+Any failed verification
+
+3.
+
+Remaining blockers
+
+4.
+
+Launch Readiness Score
+
+5.
+
+RELEASE READY
+
+or
+
+NOT READY
+
+STOP.
