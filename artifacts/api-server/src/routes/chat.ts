@@ -43,7 +43,7 @@ const chatBodySchema = z.object({
 });
 
 /* ── POST /chat ─────────────────────────────────────────────────────────── */
-router.post("/chat", aiRateLimiter, async (req, res) => {
+router.post("/chat", requireAuth, aiRateLimiter, async (req, res) => {
   const parsed = chatBodySchema.safeParse(req.body);
   if (!parsed.success) {
     return apiError.badRequest(res, "Invalid messages", parsed.error.issues);

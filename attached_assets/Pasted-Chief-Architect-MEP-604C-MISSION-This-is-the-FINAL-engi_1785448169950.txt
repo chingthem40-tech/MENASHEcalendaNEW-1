@@ -1,0 +1,237 @@
+Chief Architect
+
+MEP-604C
+
+MISSION
+
+This is the FINAL engineering sprint before Release Candidate.
+
+Resolve every remaining verified production blocker.
+
+DO NOT redesign the UI.
+
+DO NOT add new features.
+
+DO NOT refactor working code unless required to resolve a verified blocker.
+
+DO NOT change database schemas.
+
+Keep all existing APIs compatible.
+
+==================================================
+
+OBJECTIVE
+
+Achieve Release Candidate (RC1) status.
+
+==================================================
+
+P0 — AI SECURITY
+
+Protect the AI chat endpoint.
+
+Current issue:
+
+/api/chat accepts anonymous requests.
+
+Implement:
+
+✓ Apply requireAuth middleware
+
+OR
+
+If anonymous access is intentionally required:
+
+• Add strict IP/user rate limiting
+
+• Daily quota
+
+• Abuse protection
+
+• Clear documentation explaining why authentication is not required
+
+Verify:
+
+✓ Anonymous users cannot abuse AI quota
+
+✓ Authenticated users continue to work normally
+
+==================================================
+
+P0 — CLERK PRODUCTION
+
+Verify production Clerk configuration.
+
+Confirm:
+
+✓ Production publishable key
+
+✓ Production secret key
+
+✓ Session validation
+
+✓ Token verification
+
+✓ Logout
+
+✓ Session refresh
+
+No development keys may remain.
+
+==================================================
+
+P0 — AI PROVIDER
+
+Configure one production provider.
+
+Recommended priority:
+
+1.
+
+OpenAI
+
+OR
+
+2.
+
+Google Gemini
+
+Verify:
+
+✓ Connection
+
+✓ Streaming
+
+✓ Error handling
+
+✓ Timeout recovery
+
+==================================================
+
+P0 — PAYMENTS
+
+Configure Razorpay production.
+
+Verify:
+
+✓ Order creation
+
+✓ Payment success
+
+✓ Payment cancellation
+
+✓ Signature verification
+
+✓ Premium activation
+
+✓ Premium persistence
+
+==================================================
+
+P0 — PUSH NOTIFICATIONS
+
+Remove all hardcoded fallback private keys.
+
+Use only:
+
+VAPID_PRIVATE_KEY
+
+Verify:
+
+✓ Key pair matches
+
+✓ Subscription
+
+✓ Delivery
+
+✓ Broadcast
+
+==================================================
+
+P1 — RELEASE VALIDATION
+
+Run a complete verification.
+
+Authentication
+
+AI
+
+Payments
+
+Push
+
+Object Storage
+
+Community
+
+Calendar
+
+Memorials
+
+Premium
+
+==================================================
+
+QUALITY
+
+Verify:
+
+✓ No console errors
+
+✓ No unhandled promise rejections
+
+✓ No broken routes
+
+✓ No placeholder actions
+
+==================================================
+
+BUILD
+
+Verify:
+
+✓ Web Production Build
+
+✓ API Production Build
+
+✓ Expo Build
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Files modified
+
+2.
+
+Release blockers resolved
+
+3.
+
+Any remaining blockers
+
+4.
+
+Release Candidate Score (0–100)
+
+5.
+
+Production Health Score
+
+6.
+
+Security Score
+
+7.
+
+Release Recommendation
+
+READY FOR RC1
+
+or
+
+NOT READY
+
+STOP.

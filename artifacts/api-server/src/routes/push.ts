@@ -14,28 +14,31 @@ const router = Router();
 
 const VAPID_SUBJECT = process.env["VAPID_SUBJECT"] ?? "mailto:admin@menashecalendar.app";
 
-// Validated VAPID key pair (generated 2026-07-10, matched public/private)
 const VAPID_PUBLIC_FALLBACK = "BOqeOYdujQRpuveFsz_snrtPpkLZdyj1W4A21JHYPLRJ2hpAWeZwJi7AKCzzLdHvOmHVkmYDN3w0cIE2TFAoX5Q";
-const VAPID_PRIVATE_FALLBACK = "7ne_AlcazluGLlK5vI4V4AHN84l_oCzVvwfNyERH9Ls";
 
 function resolveVapidPrivate(): string {
   const raw = (process.env["VAPID_PRIVATE_KEY"] ?? "").replace(/[="'\s]/g, "");
-  if (!raw) return VAPID_PRIVATE_FALLBACK;
+  if (!raw) {
+    logger.warn("VAPID_PRIVATE_KEY not set — push notifications disabled");
+    return "";
+  }
   try {
     const decoded = Buffer.from(raw, "base64url");
     if (decoded.length === 32) return raw;
   } catch { /* fall through */ }
-  logger.warn("VAPID_PRIVATE_KEY is not a valid 32-byte base64url key — using built-in fallback");
-  return VAPID_PRIVATE_FALLBACK;
+  logger.warn("VAPID_PRIVATE_KEY is not a valid 32-byte base64url key — push notifications disabled");
+  return "";
 }
 
 const VAPID_PUBLIC = process.env["VAPID_PUBLIC_KEY"] || VAPID_PUBLIC_FALLBACK;
 const VAPID_PRIVATE = resolveVapidPrivate();
 
-try {
-  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
-} catch (err) {
-  logger.error({ err }, "VAPID key validation failed — push notifications disabled");
+if (VAPID_PUBLIC && VAPID_PRIVATE) {
+  try {
+    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
+  } catch (err) {
+    logger.error({ err }, "VAPID key validation failed — push notifications disabled");
+  }
 }
 
 export type ScheduleItem = {
