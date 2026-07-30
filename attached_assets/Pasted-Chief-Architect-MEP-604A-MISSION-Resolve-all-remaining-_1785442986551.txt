@@ -1,0 +1,192 @@
+Chief Architect
+
+MEP-604A
+
+MISSION
+
+Resolve all remaining production launch blockers.
+
+This sprint is IMPLEMENTATION ONLY.
+
+Do NOT redesign the UI.
+
+Do NOT add new features.
+
+Do NOT change business logic except where required to resolve verified production blockers.
+
+==================================================
+
+OBJECTIVE
+
+Bring the Menashe Platform from "development-ready"
+to "production-configured."
+
+==================================================
+
+P0 — SECURITY
+
+Implement ownership verification for private object storage.
+
+Current issue:
+
+GET /storage/objects/*
+
+currently downloads objects without calling:
+
+canAccessObject()
+
+Implement:
+
+✓ safeGetAuth()
+
+✓ canAccessObject()
+
+✓ READ permission verification
+
+✓ HTTP 403 on failure
+
+✓ Preserve existing public-object behaviour
+
+Verify:
+
+• User A cannot access User B files
+
+• Public files remain accessible
+
+==================================================
+
+P0 — PRODUCTION SECRETS
+
+Verify every required environment variable.
+
+Authentication
+
+✓ CLERK_SECRET_KEY
+
+AI
+
+✓ OPENAI_API_KEY OR
+
+✓ GOOGLE_API_KEY
+
+Payments
+
+✓ RAZORPAY_KEY_ID
+
+✓ RAZORPAY_KEY_SECRET
+
+Push
+
+✓ VAPID_PRIVATE_KEY
+
+Storage
+
+Verify storage configuration.
+
+Report any remaining missing secret.
+
+==================================================
+
+P0 — WORKFLOW STABILITY
+
+Fix:
+
+API Server
+
+listen EADDRINUSE
+
+Expo
+
+Port conflict
+
+Implement a reliable startup strategy that:
+
+✓ Frees occupied ports
+
+✓ Prevents duplicate processes
+
+✓ Works in CI mode
+
+==================================================
+
+P1 — TYPESCRIPT
+
+Resolve only production-impacting issues.
+
+Priority:
+
+1.
+
+memorials.ts
+
+TS2345
+
+2.
+
+API route callback typings
+
+3.
+
+Web callback typings
+
+Ignore cosmetic warnings.
+
+==================================================
+
+P1 — VALIDATION
+
+Verify:
+
+✓ Authentication works
+
+✓ Protected routes work
+
+✓ AI responds
+
+✓ Premium config loads
+
+✓ Push initializes
+
+✓ API server starts cleanly
+
+✓ Expo starts cleanly
+
+==================================================
+
+OUTPUT
+
+Return ONLY
+
+1.
+
+Files modified
+
+2.
+
+Critical blockers resolved
+
+3.
+
+Remaining blockers
+
+4.
+
+Production secrets status
+
+5.
+
+Workflow status
+
+6.
+
+TypeScript status
+
+7.
+
+Launch Readiness Score
+
+8.
+
+Is MEP-604A COMPLETE?
+
+STOP.

@@ -16,6 +16,7 @@ import {
   insertTributeSchema,
   insertPhotoSchema,
   insertMemorialPersonSchema,
+  type InsertMemorialPerson,
 } from "@workspace/db";
 
 const router = Router();
@@ -23,7 +24,7 @@ const router = Router();
 // ── Validation schemas ────────────────────────────────────────────────────────
 
 const createMemorialSchema = z.object({
-  person: insertMemorialPersonSchema as unknown as z.ZodType<(typeof insertMemorialPersonSchema)["_output"]>,
+  person: insertMemorialPersonSchema as unknown as z.ZodType<InsertMemorialPerson>,
   familyId: z.string().uuid().optional(),
   familyName: z.string().min(1).max(200).optional(),
 });

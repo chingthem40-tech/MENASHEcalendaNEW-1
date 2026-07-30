@@ -1,8 +1,9 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { Readable } from "stream";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
-import { ObjectPermission } from "../lib/objectAcl";
+import { ObjectPermission, canAccessObject } from "../lib/objectAcl";
 import { requireAuth } from "../lib/requireAuth";
+import { safeGetAuth } from "../lib/authorization";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -79,6 +80,19 @@ router.get("/storage/objects/*path", requireAuth, async (req: Request, res: Resp
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
     const objectPath = `/objects/${wildcardPath}`;
     const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+
+    // ── Ownership enforcement ────────────────────────────────────────────────
+    const { userId } = safeGetAuth(req);
+    const allowed = await canAccessObject({
+      userId: userId ?? undefined,
+      objectFile,
+      requestedPermission: ObjectPermission.READ,
+    });
+    if (!allowed) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
+    // ────────────────────────────────────────────────────────────────────────
 
     const response = await objectStorageService.downloadObject(objectFile);
 
