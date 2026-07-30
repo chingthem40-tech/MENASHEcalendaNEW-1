@@ -36,8 +36,10 @@ minimumReleaseAgeExclude:
   - '@replit/*'
   - stripe-replit-sync
   - '@babel/core'
+  - brace-expansion
   - esbuild
   - form-data
+  - http-proxy-middleware
   - js-yaml
   - markdown-it
   - minimatch
@@ -102,7 +104,9 @@ overrides:
   esbuild>@esbuild/win32-ia32: '-'
   esbuild>@esbuild/win32-x64: '-'
   form-data: ^4.0.6
-  js-yaml: ^4.2.0
+  brace-expansion: ^2.1.4
+  http-proxy-middleware: ^4.2.0
+  js-yaml: ^4.3.0
   lightningcss>lightningcss-android-arm64: '-'
   lightningcss>lightningcss-darwin-arm64: '-'
   lightningcss>lightningcss-darwin-x64: '-'
