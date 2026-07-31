@@ -23,6 +23,9 @@ export default function SplashScreen({ onFinished }: SplashScreenProps) {
 
   return (
     <div
+      role="status"
+      aria-label="Loading Bnei Menashe Calendar"
+      aria-live="polite"
       style={{
         position: "fixed",
         inset: 0,
@@ -68,8 +71,9 @@ export default function SplashScreen({ onFinished }: SplashScreenProps) {
         }}
       />
 
-      {/* Animated loading dots */}
+      {/* Animated loading dots — decorative, hidden from AT */}
       <div
+        aria-hidden="true"
         style={{
           position: "relative",
           zIndex: 10,

@@ -53,6 +53,15 @@ const BurningCandle = memo(function BurningCandle({
   const W = compact ? 110 : 140;
   const activeLearner = learners[activeLearnerIdx];
 
+  const ariaLabel = [
+    isLit ? "Lit candle" : "Candle",
+    `for ${deceasedName}`,
+    yahrzeitNumber !== undefined && yahrzeitNumber > 0 ? `${ordinal(yahrzeitNumber)} yahrzeit` : null,
+    donorName ? `lit by ${donorName}` : null,
+    learners.length > 0 ? `${learners.length} learner${learners.length === 1 ? "" : "s"} studying in memory` : null,
+    onClick ? "Press to open" : null,
+  ].filter(Boolean).join(", ");
+
   return (
     <>
       <style>{`
@@ -102,6 +111,10 @@ const BurningCandle = memo(function BurningCandle({
 
       <div
         onClick={onClick}
+        onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+        role={onClick ? "button" : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        aria-label={ariaLabel}
         className="candle-appear"
         style={{
           display: "flex",

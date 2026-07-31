@@ -1052,6 +1052,10 @@ function AppShell() {
 
   return (
     <LanguageProvider>
+      {/* Skip navigation link — only visible on keyboard focus */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <div
         className={`app-container${theme === "light" ? " light-theme" : theme === "sapphire" ? " sapphire-theme" : ""}`}
       >
@@ -1089,7 +1093,15 @@ function AppShell() {
                   onToggleCollapsed={toggleNavCollapsed}
                 />
 
-                {toast && <div className="toast">{toast}</div>}
+                {/* aria-live region so screen readers announce toasts */}
+                <div
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  className="toast-live-region"
+                >
+                  {toast && <div className="toast">{toast}</div>}
+                </div>
 
                 {premiumJustApproved && (
                   <div

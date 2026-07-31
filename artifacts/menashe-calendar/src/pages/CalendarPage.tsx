@@ -1,4 +1,4 @@
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useRef, useCallback } from "react";
 import { HebrewCalendar, flags } from "@hebcal/core";
 import { getMonthCalendar, hebrewDayNumeral, getHebrewMonthsBetween, type CalendarDay } from "../lib/hebrewCalendar";
 import { Location } from "../lib/locations";
@@ -29,12 +29,16 @@ const DAY_HEADERS: { en: string; he: string }[] = [
   { en: "Sat", he: "שבת" },
 ];
 
+const FULL_DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
 const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayClick, onLocationClick }: CalendarPageProps) {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [slideDir, setSlideDir] = useState<"left" | "right">("right");
+  const [focusedDay, setFocusedDay] = useState<number | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const days: CalendarDay[] = getMonthCalendar(year, month);
   const firstDayOfWeek = new Date(year, month, 1).getDay();
@@ -120,6 +124,37 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
     }
   }
 
+  // Keyboard navigation within the calendar grid (roving tabindex)
+  const handleCellKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>, gregorianDay: number) => {
+    if (!['ArrowRight','ArrowLeft','ArrowUp','ArrowDown','Home','End','Enter',' '].includes(e.key)) return;
+    e.preventDefault();
+    if (e.key === 'Enter' || e.key === ' ') { handleDayClick(gregorianDay); return; }
+    const firstDay = days[0]?.gregorianDay ?? gregorianDay;
+    const lastDay  = days[days.length - 1]?.gregorianDay ?? gregorianDay;
+    let next = gregorianDay;
+    if      (e.key === 'ArrowRight') next = Math.min(gregorianDay + 1, lastDay);
+    else if (e.key === 'ArrowLeft')  next = Math.max(gregorianDay - 1, firstDay);
+    else if (e.key === 'ArrowDown')  next = Math.min(gregorianDay + 7, lastDay);
+    else if (e.key === 'ArrowUp')    next = Math.max(gregorianDay - 7, firstDay);
+    else if (e.key === 'Home') {
+      const idx = days.findIndex(d => d.gregorianDay === gregorianDay);
+      const col = (firstDayOfWeek + idx) % 7;
+      next = Math.max(gregorianDay - col, firstDay);
+    } else if (e.key === 'End') {
+      const idx = days.findIndex(d => d.gregorianDay === gregorianDay);
+      const col = (firstDayOfWeek + idx) % 7;
+      next = Math.min(gregorianDay + (6 - col), lastDay);
+    }
+    setFocusedDay(next);
+    requestAnimationFrame(() => {
+      gridRef.current?.querySelector<HTMLElement>(`[data-day="${next}"]`)?.focus();
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days, firstDayOfWeek]);
+
+  // Roving tabindex: the default tab stop is today (if in view) or first day
+  const tabStopDay = focusedDay ?? days.find(d => d.isToday)?.gregorianDay ?? days[0]?.gregorianDay ?? 1;
+
   const selectedDayData = selectedDay !== null ? days.find(d => d.gregorianDay === selectedDay) : null;
 
   return (
@@ -194,12 +229,15 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
           </div>
 
           {/* ── Day Headers ── */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#162040" }}>
+          <div role="row" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#162040" }}>
             {DAY_HEADERS.map((h, idx) => {
               const isSat = idx === 6;
               return (
                 <div
                   key={h.en}
+                  role="columnheader"
+                  aria-label={FULL_DAY_NAMES[idx]}
+                  scope="col"
                   style={{
                     textAlign: "center",
                     padding: "8px 2px 6px",
@@ -207,14 +245,14 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
                     borderBottom: "1px solid #1e2d4a",
                   }}
                 >
-                  <div style={{
+                  <div aria-hidden="true" style={{
                     fontSize: 12, fontWeight: 800,
                     color: isSat ? "#fecaca" : "#e2e8f0",
                     letterSpacing: "0.05em",
                   }}>
                     {h.en}
                   </div>
-                  <div style={{
+                  <div aria-hidden="true" style={{
                     fontSize: 9,
                     color: isSat ? "#fca5a5" : "#4a5568",
                     fontFamily: "'Noto Serif Hebrew', serif",
@@ -229,7 +267,10 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
 
           {/* ── Calendar Grid (light background) ── */}
           <div
+            ref={gridRef}
             key={`${year}-${month}`}
+            role="grid"
+            aria-label={`${MONTHS[month]} ${year} calendar`}
             className={slideDir === "left" ? "month-slide-left" : "month-slide-right"}
             style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#f8fafc" }}
           >
@@ -239,6 +280,8 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
               return (
                 <div
                   key={`empty-${i}`}
+                  role="gridcell"
+                  aria-hidden="true"
                   style={{
                     minHeight: 66,
                     borderRight: i < 6 ? "1px solid #e2e8f0" : "none",
@@ -276,10 +319,32 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
               const hebrewColor  = isOnGold ? "rgba(255,255,255,0.8)" : isSatCol ? "#b91c1c" : "#6b7280";
               const monthColor   = isOnGold ? "rgba(255,255,255,0.7)" : isSatCol ? "#ef4444" : "#94a3b8";
 
+              // Accessible label for screen readers
+              const cellAriaLabel = [
+                day.date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
+                `${hebrewDayNumeral(day.hebrewDay)} ${day.hebrewMonth ?? ""}`.trim(),
+                day.isToday ? "today" : null,
+                isSelected ? "selected" : null,
+                day.isShabbat ? "Shabbat" : null,
+                isFast ? "fast day" : null,
+                day.roshChodesh ? "Rosh Chodesh" : null,
+                ...day.events,
+                candleLightingMap[day.gregorianDay] ? `candle lighting at ${candleLightingMap[day.gregorianDay]}` : null,
+                omerMap[day.gregorianDay] !== undefined ? `Omer day ${omerMap[day.gregorianDay]}` : null,
+                dayYahrtzeits.length > 0 ? dayYahrtzeits.map(y => `yahrzeit for ${y.name}`).join(", ") : null,
+              ].filter(Boolean).join(", ");
+
               return (
                 <div
                   key={i}
+                  role="gridcell"
+                  data-day={day.gregorianDay}
+                  tabIndex={day.gregorianDay === tabStopDay ? 0 : -1}
+                  aria-label={cellAriaLabel}
+                  aria-selected={isSelected}
+                  aria-current={day.isToday ? "date" : undefined}
                   onClick={() => handleDayClick(day.gregorianDay)}
+                  onKeyDown={(e) => handleCellKeyDown(e, day.gregorianDay)}
                   className={isSelected && !day.isToday ? "cal-cell-selected" : ""}
                   style={{
                     minHeight: 66,

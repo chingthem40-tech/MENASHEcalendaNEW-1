@@ -1,0 +1,269 @@
+Chief Architect
+
+PEP-703
+
+MISSION
+
+The Menashe Platform is visually polished and motion-complete.
+
+Now make it effortless to use for every person.
+
+This sprint focuses on accessibility, usability, and inclusive design.
+
+DO NOT add features.
+
+DO NOT redesign layouts.
+
+DO NOT change APIs.
+
+DO NOT change business logic.
+
+==================================================
+
+OBJECTIVE
+
+Ensure every screen is usable with:
+
+✓ Keyboard
+
+✓ Screen Reader
+
+✓ Touch
+
+✓ Mouse
+
+✓ Reduced Motion
+
+✓ High Contrast
+
+==================================================
+
+KEYBOARD EXPERIENCE
+
+Verify every page.
+
+Every interactive element must support:
+
+✓ Tab
+
+✓ Shift+Tab
+
+✓ Enter
+
+✓ Space
+
+✓ Escape (dialogs)
+
+✓ Arrow keys where appropriate
+
+Never trap keyboard focus.
+
+==================================================
+
+FOCUS MANAGEMENT
+
+Improve:
+
+✓ Visible focus ring
+
+✓ Focus returns to triggering button after modal closes
+
+✓ Focus moves into dialogs automatically
+
+✓ Skip hidden elements
+
+==================================================
+
+SCREEN READERS
+
+Audit:
+
+✓ Buttons
+
+✓ Icon buttons
+
+✓ FABs
+
+✓ Cards
+
+✓ Toggles
+
+✓ Navigation
+
+✓ Calendar controls
+
+✓ Memorial interactions
+
+✓ Prayer reactions
+
+Add:
+
+aria-label
+
+aria-describedby
+
+aria-live where appropriate
+
+==================================================
+
+COLOR & CONTRAST
+
+Verify:
+
+✓ Text contrast
+
+✓ Gold accent contrast
+
+✓ Error colours
+
+✓ Success colours
+
+✓ Dark mode
+
+✓ Light mode
+
+==================================================
+
+TOUCH EXPERIENCE
+
+Verify:
+
+✓ Minimum 44×44 touch targets
+
+✓ Comfortable spacing
+
+✓ No accidental taps
+
+==================================================
+
+FORMS
+
+Improve:
+
+✓ Labels
+
+✓ Required indicators
+
+✓ Error association
+
+✓ Success announcements
+
+✓ Autofocus only when appropriate
+
+==================================================
+
+CALENDAR
+
+Verify:
+
+✓ Keyboard day navigation
+
+✓ Screen reader date announcements
+
+✓ Holiday announcements
+
+==================================================
+
+TORAH
+
+Verify:
+
+✓ Reading controls
+
+✓ Progress announcements
+
+✓ Bookmark announcements
+
+==================================================
+
+MEMORIAL
+
+Ensure respectful accessibility.
+
+Screen readers should clearly announce:
+
+✓ Candle state
+
+✓ Memorial name
+
+✓ Lighting confirmation
+
+==================================================
+
+COMMUNITY
+
+Verify:
+
+✓ Prayer board
+
+✓ Reactions
+
+✓ Comments
+
+✓ Toast announcements
+
+==================================================
+
+ERROR RECOVERY
+
+Every error must provide:
+
+✓ Clear explanation
+
+✓ Retry option
+
+✓ Recovery path
+
+Never leave users stuck.
+
+==================================================
+
+QUALITY
+
+Run accessibility audit.
+
+Check:
+
+✓ Missing ARIA
+
+✓ Duplicate IDs
+
+✓ Heading hierarchy
+
+✓ Landmark regions
+
+✓ Focus order
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Accessibility improvements
+
+2.
+
+Keyboard improvements
+
+3.
+
+Screen reader improvements
+
+4.
+
+Contrast improvements
+
+5.
+
+Remaining accessibility issues
+
+6.
+
+Accessibility Score
+
+7.
+
+Inclusive Design Score
+
+STOP.
