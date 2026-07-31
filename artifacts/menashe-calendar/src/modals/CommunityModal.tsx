@@ -110,7 +110,7 @@ export default function CommunityModal({ onClose, isAdmin = false }: Props & { i
   if (view === "form") {
     return (
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+        <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="comm-form-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
           <div className="modal-handle" />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
@@ -120,7 +120,7 @@ export default function CommunityModal({ onClose, isAdmin = false }: Props & { i
             >
               ← Back
             </button>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
+            <div id="comm-form-title" style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
               {editId ? "✏️ Edit Link" : "➕ Add Link"}
             </div>
             <button
@@ -228,7 +228,7 @@ export default function CommunityModal({ onClose, isAdmin = false }: Props & { i
   if (view === "admin") {
     return (
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+        <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="comm-admin-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
           <div className="modal-handle" />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
@@ -238,7 +238,7 @@ export default function CommunityModal({ onClose, isAdmin = false }: Props & { i
             >
               ← Back
             </button>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>🛠 Manage Links</div>
+            <div id="comm-admin-title" style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>🛠 Manage Links</div>
             <button
               className="btn-gold"
               style={{ padding: "8px 16px", fontSize: 13, fontWeight: 700, borderRadius: 10 }}
@@ -330,7 +330,7 @@ export default function CommunityModal({ onClose, isAdmin = false }: Props & { i
   // ── Main community view ──
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto", padding: 0 }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Community resources" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto", padding: 0 }}>
         <div className="modal-handle" style={{ marginTop: 10 }} />
 
         {/* ── Hero banner with background image ── */}

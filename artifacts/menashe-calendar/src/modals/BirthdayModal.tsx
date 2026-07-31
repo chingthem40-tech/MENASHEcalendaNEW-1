@@ -81,7 +81,7 @@ export default function BirthdayModal({ onClose }: Props) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Birthday calendar" onClick={e => e.stopPropagation()}>
         <div className="modal-handle" />
 
         {/* Header */}

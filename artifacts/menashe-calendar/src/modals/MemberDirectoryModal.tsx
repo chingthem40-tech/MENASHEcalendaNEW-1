@@ -176,7 +176,7 @@ export default function MemberDirectoryModal({ onClose, isAdmin = false, userPro
   // ── Register form ──────────────────────────────────────────────────────────
   if (view === "register") return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Member directory" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
           <button onClick={() => { setView("directory"); setRegSent(false); setReg(emptyReg()); setRegError(""); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>← Back</button>
@@ -332,7 +332,7 @@ export default function MemberDirectoryModal({ onClose, isAdmin = false, userPro
   // ── Admin panel ────────────────────────────────────────────────────────────
   if (view === "admin") return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Member profile" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button onClick={() => setView("directory")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>← Directory</button>
@@ -421,7 +421,7 @@ export default function MemberDirectoryModal({ onClose, isAdmin = false, userPro
   // ── Public directory ───────────────────────────────────────────────────────
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Edit member profile" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
 
         {/* Header */}

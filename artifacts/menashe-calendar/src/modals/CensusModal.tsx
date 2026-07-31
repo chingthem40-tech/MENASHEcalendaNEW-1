@@ -2443,7 +2443,7 @@ export default function CensusModal({ onClose, isAdmin = false }: Props) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Community census" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto", display: "flex", flexDirection: "column" }}>
         <div className="modal-handle" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px 14px" }}>
           <div>

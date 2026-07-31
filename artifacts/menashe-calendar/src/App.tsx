@@ -560,7 +560,13 @@ function AppShell() {
   );
 
   const [activePage, setActivePage] = useState<Page>("home");
-  const [modal, setModal] = useState<Modal>(null);
+  const [modal, _setModal] = useState<Modal>(null);
+  // Track the element that triggered a modal so we can return focus on close
+  const lastFocusRef = useRef<Element | null>(null);
+  const setModal = useCallback((m: Modal) => {
+    if (m !== null) lastFocusRef.current = document.activeElement;
+    _setModal(m);
+  }, []);
   const [chatOpen, setChatOpen] = useState(false);
   const [dayModal, setDayModal] = useState<DayInfo>(null);
   const [readingBook, setReadingBook] = useState<Book | null>(null);
@@ -786,7 +792,16 @@ function AppShell() {
     setTimeout(() => setToast(""), 2500);
   }, []);
 
-  const closeModal = useCallback(() => setModal(null), []);
+  const closeModal = useCallback(() => {
+    _setModal(null);
+    // Return keyboard focus to the element that opened the modal
+    requestAnimationFrame(() => {
+      if (lastFocusRef.current instanceof HTMLElement) {
+        lastFocusRef.current.focus();
+        lastFocusRef.current = null;
+      }
+    });
+  }, []);
 
   // Stable callbacks — prevent page re-renders when unrelated AppShell state changes
   const onNavigate = useCallback((p: string) => setActivePage(p as Page), []);
@@ -1082,7 +1097,7 @@ function AppShell() {
             {!readingBook && modal !== "admin" && (
               <>
                 <Suspense fallback={<PageSkeleton />}>
-                  <div className="screen fade-in">{renderPage()}</div>
+                  <div className="screen fade-in" id="main-content" tabIndex={-1}>{renderPage()}</div>
                 </Suspense>
 
                 <BottomNav
@@ -1119,6 +1134,9 @@ function AppShell() {
                     onClick={() => setPremiumJustApproved(false)}
                   >
                     <div
+                      role="dialog"
+                      aria-modal="true"
+                      aria-labelledby="premium-approved-title"
                       style={{
                         maxWidth: 340,
                         width: "100%",
@@ -1143,6 +1161,7 @@ function AppShell() {
                         👑
                       </div>
                       <div
+                        id="premium-approved-title"
                         style={{
                           fontSize: 22,
                           fontWeight: 900,

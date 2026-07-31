@@ -153,7 +153,7 @@ export default function ProfileModal({ onClose, onSaved }: Props) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Your profile" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
 
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>

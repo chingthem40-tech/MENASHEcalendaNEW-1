@@ -125,7 +125,7 @@ const BottomNav = memo(function BottomNav({ active, onNavigate, collapsed = fals
             aria-label={ariaLabel}
             aria-current={isActive ? "page" : undefined}
             title={collapsed ? ariaLabel : undefined}
-            style={{ background: "none", border: "none", outline: "none", flex: 1 }}
+            style={{ background: "none", border: "none", flex: 1 }}
           >
             <Icon active={isActive} />
             <span aria-hidden="true">{label}</span>

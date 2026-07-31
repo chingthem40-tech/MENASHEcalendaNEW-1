@@ -1,4 +1,4 @@
-import { useState, useMemo, memo, useRef, useCallback } from "react";
+import { useState, useMemo, memo, useRef, useCallback, useEffect } from "react";
 import { HebrewCalendar, flags } from "@hebcal/core";
 import { getMonthCalendar, hebrewDayNumeral, getHebrewMonthsBetween, type CalendarDay } from "../lib/hebrewCalendar";
 import { Location } from "../lib/locations";
@@ -43,6 +43,9 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
   const days: CalendarDay[] = getMonthCalendar(year, month);
   const firstDayOfWeek = new Date(year, month, 1).getDay();
   const hebrewMonths = getHebrewMonthsBetween(new Date(year, month, 1), new Date(year, month + 1, 0));
+
+  // Announce month navigation to screen readers
+  const [monthAnnouncement, setMonthAnnouncement] = useState("");
 
   // Month-level summary: shabbatot, holidays, parashiyot
   const monthStats = useMemo(() => {
@@ -102,6 +105,13 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
     const entries = getYahrzeitEntries();
     return getYahrzeitDatesForMonth(year, month, entries);
   }, [year, month]);
+
+  // Announce month/year to screen readers when it changes (skip mount)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    setMonthAnnouncement(`${MONTHS[month]} ${year}`);
+  }, [month, year]);
 
   function prevMonth() {
     setSlideDir("left");
@@ -170,17 +180,22 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
           </div>
         </div>
         <button
+          type="button"
           onClick={onLocationClick}
+          aria-label={`Change location: ${location.name}`}
           style={{
             display: "flex", alignItems: "center", gap: 5,
             background: "var(--elevated)", border: "1px solid var(--border)",
             borderRadius: 99, padding: "5px 12px", cursor: "pointer",
           }}
         >
-          <span style={{ fontSize: 11 }}>📍</span>
-          <span style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 500 }}>{location.name}</span>
+          <span aria-hidden="true" style={{ fontSize: 11 }}>📍</span>
+          <span aria-hidden="true" style={{ fontSize: 11, color: "var(--text-secondary)", fontWeight: 500 }}>{location.name}</span>
         </button>
       </div>
+
+      {/* Screen-reader live region — announces month navigation */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">{monthAnnouncement}</div>
 
       {/* ── Calendar Card ── */}
       <div style={{ padding: "8px 8px 0", flex: 1, overflowY: "auto" }}>

@@ -156,12 +156,12 @@ export default function AnnouncementsModal({ onClose, announcements, onAdd, onUp
   if (view === "form") {
     return (
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+        <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="ann-form-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
           <div className="modal-handle" />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
             <button onClick={() => setView("admin")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>← Back</button>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
+            <div id="ann-form-title" style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>
               {editId ? "✏️ Edit" : "📢 New Announcement"}
             </div>
             <div />
@@ -169,11 +169,12 @@ export default function AnnouncementsModal({ onClose, announcements, onAdd, onUp
 
           {/* Emoji picker */}
           <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>ICON</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+            <label style={labelStyle} id="ann-icon-label">ICON</label>
+            <div role="group" aria-labelledby="ann-icon-label" style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
               {EMOJI_OPTIONS.map(e => (
                 <button key={e} onClick={() => setForm(f => ({ ...f, emoji: e }))}
-                  style={{ width: 36, height: 36, borderRadius: 8, fontSize: 17, cursor: "pointer",
+                  aria-label={e} aria-pressed={form.emoji === e}
+                  style={{ width: 44, height: 44, borderRadius: 8, fontSize: 17, cursor: "pointer",
                     background: form.emoji === e ? "rgba(212,168,67,0.2)" : "var(--elevated)",
                     border: form.emoji === e ? "2px solid #d4a843" : "1px solid var(--border)", transition: "all 0.15s" }}
                 >{e}</button>
@@ -183,16 +184,17 @@ export default function AnnouncementsModal({ onClose, announcements, onAdd, onUp
 
           {/* Title */}
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>TITLE <span style={{ color: "#ef4444" }}>*</span></label>
-            <input style={inputStyle} value={form.title}
+            <label htmlFor="ann-title" style={labelStyle}>TITLE <span aria-hidden="true" style={{ color: "#ef4444" }}>*</span><span className="sr-only">(required)</span></label>
+            <input id="ann-title" aria-required="true" style={inputStyle} value={form.title}
               onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
               placeholder="e.g. Community Shabbat this week" />
           </div>
 
           {/* Body */}
           <div style={{ marginBottom: 14 }}>
-            <label style={labelStyle}>MESSAGE</label>
+            <label htmlFor="ann-body" style={labelStyle}>MESSAGE</label>
             <textarea
+              id="ann-body"
               style={{ ...inputStyle, minHeight: 90, resize: "vertical", lineHeight: 1.55 }}
               value={form.body}
               onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
@@ -292,12 +294,12 @@ export default function AnnouncementsModal({ onClose, announcements, onAdd, onUp
   if (view === "admin") {
     return (
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+        <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="ann-admin-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
           <div className="modal-handle" />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <button onClick={() => setView("feed")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>← Feed</button>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>📣 Manage Announcements</div>
+            <div id="ann-admin-title" style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>📣 Manage Announcements</div>
             <button className="btn-gold" style={{ padding: "8px 14px", fontSize: 13, fontWeight: 700, borderRadius: 10 }} onClick={() => openForm()}>+ New</button>
           </div>
 
@@ -364,13 +366,14 @@ export default function AnnouncementsModal({ onClose, announcements, onAdd, onUp
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="ann-feed-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <div>
             <div
+              id="ann-feed-title"
               style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}
             >
               📢 Announcements
@@ -381,13 +384,14 @@ export default function AnnouncementsModal({ onClose, announcements, onAdd, onUp
             {isAdmin && view === "feed" && (
               <button
                 onClick={() => setView("admin")}
+                aria-label="Open admin panel"
                 style={{ display: "flex", alignItems: "center", gap: 4, background: "var(--elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}
               >
-                <span style={{ fontSize: 12 }}>⚙️</span>
+                <span aria-hidden="true" style={{ fontSize: 12 }}>⚙️</span>
                 <span style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)" }}>Admin</span>
               </button>
             )}
-            <button className="modal-close-btn" onClick={onClose}>✕</button>
+            <button className="modal-close-btn" onClick={onClose} aria-label="Close announcements">✕</button>
           </div>
         </div>
 

@@ -561,7 +561,7 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
   if (!isAdmin) {
     return (
       <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-sheet" onClick={e => e.stopPropagation()}>
+        <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Admin panel" onClick={e => e.stopPropagation()}>
           <div className="modal-handle" />
           <div style={{ textAlign: "center", padding: "24px 0" }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🔒</div>

@@ -184,12 +184,12 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
   // ── Submit view ────────────────────────────────────────────────────────────
   if (view === "submit") return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="prayer-submit-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
           <button onClick={() => { setView("board"); setSubmitted(false); setForm(emptyForm(userName)); setSubmitError(""); }}
             style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>← Back</button>
-          <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>🙏 {t.prayerBoardSubmitTitle}</div>
+          <div id="prayer-submit-title" style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>🙏 {t.prayerBoardSubmitTitle}</div>
           <div />
         </div>
 
@@ -214,12 +214,13 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
           <>
             <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>{t.prayerBoardCategory}</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              <div role="group" aria-label="Prayer category" style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                 {CATEGORIES.map(cat => {
                   const cs = CAT_STYLE[cat];
                   const active = form.category === cat;
                   return (
                     <button key={cat} onClick={() => setForm(f => ({ ...f, category: cat }))}
+                      aria-pressed={active}
                       style={{
                         padding: "6px 12px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: "pointer",
                         background: active ? cs.bg : "var(--elevated)",
@@ -232,14 +233,17 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label style={labelStyle}>YOUR PRAYER REQUEST <span style={{ color: "#ef4444" }}>*</span></label>
+              <label htmlFor="prayer-text" style={labelStyle}>YOUR PRAYER REQUEST <span aria-hidden="true" style={{ color: "#ef4444" }}>*</span><span className="sr-only">(required)</span></label>
               <textarea
+                id="prayer-text"
+                aria-required="true"
+                aria-describedby={submitError ? "prayer-text-error" : undefined}
                 className={submitShake ? "error-shake" : ""}
                 onAnimationEnd={() => setSubmitShake(false)}
                 style={{ ...inputStyle, minHeight: 100, resize: "vertical", lineHeight: 1.6 }}
                 value={form.text} onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
                 placeholder="Share your prayer request with the Bnei Menashe community…" maxLength={1000} />
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>{form.text.length}/1000</div>
+              <div aria-live="polite" style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>{form.text.length}/1000</div>
             </div>
 
             <div style={{ marginBottom: 14 }}>
@@ -255,13 +259,13 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
 
             {!form.isAnonymous && (
               <div style={{ marginBottom: 16 }}>
-                <label style={labelStyle}>YOUR NAME (optional)</label>
-                <input style={inputStyle} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                <label htmlFor="prayer-name" style={labelStyle}>YOUR NAME (optional)</label>
+                <input id="prayer-name" style={inputStyle} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="Leave blank to appear as 'Anonymous'" />
               </div>
             )}
 
-            {submitError && <div style={{ fontSize: 12, color: "#ef4444", marginBottom: 10 }}>⚠️ {submitError}</div>}
+            {submitError && <div id="prayer-text-error" role="alert" aria-live="assertive" style={{ fontSize: 12, color: "#ef4444", marginBottom: 10 }}>⚠️ {submitError}</div>}
 
             <button className="btn-gold" style={{ width: "100%", padding: 14, fontSize: 15, fontWeight: 800, marginBottom: 10, opacity: (!form.text.trim() || submitting) ? 0.6 : 1 }}
               onClick={submitRequest} disabled={!form.text.trim() || submitting}>
@@ -277,11 +281,11 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
   // ── Admin panel ────────────────────────────────────────────────────────────
   if (view === "admin") return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="prayer-admin-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <button onClick={() => setView("board")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, color: "var(--text-muted)" }}>← Board</button>
-          <div style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>🙏 Moderate Prayers</div>
+          <div id="prayer-admin-title" style={{ fontSize: 16, fontWeight: 800, color: "var(--text-primary)" }}>🙏 Moderate Prayers</div>
           <div />
         </div>
 
@@ -376,22 +380,23 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
   // ── Public board ───────────────────────────────────────────────────────────
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
+      <div className="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="prayer-board-title" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto" }}>
         <div className="modal-handle" />
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>🙏 {t.prayerBoardTitle}</div>
+            <div id="prayer-board-title" style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)" }}>🙏 {t.prayerBoardTitle}</div>
             <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Community prayers &amp; blessings</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {isAdmin && (
               <button onClick={() => setView("admin")}
+                aria-label={pending.length > 0 ? `Admin: ${pending.length} pending prayers` : "Admin panel"}
                 style={{ padding: "7px 12px", borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: "pointer", background: "rgba(212,168,67,0.12)", border: "1px solid rgba(212,168,67,0.3)", color: "#d4a843" }}>
                 {pending.length > 0 ? `⚡ ${pending.length} pending` : "⚡ Admin"}
               </button>
             )}
-            <button className="modal-close-btn" onClick={onClose}>✕</button>
+            <button className="modal-close-btn" onClick={onClose} aria-label="Close prayer board">✕</button>
           </div>
         </div>
 
@@ -400,12 +405,13 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
           <div style={{ fontSize: 11, color: "var(--text-muted)" }}>"Hear, O Lord, my voice when I call" — Tehillim 27:7</div>
         </div>
 
-        <div style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 8, marginBottom: 14, scrollbarWidth: "none" }}>
+        <div role="group" aria-label="Filter by category" style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 8, marginBottom: 14, scrollbarWidth: "none" }}>
           {["All", ...CATEGORIES].map(cat => {
             const cs = CAT_STYLE[cat];
             const active = filterCat === cat;
             return (
               <button key={cat} onClick={() => setFilterCat(cat)}
+                aria-pressed={active}
                 style={{
                   padding: "5px 11px", borderRadius: 20, fontSize: 11, fontWeight: 700,
                   whiteSpace: "nowrap", cursor: "pointer", flexShrink: 0, transition: "all 0.15s",
@@ -467,6 +473,8 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
                   <div style={{ padding: "8px 14px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
                     <button onClick={() => castAmen(req.id)} disabled={hasAmen || amenLoading === req.id}
                       className="no-press"
+                      aria-label={hasAmen ? `Amen given — ${req.amens} amens` : `Say Amen — ${req.amens} amens`}
+                      aria-pressed={hasAmen}
                       style={{
                         display: "flex", alignItems: "center", gap: 5,
                         padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700,
@@ -477,11 +485,12 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
                         transition: "background 0.2s, border-color 0.2s, color 0.2s",
                         opacity: amenLoading === req.id ? 0.6 : 1,
                       }}>
-                      <span className={justAmenedId === req.id ? "reaction-pop" : ""}>
+                      <span aria-hidden="true" className={justAmenedId === req.id ? "reaction-pop" : ""}>
                         {hasAmen ? "🙏" : "🤲"}
                       </span>
-                      <span>{t.prayerBoardAmen}</span>
+                      <span aria-hidden="true">{t.prayerBoardAmen}</span>
                       <span
+                        aria-hidden="true"
                         key={req.amens}
                         className={justAmenedId === req.id ? "success-bounce" : ""}
                         style={{ fontSize: 13, fontWeight: 800, color: hasAmen ? "#d4a843" : "var(--text-secondary)" }}

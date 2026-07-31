@@ -355,7 +355,7 @@ export default function PremiumModal({ onClose, onActivated }: Props) {
       `}</style>
 
       <div className="modal-overlay" onClick={step === "success" ? onClose : undefined}>
-        <div className="modal-sheet" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto", padding: 0 }}>
+        <div className="modal-sheet" role="dialog" aria-modal="true" aria-label="Premium subscription" onClick={e => e.stopPropagation()} style={{ maxHeight: "92vh", overflowY: "auto", padding: 0 }}>
 
           {/* Gradient header */}
           <div style={{ background: "linear-gradient(180deg, rgba(212,168,67,0.16) 0%, transparent 100%)", padding: "20px 20px 0", borderRadius: "20px 20px 0 0" }}>
