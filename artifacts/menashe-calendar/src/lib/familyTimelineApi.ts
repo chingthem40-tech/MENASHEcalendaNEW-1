@@ -1,5 +1,15 @@
 const API_BASE = "/api";
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function apiFetch(path: string, options: RequestInit = {}) {
   const token: string | null =
     (await (window as any).Clerk?.session?.getToken()) ?? null;
@@ -14,7 +24,7 @@ async function apiFetch(path: string, options: RequestInit = {}) {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error ?? `API ${path} failed: ${res.status}`);
+    throw new ApiError(body?.error ?? `Request failed`, res.status);
   }
   if (res.status === 204) return null;
   return res.json();

@@ -10,6 +10,7 @@ import {
   fetchFamilyTimeline,
   createFamilyTimelineEvent,
   deleteFamilyTimelineEvent,
+  ApiError,
   type FamilyTimelineEvent,
   type FilterKey,
   type EventType,
@@ -687,6 +688,7 @@ const FamilyTimeline = memo(function FamilyTimeline({ isSignedIn }: FamilyTimeli
   const [loading,        setLoading]        = useState(true);
   const [loadingMore,    setLoadingMore]    = useState(false);
   const [error,          setError]          = useState("");
+  const [needsAuth,      setNeedsAuth]      = useState(false);
   const [filter,         setFilter]         = useState<FilterKey>("all");
   const [search,         setSearch]         = useState("");
   const [searchInput,    setSearchInput]    = useState("");
@@ -702,6 +704,7 @@ const FamilyTimeline = memo(function FamilyTimeline({ isSignedIn }: FamilyTimeli
     async (pg: number, f: FilterKey, s: string, append = false) => {
       if (pg === 1) setLoading(true); else setLoadingMore(true);
       setError("");
+      setNeedsAuth(false);
       try {
         const data = await fetchFamilyTimeline({ filter: f, search: s, page: pg, limit: LIMIT });
         setEvents((prev) => append ? [...prev, ...data.events] : data.events);
@@ -709,7 +712,11 @@ const FamilyTimeline = memo(function FamilyTimeline({ isSignedIn }: FamilyTimeli
         setPage(pg);
         setHasMore(data.hasMore);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load timeline");
+        if (err instanceof ApiError && err.status === 401) {
+          setNeedsAuth(true);
+        } else {
+          setError(err instanceof Error ? err.message : "Failed to load timeline");
+        }
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -746,12 +753,12 @@ const FamilyTimeline = memo(function FamilyTimeline({ isSignedIn }: FamilyTimeli
     return () => io.disconnect();
   }, [hasMore, loadingMore, page, filter, search, load]);
 
-  // Real-time polling (every 30 s)
+  // Real-time polling (every 30 s) — stop if auth isn't configured
   useEffect(() => {
-    if (!isSignedIn) return;
+    if (!isSignedIn || needsAuth) return;
     const id = setInterval(() => load(1, filter, search), 30_000);
     return () => clearInterval(id);
-  }, [isSignedIn, filter, search, load]);
+  }, [isSignedIn, needsAuth, filter, search, load]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   function handleEventAdded(ev: FamilyTimelineEvent) {
@@ -779,6 +786,26 @@ const FamilyTimeline = memo(function FamilyTimeline({ isSignedIn }: FamilyTimeli
         </div>
         <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6 }}>
           Sign in to preserve your family's sacred history.
+        </div>
+      </div>
+    );
+  }
+
+  // ── Auth not configured on server (no CLERK_SECRET_KEY yet) ────────────────
+  if (needsAuth) {
+    return (
+      <div style={{
+        padding: "28px 20px", textAlign: "center",
+        background: "linear-gradient(145deg, rgba(212,168,67,0.04) 0%, var(--elevated) 100%)",
+        borderRadius: 16, border: "1px solid rgba(212,168,67,0.15)",
+      }}>
+        <div style={{ fontSize: 36, marginBottom: 12 }}>🔐</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
+          Authentication Required
+        </div>
+        <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 280, margin: "0 auto" }}>
+          The Family Timeline needs a Clerk secret key to be configured on the server before it can load.
+          Once authentication is set up, your family history will appear here.
         </div>
       </div>
     );
