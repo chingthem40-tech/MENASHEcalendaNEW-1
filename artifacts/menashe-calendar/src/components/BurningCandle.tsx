@@ -102,6 +102,7 @@ const BurningCandle = memo(function BurningCandle({
 
       <div
         onClick={onClick}
+        className="candle-appear"
         style={{
           display: "flex",
           flexDirection: "column",

@@ -82,6 +82,8 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [filterCat, setFilterCat]     = useState("All");
   const [amenLoading, setAmenLoading] = useState<string | null>(null);
+  const [justAmenedId, setJustAmenedId] = useState<string | null>(null);
+  const [submitShake, setSubmitShake] = useState(false);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -95,7 +97,11 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
   async function submitRequest() {
-    if (!form.text.trim()) { setSubmitError("Please write your prayer request."); return; }
+    if (!form.text.trim()) {
+      setSubmitError("Please write your prayer request.");
+      setSubmitShake(true);
+      return;
+    }
     setSubmitError("");
     setSubmitting(true);
     const id = `pr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -117,7 +123,11 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
 
   async function castAmen(id: string) {
     if (castAmens.has(id) || amenLoading === id) return;
+    // Optimistic count increment
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, amens: r.amens + 1 } : r));
     setAmenLoading(id);
+    setJustAmenedId(id);
+    setTimeout(() => setJustAmenedId(null), 520);
     try {
       const res = await fetch(`/api/prayer-requests/${id}/amen`, { method: "POST" });
       if (res.ok) {
@@ -125,8 +135,13 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
         setRequests(prev => prev.map(r => r.id === id ? { ...r, amens } : r));
         const next = new Set(castAmens); next.add(id);
         setCastAmens(next); saveCastAmens(next);
+      } else {
+        // Rollback on failure
+        setRequests(prev => prev.map(r => r.id === id ? { ...r, amens: r.amens - 1 } : r));
       }
-    } catch {}
+    } catch {
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, amens: r.amens - 1 } : r));
+    }
     setAmenLoading(null);
   }
 
@@ -180,18 +195,20 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
 
         {submitted ? (
           <div style={{ textAlign: "center", padding: "32px 0" }}>
-            <div style={{ fontSize: 52, marginBottom: 14 }}>🕍</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>Prayer Submitted</div>
-            <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 6 }}>
+            <div className="bloom-in" style={{ fontSize: 56, marginBottom: 14, display: "inline-block" }}>🕍</div>
+            <div className="slide-up-fade" style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, animationDelay: "120ms" }}>Prayer Submitted</div>
+            <div className="slide-up-fade" style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 6, animationDelay: "180ms" }}>
               Your prayer request is <strong style={{ color: "#d4a843" }}>pending review</strong>.<br />
               The admin will approve it for the community board.
             </div>
-            <div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontSize: 18, color: "#d4a843", margin: "20px 0" }}>יְהִי רָצוֹן</div>
-            <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 24 }}>May it be G-d's will</div>
-            <button className="btn-gold" style={{ padding: "12px 32px", fontSize: 14, fontWeight: 700 }}
-              onClick={() => { setView("board"); setSubmitted(false); setForm(emptyForm(userName)); fetchRequests(); }}>
-              Back to Prayer Board
-            </button>
+            <div className="slide-up-fade" style={{ fontFamily: "'Noto Serif Hebrew', serif", fontSize: 20, color: "#d4a843", margin: "20px 0", animationDelay: "240ms" }}>יְהִי רָצוֹן</div>
+            <div className="slide-up-fade" style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 24, animationDelay: "290ms" }}>May it be G-d's will</div>
+            <div className="slide-up-fade" style={{ animationDelay: "340ms" }}>
+              <button className="btn-gold" style={{ padding: "12px 32px", fontSize: 14, fontWeight: 700 }}
+                onClick={() => { setView("board"); setSubmitted(false); setForm(emptyForm(userName)); fetchRequests(); }}>
+                Back to Prayer Board
+              </button>
+            </div>
           </div>
         ) : (
           <>
@@ -216,7 +233,10 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
 
             <div style={{ marginBottom: 14 }}>
               <label style={labelStyle}>YOUR PRAYER REQUEST <span style={{ color: "#ef4444" }}>*</span></label>
-              <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical", lineHeight: 1.6 }}
+              <textarea
+                className={submitShake ? "error-shake" : ""}
+                onAnimationEnd={() => setSubmitShake(false)}
+                style={{ ...inputStyle, minHeight: 100, resize: "vertical", lineHeight: 1.6 }}
                 value={form.text} onChange={e => setForm(f => ({ ...f, text: e.target.value }))}
                 placeholder="Share your prayer request with the Bnei Menashe community…" maxLength={1000} />
               <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4, textAlign: "right" }}>{form.text.length}/1000</div>
@@ -446,17 +466,26 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
                   </div>
                   <div style={{ padding: "8px 14px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }}>
                     <button onClick={() => castAmen(req.id)} disabled={hasAmen || amenLoading === req.id}
+                      className="no-press"
                       style={{
                         display: "flex", alignItems: "center", gap: 5,
-                        padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700, cursor: hasAmen ? "default" : "pointer",
+                        padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 700,
+                        cursor: hasAmen ? "default" : "pointer",
                         background: hasAmen ? "rgba(212,168,67,0.15)" : "var(--elevated)",
                         border: hasAmen ? "1px solid rgba(212,168,67,0.4)" : "1px solid var(--border)",
                         color: hasAmen ? "#d4a843" : "var(--text-muted)",
-                        transition: "all 0.2s", opacity: amenLoading === req.id ? 0.6 : 1,
+                        transition: "background 0.2s, border-color 0.2s, color 0.2s",
+                        opacity: amenLoading === req.id ? 0.6 : 1,
                       }}>
-                      <span>{hasAmen ? "🙏" : "🤲"}</span>
+                      <span className={justAmenedId === req.id ? "reaction-pop" : ""}>
+                        {hasAmen ? "🙏" : "🤲"}
+                      </span>
                       <span>{t.prayerBoardAmen}</span>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: hasAmen ? "#d4a843" : "var(--text-secondary)" }}>{req.amens}</span>
+                      <span
+                        key={req.amens}
+                        className={justAmenedId === req.id ? "success-bounce" : ""}
+                        style={{ fontSize: 13, fontWeight: 800, color: hasAmen ? "#d4a843" : "var(--text-secondary)" }}
+                      >{req.amens}</span>
                     </button>
                   </div>
                 </div>

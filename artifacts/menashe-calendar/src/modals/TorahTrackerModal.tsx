@@ -343,13 +343,13 @@ export default function TorahTrackerModal({ onClose }: Props) {
 
         {saved ? (
           <div style={{ textAlign: "center", padding: "32px 0" }}>
-            <div style={{ fontSize: 52, marginBottom: 14 }}>🌟</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>Session Logged!</div>
-            <div style={{ fontFamily: "'Noto Serif Hebrew', serif", fontSize: 18, color: "#d4a843", margin: "16px 0 6px" }}>כָּל הַמְּלַמֵּד תּוֹרָה</div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 20 }}>"All who study Torah" — every session counts</div>
+            <div className="bloom-in" style={{ fontSize: 52, marginBottom: 14, display: "inline-block" }}>🌟</div>
+            <div className="slide-up-fade" style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8, animationDelay: "100ms" }}>Session Logged!</div>
+            <div className="slide-up-fade" style={{ fontFamily: "'Noto Serif Hebrew', serif", fontSize: 18, color: "#d4a843", margin: "16px 0 6px", animationDelay: "160ms" }}>כָּל הַמְּלַמֵּד תּוֹרָה</div>
+            <div className="slide-up-fade" style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 20, animationDelay: "210ms" }}>"All who study Torah" — every session counts</div>
             {streak > 1 && (
-              <div style={{ marginBottom: 12, padding: "10px 20px", borderRadius: 12, background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.2)", display: "inline-block" }}>
-                <span style={{ fontSize: 18 }}>🔥</span>
+              <div className="slide-up-fade" style={{ marginBottom: 12, padding: "10px 20px", borderRadius: 12, background: "rgba(212,168,67,0.08)", border: "1px solid rgba(212,168,67,0.2)", display: "inline-block", animationDelay: "260ms" }}>
+                <span className="streak-celebrate" style={{ fontSize: 20, display: "inline-block" }}>🔥</span>
                 <span style={{ fontSize: 14, fontWeight: 800, color: "#d4a843", marginLeft: 6 }}>{streak}-day streak!</span>
               </div>
             )}
@@ -590,8 +590,10 @@ export default function TorahTrackerModal({ onClose }: Props) {
             { label: "🔥 Streak", value: streak > 0 ? `${streak}d` : "—", sub: "days", color: streak >= 7 ? "#d4a843" : streak >= 3 ? "#f97316" : "var(--text-primary)" },
             { label: "📅 This Week", value: weekMins > 0 ? fmtDuration(weekMins) : "—", sub: "studied", color: "var(--text-primary)" },
             { label: "🕰 All Time", value: totalMins > 0 ? fmtDuration(totalMins) : "—", sub: `${totalSessions} sessions`, color: "var(--text-primary)" },
-          ].map(stat => (
-            <div key={stat.label} style={{ padding: "12px 8px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--border)", textAlign: "center" }}>
+          ].map((stat, idx) => (
+            <div key={stat.label}
+              className="stagger-item"
+              style={{ padding: "12px 8px", borderRadius: 14, background: "var(--card)", border: "1px solid var(--border)", textAlign: "center", animationDelay: `${idx * 55}ms` }}>
               <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 4 }}>{stat.label}</div>
               <div style={{ fontSize: 20, fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
               <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>{stat.sub}</div>

@@ -1,0 +1,285 @@
+Chief Architect
+
+PEP-702
+
+MISSION
+
+The Menashe Platform is feature-complete and visually polished.
+
+Now refine the emotional experience.
+
+This sprint focuses on meaningful motion, feedback, and delight.
+
+DO NOT add features.
+
+DO NOT redesign layouts.
+
+DO NOT change navigation.
+
+DO NOT modify business logic.
+
+DO NOT change APIs or database.
+
+Every animation must have a purpose.
+
+==================================================
+
+DESIGN PRINCIPLE
+
+Motion should communicate:
+
+• state
+
+• continuity
+
+• success
+
+• focus
+
+• calm
+
+Never distract.
+
+Respect prefers-reduced-motion.
+
+Maintain 60fps.
+
+==================================================
+
+GLOBAL MOTION
+
+Implement a unified motion system.
+
+Standardize:
+
+✓ page enter
+
+✓ page exit
+
+✓ modal open
+
+✓ modal close
+
+✓ drawer transitions
+
+✓ bottom sheet
+
+✓ dialog
+
+Use one timing system.
+
+Avoid multiple animation styles.
+
+==================================================
+
+BUTTON FEEDBACK
+
+Every interactive button should have:
+
+✓ subtle press scale
+
+✓ ripple or glow (theme-aware)
+
+✓ disabled state
+
+✓ loading state
+
+✓ success completion
+
+Never block interaction.
+
+==================================================
+
+FORM EXPERIENCE
+
+Improve:
+
+✓ input focus animation
+
+✓ validation transitions
+
+✓ success confirmation
+
+✓ error shake (subtle)
+
+✓ save confirmation
+
+==================================================
+
+CALENDAR EXPERIENCE
+
+Polish:
+
+✓ month transition
+
+✓ selected day feedback
+
+✓ holiday appearance
+
+✓ scroll continuity
+
+Keep motion respectful.
+
+==================================================
+
+TORAH EXPERIENCE
+
+Enhance:
+
+✓ reading completion
+
+✓ progress updates
+
+✓ bookmark confirmation
+
+✓ study streak celebration
+
+Small, elegant animations only.
+
+==================================================
+
+MEMORIAL EXPERIENCE
+
+This is the emotional heart of the platform.
+
+Improve:
+
+✓ candle lighting glow
+
+✓ memorial card appearance
+
+✓ peaceful fade transitions
+
+✓ respectful loading
+
+Never use playful animations.
+
+==================================================
+
+COMMUNITY EXPERIENCE
+
+Improve:
+
+✓ prayer submitted confirmation
+
+✓ reaction feedback
+
+✓ loading placeholders
+
+✓ optimistic UI where safe
+
+==================================================
+
+EMPTY STATES
+
+Every empty state should feel welcoming.
+
+Use:
+
+✓ gentle illustration
+
+✓ helpful guidance
+
+✓ primary action
+
+Avoid "No data."
+
+==================================================
+
+LOADING
+
+Standardize:
+
+✓ skeletons
+
+✓ shimmer
+
+✓ progress indicators
+
+✓ async transitions
+
+==================================================
+
+ERROR EXPERIENCE
+
+Replace abrupt errors with:
+
+✓ calm messaging
+
+✓ retry action
+
+✓ recovery guidance
+
+==================================================
+
+SUCCESS EXPERIENCE
+
+Standardize:
+
+✓ success toast
+
+✓ subtle check animation
+
+✓ optional haptic (mobile)
+
+✓ accessibility announcement
+
+==================================================
+
+ACCESSIBILITY
+
+Respect:
+
+✓ prefers-reduced-motion
+
+✓ keyboard users
+
+✓ screen readers
+
+✓ focus visibility
+
+==================================================
+
+PERFORMANCE
+
+No dropped frames.
+
+No layout shift.
+
+No blocking animation.
+
+No unnecessary re-renders.
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Components improved
+
+2.
+
+Motion improvements
+
+3.
+
+Feedback improvements
+
+4.
+
+Accessibility improvements
+
+5.
+
+Performance impact
+
+6.
+
+Motion Consistency Score
+
+7.
+
+Overall Delight Score
+
+STOP.
