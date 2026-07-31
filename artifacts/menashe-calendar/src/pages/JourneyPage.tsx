@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, memo, lazy, Suspense } from "react";
 
 const ChatModal = lazy(() => import("../modals/ChatModal"));
+const FamilyTimeline = lazy(() => import("../components/FamilyTimeline"));
 import { useUser } from "@clerk/react";
 import {
   fetchPublicProfile,
@@ -660,6 +661,21 @@ const JourneyPage = memo(function JourneyPage({
             </svg>
           </button>
         </div>
+      </Section>
+
+      {/* ── ⑤b Family Heritage & Ancestry ──────────────────────────────── */}
+      <Section title="Family Heritage & Ancestry">
+        <Suspense fallback={
+          <div style={{
+            background: "var(--elevated)", border: "1px solid var(--border)",
+            borderRadius: 16, padding: "32px 20px", textAlign: "center",
+            color: "var(--text-muted)", fontSize: 13,
+          }}>
+            Loading family timeline…
+          </div>
+        }>
+          <FamilyTimeline isSignedIn={!!user} />
+        </Suspense>
       </Section>
 
       {/* ── ⑥ Goals ─────────────────────────────────────────────────────── */}

@@ -19,6 +19,7 @@ import prayerBoardRouter from "./prayerBoard";
 import communityEventsRouter from "./communityEvents";
 import directoryRouter from "./directory";
 import remembranceRouter from "./remembrance";
+import familyTimelineRouter from "./familyTimeline";
 
 const router: IRouter = Router();
 
@@ -42,5 +43,6 @@ router.use(prayerBoardRouter);
 router.use(communityEventsRouter);
 router.use(directoryRouter);
 router.use(remembranceRouter);
+router.use(familyTimelineRouter);
 
 export default router;

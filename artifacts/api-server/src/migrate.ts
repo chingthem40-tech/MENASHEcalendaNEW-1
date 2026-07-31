@@ -745,6 +745,34 @@ export async function runMigrations(): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_remembrance_user ON remembrance_events (user_id)
     `);
 
+    // ── Family Timeline ────────────────────────────────────────────────────────
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS family_timeline (
+        id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id          TEXT NOT NULL,
+        event_type       TEXT NOT NULL DEFAULT 'milestone',
+        title            TEXT NOT NULL,
+        description      TEXT NOT NULL DEFAULT '',
+        member_name      TEXT NOT NULL DEFAULT '',
+        member_photo_url TEXT,
+        gregorian_date   DATE,
+        hebrew_date      TEXT NOT NULL DEFAULT '',
+        icon             TEXT NOT NULL DEFAULT '',
+        details_url      TEXT,
+        created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_family_timeline_user ON family_timeline (user_id, created_at DESC)
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_family_timeline_event_type ON family_timeline (user_id, event_type)
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_family_timeline_greg_date ON family_timeline (user_id, gregorian_date DESC)
+    `);
+
     logger.info("Schema ready");
 
     const { rows } = await client.query("SELECT COUNT(*) AS cnt FROM books");
