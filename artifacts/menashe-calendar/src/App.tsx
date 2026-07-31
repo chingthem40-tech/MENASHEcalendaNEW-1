@@ -288,93 +288,69 @@ type Modal =
 
 type DayInfo = { day: number; month: number; year: number } | null;
 
-/* ── Shared auth card wrapper — Bold 3D ─────────────────────────── */
+/* ── Shared auth card wrapper — Enhanced ────────────────────────── */
 function AuthCard({ children }: { children: React.ReactNode }) {
   const photoUrl = `${basePath}/saipikhup-photo.jpg`;
   return (
     <div
       style={{
-        minHeight: "100dvh",
+        position: "fixed",
+        inset: 0,
+        zIndex: 2000,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "24px 16px",
-        position: "relative",
-        backgroundImage: `url(${photoUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
+        overflowY: "auto",
+        /* Deep dark backdrop — fully opaque, no see-through */
+        background:
+          "radial-gradient(ellipse 90% 80% at 50% 40%, #0d1528 0%, #060810 65%)",
       }}
     >
-      {/* Deep dark veil */}
+      {/* Ambient gold center glow */}
       <div
         aria-hidden
         style={{
-          position: "absolute",
-          inset: 0,
-          background: "rgba(3,3,8,0.88)",
-          pointerEvents: "none",
-        }}
-      />
-      {/* Subtle center radial glow */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
           background:
-            "radial-gradient(ellipse 55% 50% at 50% 52%, rgba(212,175,55,0.05) 0%, transparent 70%)",
+            "radial-gradient(ellipse 50% 40% at 50% 48%, rgba(212,175,55,0.06) 0%, transparent 65%)",
           pointerEvents: "none",
+          zIndex: 0,
         }}
       />
 
-      {/* ── 3D CARD ── */}
+      {/* ── CARD ── */}
       <div
         style={{
           position: "relative",
           zIndex: 10,
           width: "100%",
-          maxWidth: 448,
-          borderRadius: "20px",
+          maxWidth: 420,
+          borderRadius: "24px",
           overflow: "hidden",
-          /* Light source from top-left — brighter top border */
-          borderTop: "1.5px solid rgba(212,175,55,0.65)",
-          borderLeft: "1px solid rgba(212,175,55,0.28)",
-          borderRight: "1px solid rgba(212,175,55,0.18)",
-          borderBottom: "1px solid rgba(212,175,55,0.12)",
-          /* 5-layer shadow stack for floating 3D depth */
+          border: "1px solid rgba(212,175,55,0.45)",
           boxShadow: [
-            "0 1px 0 rgba(255,220,100,0.08)",
-            "0 6px 12px rgba(0,0,0,0.55)",
-            "0 20px 48px rgba(0,0,0,0.75)",
-            "0 52px 100px rgba(0,0,0,0.85)",
-            "0 80px 140px rgba(0,0,0,0.60)",
-            "0 0 80px rgba(212,175,55,0.07)",
+            "0 0 0 1px rgba(212,175,55,0.08)",
+            "0 4px 8px rgba(0,0,0,0.5)",
+            "0 16px 40px rgba(0,0,0,0.8)",
+            "0 48px 96px rgba(0,0,0,0.9)",
+            "0 0 60px rgba(212,175,55,0.06)",
           ].join(", "),
-          transform: "perspective(1800px) rotateX(1.2deg)",
         }}
       >
-        {/* ── PHOTO HEADER — real embroidery band ── */}
+        {/* ── EMBROIDERY HEADER ── */}
         <div
           style={{
-            height: 210,
             position: "relative",
             overflow: "hidden",
             backgroundImage: `url(${photoUrl})`,
-            backgroundSize: "310%",
-            backgroundPosition: "center 87%",
+            backgroundSize: "280%",
+            backgroundPosition: "center 82%",
+            height: 230,
           }}
         >
-          {/* Dramatic vignette overlay */}
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              inset: 0,
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.08) 38%, rgba(0,0,0,0.08) 62%, rgba(0,0,0,0.85) 100%)",
-            }}
-          />
-          {/* Gold shimmer top edge */}
+          {/* Top gold shimmer bar */}
           <div
             aria-hidden
             style={{
@@ -384,21 +360,34 @@ function AuthCard({ children }: { children: React.ReactNode }) {
               right: 0,
               height: 3,
               background:
-                "linear-gradient(90deg, transparent 0%, rgba(212,175,55,1) 35%, rgba(255,235,120,1) 50%, rgba(212,175,55,1) 65%, transparent 100%)",
+                "linear-gradient(90deg, transparent 5%, #D4AF37 35%, #FFE878 50%, #D4AF37 65%, transparent 95%)",
+              zIndex: 5,
             }}
           />
-          {/* Side edge vignettes */}
+          {/* Dark overlay — top + bottom vignette, preserve middle textile */}
           <div
             aria-hidden
             style={{
               position: "absolute",
               inset: 0,
               background:
-                "linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 20%, transparent 80%, rgba(0,0,0,0.4) 100%)",
+                "linear-gradient(to bottom, rgba(4,6,14,0.82) 0%, rgba(4,6,14,0.1) 30%, rgba(4,6,14,0.1) 65%, rgba(4,6,14,0.88) 100%)",
+              zIndex: 1,
+            }}
+          />
+          {/* Side vignettes */}
+          <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to right, rgba(4,6,14,0.55) 0%, transparent 18%, transparent 82%, rgba(4,6,14,0.55) 100%)",
+              zIndex: 2,
             }}
           />
 
-          {/* Logo badge + branding */}
+          {/* Logo + branding */}
           <div
             style={{
               position: "relative",
@@ -408,84 +397,126 @@ function AuthCard({ children }: { children: React.ReactNode }) {
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              gap: 12,
+              gap: 0,
+              paddingTop: 8,
             }}
           >
-            {/* 3D logo badge */}
+            {/* Logo badge */}
             <img
               src="/logo.png"
               alt="Bnei Menashe Calendar"
               style={{
-                width: 80,
-                height: 80,
-                borderRadius: "20px",
+                width: 86,
+                height: 86,
+                borderRadius: "22px",
                 objectFit: "cover",
                 boxShadow: [
-                  "0 4px 20px rgba(0,0,0,0.9)",
-                  "0 10px 40px rgba(0,0,0,0.7)",
-                  "0 0 24px rgba(212,175,55,0.25)",
+                  "0 4px 24px rgba(0,0,0,0.95)",
+                  "0 12px 40px rgba(0,0,0,0.8)",
+                  "0 0 32px rgba(212,175,55,0.3)",
                 ].join(", "),
-                border: "2px solid rgba(212,175,55,0.6)",
+                border: "2px solid rgba(212,175,55,0.7)",
+                marginBottom: 16,
               }}
             />
 
-            <div style={{ textAlign: "center" }}>
+            {/* BNEI MENASHE wordmark */}
+            <div
+              style={{
+                color: "#D4AF37",
+                fontWeight: 800,
+                fontSize: 26,
+                letterSpacing: "0.22em",
+                textTransform: "uppercase",
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                textShadow:
+                  "0 2px 20px rgba(0,0,0,1), 0 0 40px rgba(212,175,55,0.35), 0 1px 0 rgba(0,0,0,1)",
+                lineHeight: 1,
+                marginBottom: 8,
+              }}
+            >
+              BNEI MENASHE
+            </div>
+
+            {/* · SACRED CALENDAR · with ornament lines */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                marginBottom: 10,
+              }}
+            >
               <div
                 style={{
-                  color: "#F5D982",
-                  fontWeight: 800,
-                  fontSize: 22,
-                  letterSpacing: "0.16em",
-                  textTransform: "uppercase",
-                  fontFamily: "Georgia, serif",
-                  textShadow:
-                    "0 2px 16px rgba(0,0,0,1), 0 1px 0 rgba(0,0,0,0.9), 0 0 30px rgba(212,175,55,0.2)",
-                  lineHeight: 1,
+                  height: 1,
+                  width: 32,
+                  background:
+                    "linear-gradient(to right, transparent, rgba(212,175,55,0.7))",
                 }}
-              >
-                Bnei Menashe
-              </div>
-              <div
+              />
+              <span
                 style={{
-                  color: "rgba(245,217,130,0.65)",
+                  color: "rgba(212,175,55,0.85)",
                   fontSize: 10,
-                  letterSpacing: "0.30em",
+                  letterSpacing: "0.28em",
+                  fontWeight: 600,
                   textTransform: "uppercase",
-                  marginTop: 6,
                   textShadow: "0 1px 8px rgba(0,0,0,1)",
+                  whiteSpace: "nowrap",
                 }}
               >
-                Sacred Calendar
-              </div>
+                · SACRED CALENDAR ·
+              </span>
+              <div
+                style={{
+                  height: 1,
+                  width: 32,
+                  background:
+                    "linear-gradient(to left, transparent, rgba(212,175,55,0.7))",
+                }}
+              />
+            </div>
+
+            {/* Diamond separator ◆ */}
+            <div
+              style={{
+                color: "rgba(212,175,55,0.75)",
+                fontSize: 10,
+                textShadow: "0 0 12px rgba(212,175,55,0.5)",
+                lineHeight: 1,
+              }}
+            >
+              ◆
             </div>
           </div>
         </div>
 
-        {/* Bold gold separator */}
+        {/* Gold separator line */}
         <div
           aria-hidden
           style={{
             height: 2,
             background:
-              "linear-gradient(90deg, rgba(212,175,55,0.05) 0%, rgba(212,175,55,0.8) 30%, rgba(255,235,120,1) 50%, rgba(212,175,55,0.8) 70%, rgba(212,175,55,0.05) 100%)",
+              "linear-gradient(90deg, rgba(212,175,55,0.0) 0%, rgba(212,175,55,0.9) 30%, rgba(255,235,120,1) 50%, rgba(212,175,55,0.9) 70%, rgba(212,175,55,0.0) 100%)",
           }}
         />
 
         {/* ── FORM BODY ── */}
         <div
           style={{
-            background: "linear-gradient(180deg, #111118 0%, #0f0f16 100%)",
+            background: "linear-gradient(180deg, #0d0d16 0%, #0b0b14 100%)",
           }}
         >
           {children}
         </div>
 
-        {/* Bottom accent bar */}
+        {/* Bottom gold accent */}
         <div
           style={{
-            height: 3,
+            height: 2,
             background:
-              "linear-gradient(90deg, transparent 0%, rgba(212,175,55,0.22) 40%, rgba(212,175,55,0.35) 50%, rgba(212,175,55,0.22) 60%, transparent 100%)",
+              "linear-gradient(90deg, rgba(212,175,55,0.0) 0%, rgba(212,175,55,0.3) 40%, rgba(212,175,55,0.5) 50%, rgba(212,175,55,0.3) 60%, rgba(212,175,55,0.0) 100%)",
           }}
         />
       </div>
