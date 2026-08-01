@@ -646,7 +646,7 @@ export async function runMigrations(): Promise<void> {
         message     TEXT NOT NULL,
         page        TEXT NOT NULL DEFAULT '',
         device      TEXT NOT NULL DEFAULT '',
-        status      TEXT NOT NULL DEFAULT 'open',
+        status      TEXT NOT NULL DEFAULT 'new',
         admin_note  TEXT NOT NULL DEFAULT '',
         created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -654,6 +654,35 @@ export async function runMigrations(): Promise<void> {
     `);
     await client.query(`
       CREATE INDEX IF NOT EXISTS feedback_status_idx ON feedback (status, created_at DESC)
+    `);
+    // PEP-705: Expand feedback table with full support-center fields
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS reference_number TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'general'`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS subject TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS expected_behaviour TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS actual_behaviour TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS steps_to_reproduce TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS platform TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS browser TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS device_model TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS app_version TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS problem_solved TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS who_benefits TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS importance TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS emoji_reaction TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS rating INTEGER`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS would_recommend TEXT NOT NULL DEFAULT ''`);
+    await client.query(`ALTER TABLE feedback ADD COLUMN IF NOT EXISTS attachment_url TEXT`);
+    // Backfill reference_number for rows that predate PEP-705
+    await client.query(`
+      UPDATE feedback SET reference_number = 'FB-' || LPAD(id::TEXT, 6, '0')
+      WHERE reference_number = ''
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS feedback_user_id_idx ON feedback (user_id) WHERE user_id IS NOT NULL
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS feedback_type_idx ON feedback (type, created_at DESC)
     `);
 
     // ── Community Prayer Board ────────────────────────────────────────────────

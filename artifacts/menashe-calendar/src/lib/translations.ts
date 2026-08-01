@@ -57,6 +57,10 @@ export interface Translations {
   feedbackClose: string;
   feedbackError: string;
 
+  /* ── Feedback Center (PEP-705) ── */
+  fcHelpSupportSection: string;
+  fcHelpSupportSub: string;
+
   /* ── Settings ── */
   settingsTitle: string;
   settingsLocation: string;
@@ -844,6 +848,10 @@ export const en: Translations = {
   feedbackClose: "Close",
   feedbackError: "Could not send — please try again.",
 
+  /* ── Feedback Center (PEP-705) ── */
+  fcHelpSupportSection: "Help & Support",
+  fcHelpSupportSub: "Feedback, help, and release notes",
+
   settingsTitle: "Settings",
   settingsLocation: "LOCATION",
   settingsCity: "City",
@@ -1609,6 +1617,10 @@ export const tk: Translations = {
   feedbackSuccessDetail: "Na thu a ziak ta. Ziak tawh zawng zawng kan en ang.",
   feedbackClose: "Kawr",
   feedbackError: "A thawn theilo — zawk tih rawh.",
+
+  /* ── Feedback Center (PEP-705) ── */
+  fcHelpSupportSection: "Pui Leh Enkawl",
+  fcHelpSupportSub: "Thu pe, pui leh thar ziak dan",
 
   settingsTitle: "Siam Dan",
   settingsLocation: "HMUN",

@@ -1,0 +1,395 @@
+Chief Architect
+
+PEP-705
+
+MISSION
+
+Design and implement a world-class Community Feedback & Support Center.
+
+This is NOT a simple contact form.
+
+This is the official communication hub between the Bnei Menashe community and the development team.
+
+Use the existing Menashe design language.
+
+Premium.
+
+Warm.
+
+Respectful.
+
+Professional.
+
+DO NOT redesign the app.
+
+DO NOT modify authentication.
+
+DO NOT change existing APIs unless expanding the feedback module.
+
+==================================================
+
+LOCATION
+
+Settings
+
+↓
+
+Help & Support
+
+↓
+
+Feedback Center
+
+==================================================
+
+HOME SCREEN
+
+Create a premium dashboard.
+
+Sections:
+
+💡 Suggest a Feature
+
+🐞 Report a Bug
+
+❤️ Share Appreciation
+
+❓ Ask for Help
+
+⭐ Rate the App
+
+📢 Release Notes
+
+📚 Help Center
+
+Contact Support
+
+Each section should have its own beautiful card.
+
+==================================================
+
+BUG REPORT
+
+Fields
+
+Category
+
+Priority
+
+Subject
+
+Description
+
+Expected Behaviour
+
+Actual Behaviour
+
+Steps to Reproduce
+
+Platform
+
+Web
+
+Android
+
+iPhone
+
+Browser
+
+Device Model
+
+App Version
+
+Attach Screenshot (optional)
+
+Attach Log (future-ready)
+
+==================================================
+
+FEATURE REQUEST
+
+Fields
+
+Title
+
+Description
+
+Problem it solves
+
+Who benefits
+
+Importance
+
+Low
+
+Medium
+
+High
+
+==================================================
+
+APPRECIATION
+
+Simple beautiful screen.
+
+"What made your experience meaningful?"
+
+Optional message.
+
+Allow emoji reaction.
+
+==================================================
+
+HELP REQUEST
+
+Fields
+
+Subject
+
+Description
+
+Category
+
+Account
+
+Calendar
+
+Prayer
+
+Premium
+
+Payments
+
+Community
+
+Other
+
+==================================================
+
+APP RATING
+
+1–5 stars
+
+Optional comment
+
+Would you recommend this app?
+
+Yes
+
+Maybe
+
+No
+
+==================================================
+
+SUCCESS SCREEN
+
+Never simply say
+
+"Submitted"
+
+Instead show
+
+✓ Thank You
+
+Shalom!
+
+Your message has been safely received.
+
+Reference Number
+
+FB-000124
+
+We'll carefully review your feedback.
+
+Thank you for helping improve the Menashe Platform.
+
+==================================================
+
+ADMIN PANEL
+
+Create Feedback Management.
+
+Status
+
+New
+
+Reviewed
+
+In Progress
+
+Planned
+
+Completed
+
+Closed
+
+Filters
+
+Category
+
+Priority
+
+Platform
+
+Version
+
+Date
+
+User
+
+Search
+
+Bulk actions
+
+Export CSV
+
+==================================================
+
+USER HISTORY
+
+Every signed-in user has
+
+My Feedback
+
+Status
+
+Submitted Date
+
+Reference Number
+
+Developer Response (future)
+
+==================================================
+
+DATABASE
+
+Verify the structure supports
+
+feedback
+
+feedback_category
+
+feedback_status
+
+feedback_priority
+
+platform
+
+app_version
+
+device
+
+user_id
+
+attachments
+
+created_at
+
+updated_at
+
+==================================================
+
+ANALYTICS
+
+Prepare for future dashboard.
+
+Most requested features
+
+Most common bugs
+
+Average rating
+
+Most active community
+
+Platform distribution
+
+==================================================
+
+DESIGN
+
+Follow the Menashe Premium Design System.
+
+Large comfortable spacing.
+
+Rounded cards.
+
+Gold accents.
+
+Meaningful icons.
+
+Beautiful empty states.
+
+Skeleton loading.
+
+Respect Dark / Light / Sapphire themes.
+
+Responsive.
+
+Accessible.
+
+==================================================
+
+DO NOT
+
+Use browser alerts.
+
+Use placeholder text.
+
+Create dead ends.
+
+Duplicate Settings UI.
+
+==================================================
+
+VERIFY
+
+✓ Zero TypeScript errors
+
+✓ Responsive
+
+✓ Accessible
+
+✓ Keyboard support
+
+✓ Mobile friendly
+
+✓ Dark mode
+
+✓ Light mode
+
+✓ Sapphire mode
+
+==================================================
+
+RETURN ONLY
+
+1.
+
+Files modified
+
+2.
+
+New database structures
+
+3.
+
+New UI screens
+
+4.
+
+Admin capabilities
+
+5.
+
+User capabilities
+
+6.
+
+Accessibility improvements
+
+7.
+
+Production readiness
+
+STOP.

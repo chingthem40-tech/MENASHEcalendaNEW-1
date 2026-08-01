@@ -77,6 +77,7 @@ interface SettingsPageProps {
   onProfile: () => void;
   onSignOut: () => void;
   onWhatsNew: () => void;
+  onFeedbackCenter: () => void;
   profileName?: string;
   profileRole?: string;
   notifPermission: NotificationPermission;
@@ -143,7 +144,7 @@ function VersionFooter({ userId, versionLabel }: { userId: string; versionLabel:
 const SettingsPage = memo(function SettingsPage({
   theme, location,
   onToggleTheme, onSetTheme, onLocationClick, onPremium, onTahara, onYartzeit, onBirthday, onCommunity, onCensus,
-  onProfile, onSignOut, onWhatsNew, profileName, profileRole,
+  onProfile, onSignOut, onWhatsNew, onFeedbackCenter, profileName, profileRole,
   notifPermission, notifPrefs, leadTime, onUpdateNotifPref, onUpdateLeadTime,
   pushSubscribed, pushSupported, pushLoading, pushError, onSubscribePush, onUnsubscribePush, onTestPush,
 }: SettingsPageProps) {
@@ -1281,6 +1282,44 @@ const SettingsPage = memo(function SettingsPage({
             <div style={{ fontSize: 12, color: "#94a3b8" }}>{t.settingsUpgradeSub}</div>
           </div>
           <span style={{ color: "#d4a843", fontSize: 18 }}>›</span>
+        </div>
+
+        {/* Help & Support */}
+        <div className="section-header">HELP &amp; SUPPORT</div>
+        <div className="card" style={{ marginBottom: 16, overflow: "hidden" }}>
+          <div
+            style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+            onClick={onFeedbackCenter}
+          >
+            <span style={{ fontSize: 20, lineHeight: 1 }}>💬</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>Feedback Center</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>Report bugs, suggest features, share appreciation</div>
+            </div>
+            <span style={{ color: "#d4a843", fontSize: 18 }}>›</span>
+          </div>
+          <div
+            style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+            onClick={onFeedbackCenter}
+          >
+            <span style={{ fontSize: 20, lineHeight: 1 }}>❓</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>Ask for Help</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>Get support from our team</div>
+            </div>
+            <span style={{ color: "#d4a843", fontSize: 18 }}>›</span>
+          </div>
+          <div
+            style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+            onClick={onFeedbackCenter}
+          >
+            <span style={{ fontSize: 20, lineHeight: 1 }}>⭐</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text-primary)" }}>Rate the App</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 1 }}>Tell us how we're doing</div>
+            </div>
+            <span style={{ color: "#d4a843", fontSize: 18 }}>›</span>
+          </div>
         </div>
 
         {/* Account */}

@@ -1,3 +1,4 @@
+- [PEP-705 Feedback Center](pep705-feedback-center.md) — full support center; modal key "feedback-center"; 8 views; API at /feedback/*; DB columns added via ALTER TABLE.
 - [Chat SSE abort pattern](chat-sse-abort-pattern.md) — use res.on("close") not req.on("close") in SSE routes; express.json() closes req stream immediately after body parse.
 - [Offline service worker](offline-sw.md) — git-safe offline mode: static public/sw.js, two caches (shell + assets), no build manifests, SW registered in main.tsx on startup.
 - [Bilingual system (EN + TK)](bilingual-system.md) — all UI text must go through LanguageContext; never hardcode English-only strings

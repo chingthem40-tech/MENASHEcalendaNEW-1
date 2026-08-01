@@ -92,6 +92,7 @@ const NotificationsPage = lazy(() => import("./pages/NotificationsPage"));
 const InstallPrompt = lazy(() => import("./components/InstallPrompt"));
 const ShabbatBanner = lazy(() => import("./components/ShabbatBanner"));
 const WhatsNewModal = lazy(() => import("./modals/WhatsNewModal"));
+const FeedbackCenterModal = lazy(() => import("./modals/FeedbackCenterModal"));
 // Plain constants — import from the tiny side-effect-free module, not the full modal
 import { APP_VERSION, VERSION_KEY } from "./modals/whatsNewVersion";
 import { prefetchAdjacentPages } from "./lib/prefetch";
@@ -284,6 +285,7 @@ type Modal =
   | "whats-new"
   | "mikveh-calendar"
   | "location-map"
+  | "feedback-center"
   | null;
 
 type DayInfo = { day: number; month: number; year: number } | null;
@@ -859,6 +861,7 @@ function AppShell() {
   const showBirthday = useCallback(() => setModal("birthday"), []);
   const showProfile = useCallback(() => setModal("profile"), []);
   const showWhatsNew = useCallback(() => setModal("whats-new"), []);
+  const showFeedbackCenter = useCallback(() => setModal("feedback-center"), []);
   const showLocationMap = useCallback(() => setModal("location-map"), []);
   const showPremiumModal = useCallback(() => setModal("premium"), []);
   const showZmanimInfo = useCallback(() => setModal("zmaniminfo"), []);
@@ -975,6 +978,7 @@ function AppShell() {
             onCensus={showCensus}
             onProfile={showProfile}
             onWhatsNew={showWhatsNew}
+            onFeedbackCenter={showFeedbackCenter}
             onSignOut={onSignOut}
             profileName={publicProfile?.displayName}
             profileRole={
@@ -1365,6 +1369,9 @@ function AppShell() {
                 )}
                 {modal === "torah-tracker" && (
                   <TorahTrackerModal onClose={closeModal} />
+                )}
+                {modal === "feedback-center" && (
+                  <FeedbackCenterModal onClose={closeModal} isAdmin={isAdmin} />
                 )}
                 {modal === "profile" && (
                   <ProfileModal
