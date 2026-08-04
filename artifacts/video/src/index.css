@@ -1,0 +1,60 @@
+@import 'tailwindcss';
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --color-primary: #D4AF37;
+  --color-secondary: #d4a843;
+  --color-accent: #F7E5A9;
+
+  --color-bg-light: #050A15;
+  --color-bg-dark: #02040A;
+  --color-bg-muted: #0A1124;
+
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #c2c9d6;
+  --color-text-muted: #8391a8;
+  --color-text-inverse: #02040A;
+
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Outfit', sans-serif;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg-light: var(--color-bg-light);
+  --color-bg-dark: var(--color-bg-dark);
+  --color-bg-muted: var(--color-bg-muted);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-inverse: var(--color-text-inverse);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-primary);
+  overflow: hidden;
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #F7E5A9 0%, #D4AF37 50%, #d4a843 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gold-gradient-bg {
+  background: linear-gradient(135deg, #F7E5A9 0%, #D4AF37 50%, #d4a843 100%);
+}
+
+.clip-diagonal {
+  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+}
