@@ -60,7 +60,8 @@ export const globalRateLimiter = makeRateLimiter(
   15 * 60 * 1000,
   300,
   "Too many requests — please try again later",
-  (req) => req.path === "/healthz",
+  // Skip rate limiting on the health check — it must always respond
+  (req) => req.path === "/health" || req.path === "/healthz",
 );
 
 export const aiRateLimiter = makeRateLimiter(

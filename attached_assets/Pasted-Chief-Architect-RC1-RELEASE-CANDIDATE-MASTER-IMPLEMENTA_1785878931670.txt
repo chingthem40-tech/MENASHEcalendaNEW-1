@@ -1,0 +1,312 @@
+Chief Architect
+
+RC1 — RELEASE CANDIDATE MASTER IMPLEMENTATION
+
+MISSION
+
+The Menashe Platform has completed:
+
+✓ Engineering
+✓ Security Hardening
+✓ Product Excellence
+✓ Accessibility
+✓ Feedback Center
+✓ Navigation
+✓ Motion
+✓ QA Audit
+
+From this point forward the platform enters RELEASE CANDIDATE mode.
+
+No more feature development.
+
+The objective is to transform this repository into a production-quality software product.
+
+==================================================
+
+STRICT RULES
+
+DO NOT
+
+❌ Add new features
+
+❌ Change UI layouts
+
+❌ Change navigation
+
+❌ Redesign screens
+
+❌ Change database schema unless required for production
+
+❌ Introduce breaking changes
+
+Only improve stability, quality and release readiness.
+
+==================================================
+
+PHASE 1
+
+CODEBASE HEALTH
+
+Audit entire repository.
+
+Verify
+
+✓ no duplicate components
+
+✓ no duplicate APIs
+
+✓ no dead code
+
+✓ no unused routes
+
+✓ no duplicate CSS
+
+✓ no duplicate assets
+
+✓ no unreachable screens
+
+Safely remove verified unused code.
+
+==================================================
+
+PHASE 2
+
+TYPESCRIPT
+
+Verify
+
+✓ zero errors
+
+✓ zero implicit any
+
+✓ zero unsafe casts
+
+✓ zero unused imports
+
+✓ zero unreachable branches
+
+==================================================
+
+PHASE 3
+
+ESLINT
+
+Verify
+
+✓ zero warnings
+
+✓ zero errors
+
+==================================================
+
+PHASE 4
+
+PERFORMANCE
+
+Verify
+
+✓ lazy loading
+
+✓ bundle size
+
+✓ render frequency
+
+✓ unnecessary rerenders
+
+✓ memoization
+
+✓ image optimization
+
+✓ network efficiency
+
+==================================================
+
+PHASE 5
+
+SECURITY
+
+Verify
+
+Authentication
+
+Authorization
+
+Rate limits
+
+Input validation
+
+Object ownership
+
+Storage ACL
+
+Secrets
+
+CORS
+
+Headers
+
+Session handling
+
+==================================================
+
+PHASE 6
+
+DATA
+
+Verify
+
+CRUD
+
+Transactions
+
+Error recovery
+
+Rollback
+
+Loading
+
+Optimistic UI
+
+Caching
+
+==================================================
+
+PHASE 7
+
+USER EXPERIENCE
+
+Verify
+
+Empty states
+
+Loading states
+
+Offline states
+
+Error recovery
+
+Retry flows
+
+Premium flow
+
+Feedback flow
+
+Success flow
+
+==================================================
+
+PHASE 8
+
+PRODUCTION CONFIGURATION
+
+Verify
+
+Production Clerk
+
+Production AI
+
+Production Razorpay
+
+Production Push
+
+Production Environment Variables
+
+Do NOT hardcode values.
+
+Gracefully report missing configuration.
+
+==================================================
+
+PHASE 9
+
+RELEASE CHECKLIST
+
+Verify
+
+✓ Production build
+
+✓ API build
+
+✓ Mobile build
+
+✓ Web build
+
+✓ No broken imports
+
+✓ No broken exports
+
+✓ No runtime exceptions
+
+✓ No console errors
+
+==================================================
+
+PHASE 10
+
+DOCUMENTATION
+
+Generate
+
+Release Notes v1.0
+
+Deployment Checklist
+
+Production Secrets Checklist
+
+Rollback Checklist
+
+Known Issues
+
+Post-Launch Monitoring Checklist
+
+==================================================
+
+RETURN ONLY
+
+SECTION A
+
+Files modified
+
+SECTION B
+
+Issues fixed
+
+SECTION C
+
+Issues intentionally deferred
+
+SECTION D
+
+Build status
+
+SECTION E
+
+Release readiness
+
+SECTION F
+
+Security status
+
+SECTION G
+
+Performance status
+
+SECTION H
+
+Known risks
+
+SECTION I
+
+FINAL DECISION
+
+READY FOR RC1
+
+or
+
+NOT READY
+
+Do not invent issues.
+
+Every finding must be verified.
+
+STOP.

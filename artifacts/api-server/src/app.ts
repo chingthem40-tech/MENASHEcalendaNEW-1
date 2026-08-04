@@ -1,5 +1,6 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
 import pinoHttp from "pino-http";
 import path from "path";
 import fs from "fs";
@@ -65,6 +66,22 @@ function buildAllowedOrigins(): string[] | boolean {
 const allowedOrigins = buildAllowedOrigins();
 
 app.use(cors({ credentials: true, origin: allowedOrigins }));
+
+// Security headers — applied to every response
+app.use(
+  helmet({
+    // CSP is omitted here; it is handled by the frontend's own meta tags
+    // and Vite's output. Enabling a strict CSP at the API level breaks the
+    // SPA fallback in production. Set it per-route or via CDN headers.
+    contentSecurityPolicy: false,
+    // HSTS — tell browsers to always use HTTPS (1 year)
+    strictTransportSecurity: {
+      maxAge: 31_536_000,
+      includeSubDomains: true,
+    },
+  }),
+);
+
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 
@@ -96,6 +113,11 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use(globalRateLimiter);
 
 app.use("/api", router);
+
+// Unknown /api routes — return JSON 404 (not HTML)
+app.use("/api", (_req: Request, res: Response) => {
+  res.status(404).json({ error: "Not found" });
+});
 
 // In production, serve the built React frontend from the same process.
 // The frontend builds to artifacts/menashe-calendar/dist/public.
@@ -149,5 +171,17 @@ if (process.env.NODE_ENV === "production") {
     logger.warn({ frontendDir }, "Frontend dist not found — static serving skipped");
   }
 }
+
+// Global error handler — suppresses stack traces in production to avoid
+// leaking implementation details; always returns a safe JSON body.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error({ err }, "Unhandled error");
+  const isProd = process.env.NODE_ENV === "production";
+  res.status(500).json({
+    error: "Internal server error",
+    ...(isProd ? {} : { detail: err?.message }),
+  });
+});
 
 export default app;
