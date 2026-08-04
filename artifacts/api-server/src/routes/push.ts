@@ -1,7 +1,7 @@
 import { Router } from "express";
 import webpush from "web-push";
 import { Expo, type ExpoPushMessage } from "expo-server-sdk";
-import { requireAuth } from "../lib/requireAuth";
+import { requireAuth, safeGetAuth } from "../lib/authorization";
 import { requireAdmin } from "../lib/requireAdmin";
 import { pushSubscribeRateLimiter } from "../lib/rateLimiter";
 import { pool } from "@workspace/db";
@@ -304,15 +304,17 @@ router.get("/push/vapid-public-key", (_req, res) => {
 });
 
 router.post("/push/subscribe", pushSubscribeRateLimiter, async (req, res) => {
-  const { subscription, schedule, userId } = req.body as {
+  const { subscription, schedule } = req.body as {
     subscription: webpush.PushSubscription;
     schedule: ScheduleItem[];
-    userId?: string;
   };
   if (!subscription?.endpoint) {
     res.status(400).json({ error: "Missing subscription" });
     return;
   }
+  // Derive userId from the authenticated Clerk session only — never trust the
+  // caller-supplied userId (IDOR / notification-hijacking risk).
+  const { userId } = safeGetAuth(req);
   const id = subId(subscription.endpoint);
   try {
     await dbUpsert(id, subscription, schedule ?? [], userId ?? null);

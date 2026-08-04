@@ -1,0 +1,327 @@
+Chief Architect
+
+QA-800
+
+MISSION
+
+The Menashe Platform has completed all engineering and product excellence sprints.
+
+Your task is NOT to build.
+
+Your task is to behave as an independent Quality Assurance team.
+
+Assume this application will be used tomorrow by thousands of Bnei Menashe community members.
+
+Audit EVERYTHING.
+
+Do not trust previous implementations.
+
+Verify everything from first principles.
+
+==================================================
+
+DO NOT
+
+❌ Add new features
+
+❌ Redesign UI
+
+❌ Refactor architecture
+
+❌ Change business logic unless a verified defect is found
+
+Only identify and fix genuine issues.
+
+==================================================
+
+PHASE 1
+
+FIRST USER EXPERIENCE
+
+Verify
+
+✓ Splash
+
+✓ Loading
+
+✓ Sign Up
+
+✓ Sign In
+
+✓ Theme initialization
+
+✓ Empty account
+
+✓ First navigation
+
+✓ Logout
+
+==================================================
+
+PHASE 2
+
+NAVIGATION
+
+Verify
+
+Every button
+
+Every card
+
+Every tab
+
+Every drawer
+
+Every modal
+
+Every back button
+
+Every CTA
+
+No dead ends
+
+No loops
+
+No broken navigation
+
+==================================================
+
+PHASE 3
+
+FEATURE VALIDATION
+
+Calendar
+
+Zmanim
+
+Torah
+
+Siddur
+
+Prayer Board
+
+Community
+
+Memorial
+
+Sacred Wisdom
+
+Journey
+
+Premium
+
+Notifications
+
+Feedback Center
+
+Settings
+
+Profile
+
+Translation
+
+Census
+
+Directory
+
+Verify every workflow.
+
+==================================================
+
+PHASE 4
+
+DATA
+
+Verify
+
+Create
+
+Read
+
+Update
+
+Delete
+
+Synchronization
+
+Offline behaviour
+
+Loading states
+
+Error recovery
+
+==================================================
+
+PHASE 5
+
+PERMISSIONS
+
+Guest
+
+Member
+
+Premium
+
+Admin
+
+Verify every permission.
+
+Ensure restricted pages cannot be accessed improperly.
+
+==================================================
+
+PHASE 6
+
+ACCESSIBILITY
+
+Keyboard
+
+Screen Reader
+
+Focus
+
+ARIA
+
+Touch Targets
+
+Reduced Motion
+
+High Contrast
+
+==================================================
+
+PHASE 7
+
+RESPONSIVE
+
+Desktop
+
+Tablet
+
+Mobile Web
+
+Android
+
+Small Screens
+
+Large Screens
+
+==================================================
+
+PHASE 8
+
+PERFORMANCE
+
+Verify
+
+Initial load
+
+Lazy loading
+
+Animations
+
+Memory
+
+Render loops
+
+Network requests
+
+Bundle warnings
+
+==================================================
+
+PHASE 9
+
+SECURITY
+
+Authentication
+
+Authorization
+
+API protection
+
+Storage
+
+Payments
+
+Input validation
+
+Secrets
+
+Rate limiting
+
+==================================================
+
+PHASE 10
+
+PRODUCTION READINESS
+
+Verify
+
+No placeholder text
+
+No console errors
+
+No TypeScript errors
+
+No broken routes
+
+No unfinished screens
+
+No TODO items
+
+No mock data visible
+
+No debug messages
+
+==================================================
+
+RETURN ONLY
+
+SECTION A
+
+Critical Issues (P0)
+
+SECTION B
+
+Major Issues (P1)
+
+SECTION C
+
+Minor Polish (P2)
+
+SECTION D
+
+Production Readiness Score
+
+SECTION E
+
+Accessibility Score
+
+SECTION F
+
+Performance Score
+
+SECTION G
+
+Security Score
+
+SECTION H
+
+Overall Product Score
+
+SECTION I
+
+FINAL DECISION
+
+READY FOR RC1
+
+or
+
+NOT READY
+
+Provide evidence for every issue.
+
+Do not invent problems.
+
+STOP.
