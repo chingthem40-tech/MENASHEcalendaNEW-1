@@ -41,6 +41,22 @@ export interface Family {
   members: FamilyMember[];
 }
 
+/** A single branch leadership role (Chairman / Secretary / Khazan). */
+export interface LeadershipPerson {
+  name: string;
+  mobile: string;
+  email?: string;
+}
+
+/** The three required leadership positions for every registered branch. */
+export interface BranchLeadership {
+  chairman: LeadershipPerson;
+  secretary: LeadershipPerson;
+  khazan: LeadershipPerson;
+}
+
+export type BranchStatus = "active" | "inactive" | "pending";
+
 /** A local community branch, grouping families under one admin. */
 export interface Branch {
   id: string;
@@ -54,4 +70,14 @@ export interface Branch {
   /** Photo of the local synagogue — helps members identify their branch when submitting census. */
   synagogueImageUrl?: string;
   families: Family[];
+  /** Persisted leadership details (Chairman, Secretary, Khazan). */
+  leadership?: BranchLeadership;
+  /** Branch operational status. */
+  branchStatus?: BranchStatus;
+  /** Clerk user ID of the account that created this branch. */
+  createdBy?: string;
+  /** ISO timestamp of initial registration. */
+  createdAt?: string;
+  /** ISO timestamp of last update. */
+  updatedAt?: string;
 }

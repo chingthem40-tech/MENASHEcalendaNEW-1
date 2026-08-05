@@ -25,6 +25,11 @@ function rowToBranch(row: any) {
     logoUrl: row.logo_url ?? undefined,
     synagogueImageUrl: row.synagogue_image_url ?? undefined,
     families: Array.isArray(row.families) ? row.families : [],
+    leadership: row.leadership ?? undefined,
+    branchStatus: row.branch_status ?? "active",
+    createdBy: row.owner_user_id,
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
   };
 }
 
@@ -97,12 +102,12 @@ router.put("/census/branch", requireAuth, async (req, res) => {
   if (!parsed.success) {
     return apiError.badRequest(res, "Invalid branch data", parsed.error.issues);
   }
-  const { id, name, cityId, cityName, adminName, established, logoUrl, synagogueImageUrl, families } = parsed.data;
+  const { id, name, cityId, cityName, adminName, established, logoUrl, synagogueImageUrl, families, leadership, branchStatus } = parsed.data;
   const branchId = id || `br_${Date.now()}`;
   try {
     await pool.query(
-      `INSERT INTO census_branches (id, owner_user_id, name, city_id, city_name, admin_name, established, logo_url, synagogue_image_url, families, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, NOW())
+      `INSERT INTO census_branches (id, owner_user_id, name, city_id, city_name, admin_name, established, logo_url, synagogue_image_url, families, leadership, branch_status, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, NOW())
        ON CONFLICT (owner_user_id) DO UPDATE
          SET id = EXCLUDED.id,
              name = EXCLUDED.name,
@@ -113,8 +118,16 @@ router.put("/census/branch", requireAuth, async (req, res) => {
              logo_url = EXCLUDED.logo_url,
              synagogue_image_url = EXCLUDED.synagogue_image_url,
              families = EXCLUDED.families,
+             leadership = EXCLUDED.leadership,
+             branch_status = EXCLUDED.branch_status,
              updated_at = NOW()`,
-      [branchId, userId, name, cityId || "", cityName || "", adminName || null, established || null, logoUrl || null, synagogueImageUrl || null, JSON.stringify(families ?? [])]
+      [
+        branchId, userId, name, cityId || "", cityName || "",
+        adminName || null, established || null, logoUrl || null, synagogueImageUrl || null,
+        JSON.stringify(families ?? []),
+        leadership ? JSON.stringify(leadership) : null,
+        branchStatus || "active",
+      ]
     );
     const { rows: saved } = await pool.query(
       "SELECT * FROM census_branches WHERE owner_user_id = $1", [userId]

@@ -270,6 +270,13 @@ export async function runMigrations(): Promise<void> {
     await client.query(`
       ALTER TABLE census_branches ADD COLUMN IF NOT EXISTS synagogue_image_url TEXT
     `);
+    // DATA-701: leadership roles + branch operational status (idempotent)
+    await client.query(`
+      ALTER TABLE census_branches ADD COLUMN IF NOT EXISTS leadership JSONB
+    `);
+    await client.query(`
+      ALTER TABLE census_branches ADD COLUMN IF NOT EXISTS branch_status TEXT NOT NULL DEFAULT 'active'
+    `);
 
     // Census — branch submissions for global admin review
     await client.query(`

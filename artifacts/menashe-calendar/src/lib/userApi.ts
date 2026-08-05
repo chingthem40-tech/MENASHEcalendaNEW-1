@@ -240,7 +240,7 @@ export async function fetchCensusBranch(): Promise<CensusBranchApi | null> {
   return getBranch(censusConfig);
 }
 
-export async function saveCensusBranch(branch: CensusBranchApi): Promise<void> {
+export async function saveCensusBranch(branch: CensusBranchApi): Promise<CensusBranchApi> {
   return saveBranch(branch, censusConfig);
 }
 

@@ -72,10 +72,8 @@ export async function getBranch(config: CensusClientConfig = {}): Promise<Branch
   }
 }
 
-export async function saveBranch(branch: Branch, config: CensusClientConfig = {}): Promise<void> {
-  try {
-    await censusFetch<void>("/census/branch", config, { method: "PUT", body: JSON.stringify(branch) });
-  } catch {}
+export async function saveBranch(branch: Branch, config: CensusClientConfig = {}): Promise<Branch> {
+  return censusFetch<Branch>("/census/branch", config, { method: "PUT", body: JSON.stringify(branch) });
 }
 
 /* ── Submissions (Global Admin review) ───────────────────────────────────── */

@@ -1938,6 +1938,8 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
   const [newHeadAliyah, setNewHeadAliyah] = useState<AliyahStatus>("unknown");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [registered, setRegistered] = useState<Branch | null>(null);
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const synagogueInputRef = useRef<HTMLInputElement>(null);
@@ -2015,8 +2017,8 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
     onMemberReview(id, status, note);
   }
 
-  function createBranch() {
-    if (!setupName.trim()) return;
+  async function createBranch() {
+    if (!setupName.trim() || saving) return;
 
     // BC-101 leadership validation
     const errs: Record<string, string> = {};
@@ -2028,6 +2030,8 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
     if (!khazanMobile.trim())    errs.khazanMobile    = "Required";
     if (Object.keys(errs).length) { setLeadershipErrors(errs); return; }
     setLeadershipErrors({});
+    setSaveError(null);
+    setSaving(true);
 
     const city = cities.find(c => c.id === setupCity);
     const newBranch: Branch = {
@@ -2035,18 +2039,27 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
       name: setupName.trim(),
       cityId: setupCity,
       cityName: city?.name || "",
-      established: setupDate,
-      adminName: setupAdmin.trim(),
+      established: setupDate || undefined,
+      adminName: setupAdmin.trim() || undefined,
       families: [],
-      // TODO (backend BC-101): persist leadership once API supports these fields
-      // leadership: {
-      //   chairman:  { name: chairmanName.trim(),  mobile: chairmanMobile.trim(),  email: chairmanEmail.trim()  },
-      //   secretary: { name: secretaryName.trim(), mobile: secretaryMobile.trim(), email: secretaryEmail.trim() },
-      //   khazan:    { name: khazanName.trim(),     mobile: khazanMobile.trim(),    email: khazanEmail.trim()    },
-      // },
+      branchStatus: "active",
+      leadership: {
+        chairman:  { name: chairmanName.trim(),  mobile: chairmanMobile.trim(),  email: chairmanEmail.trim() || undefined },
+        secretary: { name: secretaryName.trim(), mobile: secretaryMobile.trim(), email: secretaryEmail.trim() || undefined },
+        khazan:    { name: khazanName.trim(),     mobile: khazanMobile.trim(),    email: khazanEmail.trim() || undefined },
+      },
     };
-    setBranch(newBranch);
-    saveCensusBranch(newBranch as any);
+
+    try {
+      const saved = await saveCensusBranch(newBranch as any);
+      setBranch(saved as any);
+      setRegistered(saved as any);
+      onSubmit(saved as any);
+    } catch {
+      setSaveError("Registration failed — your data is still in the form. Check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function addFamily() {
@@ -2063,6 +2076,7 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
   if (!branch) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={{ padding: "12px 14px", borderRadius: 12, background: "rgba(79,142,247,0.08)", border: "1px solid rgba(79,142,247,0.25)", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 18 }}>📍</span>
           <div>
@@ -2127,17 +2141,73 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
           </div>
         </div>
 
+        {saveError && (
+          <div style={{ padding: "12px 14px", borderRadius: 10, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", display: "flex", alignItems: "flex-start", gap: 8 }}>
+            <span style={{ fontSize: 15, flexShrink: 0 }}>⚠️</span>
+            <div style={{ fontSize: 12, color: "#ef4444", lineHeight: 1.5 }}>{saveError}</div>
+          </div>
+        )}
+
         <button
           onClick={createBranch}
-          disabled={!setupName.trim()}
+          disabled={!setupName.trim() || saving}
           style={{
             padding: "14px", borderRadius: 12, fontWeight: 700, fontSize: 14,
-            border: "none", cursor: setupName.trim() ? "pointer" : "not-allowed",
-            background: setupName.trim() ? "#4f8ef7" : "var(--elevated)",
-            color: setupName.trim() ? "#fff" : "var(--text-muted)",
+            border: "none", cursor: (setupName.trim() && !saving) ? "pointer" : "not-allowed",
+            background: (setupName.trim() && !saving) ? "#4f8ef7" : "var(--elevated)",
+            color: (setupName.trim() && !saving) ? "#fff" : "var(--text-muted)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
         >
-          Register Branch
+          {saving ? <><span style={{ display: "inline-block", width: 14, height: 14, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />Registering…</> : "Register Branch"}
+        </button>
+      </div>
+    );
+  }
+
+  /* ── SUCCESS SCREEN — shown immediately after first-time registration ── */
+  if (registered) {
+    const regDate = registered.createdAt
+      ? new Date(registered.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+      : new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, alignItems: "center", padding: "8px 0 4px" }}>
+        {/* Tick */}
+        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg, #22c55e, #16a34a)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 18px rgba(34,197,94,0.35)", flexShrink: 0 }}>
+          <span style={{ fontSize: 30 }}>✓</span>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginBottom: 4 }}>Branch Successfully Registered</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.55 }}>Your congregation is now part of the official BMC census registry.</div>
+        </div>
+
+        {/* Registration details card */}
+        <div style={{ width: "100%", borderRadius: 14, background: "linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.03))", border: "1px solid rgba(34,197,94,0.25)", overflow: "hidden" }}>
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(34,197,94,0.12)", background: "rgba(34,197,94,0.06)" }}>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", color: "#22c55e" }}>REGISTRATION CONFIRMATION</div>
+          </div>
+          <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { label: "Branch ID", value: registered.id },
+              { label: "Registration Date", value: regDate },
+              { label: "Branch Name", value: registered.name },
+              { label: "City", value: registered.cityName },
+              ...(registered.adminName ? [{ label: "Local Admin", value: registered.adminName }] : []),
+              { label: "Status", value: "Active ✓" },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, flexShrink: 0 }}>{label}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", textAlign: "right", wordBreak: "break-all" }}>{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={() => setRegistered(null)}
+          style={{ width: "100%", padding: "14px", borderRadius: 12, fontWeight: 700, fontSize: 14, border: "none", cursor: "pointer", background: "#4f8ef7", color: "#fff" }}
+        >
+          Go to Branch Registry →
         </button>
       </div>
     );

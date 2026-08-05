@@ -1,0 +1,211 @@
+Chief Architect
+
+DATA-701 — Permanent Branch Registration
+
+MISSION
+
+Convert Branch Registration into a production-grade persistent workflow.
+
+The Create Branch form must NEVER behave as temporary UI state.
+
+Once successfully submitted, all branch information must be permanently stored.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OBJECTIVES
+
+1.
+
+Audit the complete Create Branch workflow.
+
+Determine:
+
+• Is data only held in React state?
+
+• Is it saved to Supabase?
+
+• Is it restored after login?
+
+• Does logout lose data?
+
+• Is there an API endpoint?
+
+• Is there a database table?
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2.
+
+If persistence already exists:
+
+Verify:
+
+✓ Branch survives logout
+
+✓ Branch survives browser refresh
+
+✓ Branch survives server restart
+
+✓ Branch appears on every device for the same account
+
+✓ Local Admin becomes the owner
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.
+
+If persistence does NOT exist:
+
+Implement production persistence.
+
+Store:
+
+Branch Name
+
+City
+
+Established Date
+
+Chairman
+
+Chairman Contact
+
+Secretary
+
+Secretary Contact
+
+Khazan
+
+Khazan Contact
+
+Created By
+
+Created At
+
+Updated At
+
+Branch Status
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4.
+
+Database
+
+Use Supabase PostgreSQL.
+
+Do NOT use localStorage.
+
+Do NOT use sessionStorage.
+
+Do NOT rely on React state.
+
+All official records must live in the database.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5.
+
+Ownership
+
+When a branch is created:
+
+Assign:
+
+created_by
+
+owner_user_id
+
+organization_id (if applicable)
+
+Only authorized users may edit it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6.
+
+Reload Test
+
+Verify:
+
+Refresh page
+
+Logout
+
+Login again
+
+Open from another device
+
+Restart API
+
+Data must still exist.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7.
+
+Error Handling
+
+If save fails:
+
+Never silently discard data.
+
+Display a clear error.
+
+Keep entered values in the form until the user retries.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+8.
+
+Success
+
+After successful save:
+
+Generate a Branch ID.
+
+Display:
+
+"Branch successfully registered."
+
+Show:
+
+Branch ID
+
+Registration Date
+
+Local Admin Name
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RETURN
+
+SECTION A
+
+Current persistence audit
+
+SECTION B
+
+Database tables involved
+
+SECTION C
+
+API endpoints used
+
+SECTION D
+
+Changes made
+
+SECTION E
+
+Persistence verification
+
+SECTION F
+
+Security verification
+
+SECTION G
+
+Production readiness
+
+STOP.

@@ -47,6 +47,22 @@ export const familySchema = z.object({
   members: z.array(familyMemberSchema).max(100),
 });
 
+/** A single leadership role holder (name + mobile required, email optional). */
+export const leadershipPersonSchema = z.object({
+  name: z.string().min(1).max(200),
+  mobile: z.string().min(1).max(50),
+  email: z.string().max(200).optional(),
+});
+
+/** The three required leadership roles for a registered branch. */
+export const branchLeadershipSchema = z.object({
+  chairman: leadershipPersonSchema,
+  secretary: leadershipPersonSchema,
+  khazan: leadershipPersonSchema,
+});
+
+export const branchStatusSchema = z.enum(["active", "inactive", "pending"]);
+
 /** A local community branch, grouping families under one admin. */
 export const branchSchema = z.object({
   id: z.string().max(100).optional(),
@@ -58,6 +74,8 @@ export const branchSchema = z.object({
   logoUrl: z.string().max(2000000).optional().nullable(),
   synagogueImageUrl: z.string().max(2000000).optional().nullable(),
   families: z.array(familySchema).max(500).optional(),
+  leadership: branchLeadershipSchema.optional(),
+  branchStatus: branchStatusSchema.optional(),
 });
 
 /** A single household's self-service census submission (public form). */
