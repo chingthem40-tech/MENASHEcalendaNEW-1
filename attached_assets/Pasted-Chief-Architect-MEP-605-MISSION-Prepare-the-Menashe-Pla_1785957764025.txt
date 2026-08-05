@@ -1,0 +1,287 @@
+Chief Architect
+
+MEP-605
+
+MISSION
+
+Prepare the Menashe Platform for production by validating every required secret and environment variable.
+
+DO NOT add new features.
+
+DO NOT redesign UI.
+
+DO NOT modify business logic.
+
+Only improve production configuration, startup validation, diagnostics, and graceful failure handling.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OBJECTIVE
+
+Every production dependency must either:
+
+✓ initialize correctly
+
+OR
+
+✓ fail gracefully with a clear startup warning.
+
+The application must NEVER crash because a non-critical secret is missing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1
+
+Inspect every use of:
+
+process.env
+
+import.meta.env
+
+Expo public env variables
+
+Create a complete inventory.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2
+
+Categorize every variable.
+
+Required
+
+Optional
+
+Development Only
+
+Production Only
+
+Replit Only
+
+Netlify Only
+
+Expo Only
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3
+
+Validate configuration for:
+
+DATABASE_URL
+
+CLERK_SECRET_KEY
+
+CLERK_PUBLISHABLE_KEY
+
+VITE_CLERK_PUBLISHABLE_KEY
+
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+OPENAI_API_KEY
+
+GOOGLE_API_KEY
+
+GROK_API_KEY
+
+RAZORPAY_KEY_ID
+
+RAZORPAY_KEY_SECRET
+
+VAPID_PUBLIC_KEY
+
+VAPID_PRIVATE_KEY
+
+ALLOWED_ORIGINS
+
+PORT
+
+NODE_ENV
+
+LOG_LEVEL
+
+EXPO_PUBLIC_DOMAIN
+
+BASE_PATH
+
+SESSION_SECRET
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 4
+
+Create startup validation.
+
+At API startup:
+
+Print a configuration summary.
+
+Example:
+
+Database ............ READY
+
+Clerk ............... READY
+
+OpenAI .............. READY
+
+Gemini .............. NOT CONFIGURED
+
+Grok ................ NOT CONFIGURED
+
+Push ................ READY
+
+Payments ............ READY
+
+Object Storage ...... READY
+
+Environment ......... production
+
+Do NOT print secret values.
+
+Only READY / MISSING.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 5
+
+Graceful degradation.
+
+Missing AI key
+
+→ AI unavailable
+
+Missing Razorpay
+
+→ Payments unavailable
+
+Missing VAPID
+
+→ Push disabled
+
+Missing Clerk Secret
+
+→ Auth disabled
+
+Missing optional providers
+
+→ Continue startup.
+
+Only DATABASE_URL should prevent startup.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 6
+
+Verify production logging.
+
+No secrets in logs.
+
+No stack traces in production.
+
+Warnings should clearly identify the missing service.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 7
+
+Generate documentation.
+
+docs/
+
+ENVIRONMENT_VARIABLES.md
+
+Include:
+
+Variable
+
+Purpose
+
+Required?
+
+Default
+
+Platform
+
+Notes
+
+Also generate:
+
+docs/
+
+PRODUCTION_CONFIGURATION.md
+
+Include:
+
+Replit
+
+Netlify
+
+Expo
+
+Supabase
+
+Clerk
+
+OpenAI
+
+Razorpay
+
+Push Notifications
+
+Deployment checklist.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 8
+
+Verify
+
+Netlify frontend
+
+Replit backend
+
+Supabase
+
+Expo
+
+All use the correct environment variables.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RETURN ONLY
+
+SECTION A
+
+Files modified
+
+SECTION B
+
+Environment variables discovered
+
+SECTION C
+
+Startup validation added
+
+SECTION D
+
+Graceful degradation improvements
+
+SECTION E
+
+Documentation generated
+
+SECTION F
+
+Remaining configuration still requiring manual setup
+
+SECTION G
+
+Production configuration score
+
+Do not invent issues.
+
+Do not change application behaviour.
+
+Do not expose secret values.
+
+STOP.

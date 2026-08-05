@@ -1,15 +1,15 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { runMigrations } from "./migrate";
-import { startPushScheduler, startExpoScheduler, startHolidayWebPushScheduler, startYahrzeitPushScheduler, startHolidayHourReminderScheduler, startWeeklyYahrzeitDigestScheduler } from "./routes/push";
-
-const rawPort = process.env["PORT"] ?? "8080";
-
-const port = Number(rawPort);
-
-if (Number.isNaN(port) || port <= 0) {
-  throw new Error(`Invalid PORT value: "${rawPort}"`);
-}
+import { config, printConfigSummary } from "./lib/config";
+import {
+  startPushScheduler,
+  startExpoScheduler,
+  startHolidayWebPushScheduler,
+  startYahrzeitPushScheduler,
+  startHolidayHourReminderScheduler,
+  startWeeklyYahrzeitDigestScheduler,
+} from "./routes/push";
 
 async function start() {
   try {
@@ -19,6 +19,10 @@ async function start() {
     process.exit(1);
   }
 
+  // Print a configuration summary so operators can confirm readiness at a
+  // glance without exposing any secret values in logs.
+  printConfigSummary();
+
   startPushScheduler();
   startExpoScheduler();
   startHolidayWebPushScheduler();
@@ -26,12 +30,15 @@ async function start() {
   startYahrzeitPushScheduler();
   startWeeklyYahrzeitDigestScheduler();
 
-  app.listen(port, (err) => {
-    if (err) {
-      logger.error({ err }, "Error listening on port");
-      process.exit(1);
-    }
-    logger.info({ port }, "Server listening");
+  // Explicitly bind to 0.0.0.0 so the server accepts connections on all
+  // network interfaces — required on Railway, Render, and Fly.io.
+  const server = app.listen(config.port, "0.0.0.0", () => {
+    logger.info({ port: config.port }, "Server listening");
+  });
+
+  server.on("error", (err) => {
+    logger.error({ err }, "Failed to start server");
+    process.exit(1);
   });
 }
 

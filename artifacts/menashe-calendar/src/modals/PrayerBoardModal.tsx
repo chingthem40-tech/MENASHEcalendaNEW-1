@@ -68,6 +68,13 @@ const labelStyle: React.CSSProperties = {
 export default function PrayerBoardModal({ onClose, userName = "", isAdmin = false }: Props) {
   const { t } = useLanguage();
 
+  // Close on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const [requests, setRequests]       = useState<PrayerRequest[]>([]);
   const [loading, setLoading]         = useState(true);
   const [castAmens, setCastAmens]     = useState<Set<string>>(loadCastAmens);
@@ -364,7 +371,7 @@ export default function PrayerBoardModal({ onClose, userName = "", isAdmin = fal
                     {deleteConfirm === req.id ? (
                       <button onClick={() => removeReq(req.id)} style={{ flex: 1, padding: "6px", borderRadius: 8, background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.3)", cursor: "pointer", fontSize: 10, fontWeight: 800, color: "#ef4444" }}>CONFIRM</button>
                     ) : (
-                      <button onClick={() => setDeleteConfirm(req.id)} style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "none", cursor: "pointer", fontSize: 10, color: "#ef4444", fontWeight: 700 }}>🗑</button>
+                      <button onClick={() => setDeleteConfirm(req.id)} aria-label="Delete prayer request" style={{ padding: "6px 10px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "none", cursor: "pointer", fontSize: 10, color: "#ef4444", fontWeight: 700 }}>🗑</button>
                     )}
                   </div>
                 </div>
