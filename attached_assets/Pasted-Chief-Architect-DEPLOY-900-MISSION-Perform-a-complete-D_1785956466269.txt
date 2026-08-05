@@ -1,0 +1,204 @@
+Chief Architect
+
+DEPLOY-900
+
+MISSION
+
+Perform a complete Deployment & Production Architecture Audit.
+
+Do NOT modify any code.
+
+Do NOT deploy anything.
+
+Do NOT migrate anything.
+
+Your task is to inspect the entire repository and determine the best production hosting strategy.
+
+==================================================
+
+Audit the following:
+
+1. Frontend
+
+Can the React/Vite web app be hosted on Netlify without changes?
+
+Check:
+
+• SPA routing
+• Environment variables
+• Assets
+• API base URLs
+• Service worker
+• PWA
+• Lazy loading
+• Build output
+• Headers
+• Redirect requirements
+
+==================================================
+
+2. Backend
+
+Inspect the Express API.
+
+Determine whether it is compatible with:
+
+• Railway
+• Render
+• Fly.io
+• Replit
+• Netlify Functions (if not, explain why)
+
+Check:
+
+• SSE streaming
+• File uploads
+• Authentication
+• Long-running requests
+• Background tasks
+• Push notifications
+
+==================================================
+
+3. Database
+
+Inspect Supabase usage.
+
+Verify:
+
+• Connection method
+• Environment variables
+• Migrations
+• Storage
+• RLS
+• Performance considerations
+
+==================================================
+
+4. Third-party Services
+
+Verify deployment readiness for:
+
+• Clerk
+• OpenAI
+• Razorpay
+• Web Push
+• Object Storage
+
+List every required environment variable.
+
+==================================================
+
+5. Mobile
+
+Verify whether any deployment changes would affect:
+
+• Expo
+• Android
+• iOS
+
+==================================================
+
+6. Cost Analysis
+
+Estimate the monthly cost for:
+
+100 active users
+
+500 active users
+
+1,000 active users
+
+5,000 active users
+
+Include:
+
+Netlify
+
+Railway
+
+Render
+
+Replit
+
+Supabase
+
+Clerk
+
+OpenAI
+
+==================================================
+
+7. Risk Analysis
+
+Identify:
+
+Deployment risks
+
+Migration risks
+
+Downtime risks
+
+Vendor lock-in
+
+Scaling bottlenecks
+
+==================================================
+
+8. Recommendation
+
+Choose ONE architecture only.
+
+Examples:
+
+Option A
+Netlify + Railway + Supabase
+
+Option B
+Replit + Supabase
+
+Option C
+Render + Supabase
+
+Option D
+Fly.io + Supabase
+
+Explain WHY it is the best choice.
+
+==================================================
+
+RETURN ONLY
+
+SECTION A
+Current architecture
+
+SECTION B
+Compatibility analysis
+
+SECTION C
+Required environment variables
+
+SECTION D
+Estimated monthly cost
+
+SECTION E
+Migration risks
+
+SECTION F
+Recommended production architecture
+
+SECTION G
+Step-by-step deployment order
+
+SECTION H
+Final recommendation
+
+Do not modify code.
+
+Do not deploy.
+
+Do not guess.
+
+Base every conclusion on the repository.
+
+STOP.
