@@ -110,6 +110,87 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 /* ══════════════════════════════════════════════════════════════
+   LEADERSHIP CARD — BC-101 Branch Leadership section
+══════════════════════════════════════════════════════════════ */
+function LeadershipCard({
+  role, icon, name, onName, mobile, onMobile, email, onEmail, errors, fieldPrefix,
+}: {
+  role: string; icon: string;
+  name: string; onName: (v: string) => void;
+  mobile: string; onMobile: (v: string) => void;
+  email: string; onEmail: (v: string) => void;
+  errors: Record<string, string>;
+  fieldPrefix: string;
+}) {
+  const errName   = errors[`${fieldPrefix}Name`];
+  const errMobile = errors[`${fieldPrefix}Mobile`];
+  const errInput: React.CSSProperties = { borderColor: "rgba(239,68,68,0.6)" };
+  return (
+    <div style={{
+      borderRadius: 14, overflow: "hidden",
+      border: "1px solid rgba(212,168,67,0.2)",
+      background: "linear-gradient(135deg, rgba(212,168,67,0.05) 0%, rgba(212,168,67,0.02) 100%)",
+    }}>
+      {/* Card header */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "10px 14px 9px",
+        borderBottom: "1px solid rgba(212,168,67,0.1)",
+        background: "rgba(212,168,67,0.06)",
+      }}>
+        <span style={{ fontSize: 15 }}>{icon}</span>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#d4a843" }}>
+          {role.toUpperCase()}
+        </span>
+      </div>
+      {/* Fields */}
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div>
+          <label style={{ fontSize: 10, fontWeight: 700, color: errName ? "#ef4444" : "var(--text-muted)", letterSpacing: "0.06em", marginBottom: 3, display: "block" }}>
+            FULL NAME <span style={{ color: "#ef4444" }}>*</span>
+          </label>
+          <input
+            aria-label={`${role} full name`}
+            style={{ ...inputStyle, ...(errName ? errInput : {}) }}
+            placeholder={`e.g. Yosef Ben-David`}
+            value={name}
+            onChange={e => onName(e.target.value)}
+          />
+          {errName && <div style={{ fontSize: 10, color: "#ef4444", marginTop: 3 }}>{errName}</div>}
+        </div>
+        <div>
+          <label style={{ fontSize: 10, fontWeight: 700, color: errMobile ? "#ef4444" : "var(--text-muted)", letterSpacing: "0.06em", marginBottom: 3, display: "block" }}>
+            MOBILE NUMBER <span style={{ color: "#ef4444" }}>*</span>
+          </label>
+          <input
+            aria-label={`${role} mobile number`}
+            style={{ ...inputStyle, ...(errMobile ? errInput : {}) }}
+            placeholder="e.g. +91 98765 43210"
+            type="tel"
+            value={mobile}
+            onChange={e => onMobile(e.target.value)}
+          />
+          {errMobile && <div style={{ fontSize: 10, color: "#ef4444", marginTop: 3 }}>{errMobile}</div>}
+        </div>
+        <div>
+          <label style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.06em", marginBottom: 3, display: "block" }}>
+            EMAIL ADDRESS <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>(optional)</span>
+          </label>
+          <input
+            aria-label={`${role} email address`}
+            style={inputStyle}
+            placeholder="e.g. name@example.com"
+            type="email"
+            value={email}
+            onChange={e => onEmail(e.target.value)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════
    IMAGE UPLOAD BOX — used for community logo / synagogue photo
 ══════════════════════════════════════════════════════════════ */
 function ImageUploadBox({ label, imageUrl, isUploading, progress, inputRef, onPick, errorMessage }: {
@@ -1839,6 +1920,19 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
   const [setupCity, setSetupCity] = useState(cities[0]?.id || "");
   const [setupAdmin, setSetupAdmin] = useState("");
   const [setupDate, setSetupDate] = useState("");
+
+  // Branch Leadership fields (BC-101)
+  // TODO (backend): persist leadership data alongside branch once API supports it
+  const [chairmanName,    setChairmanName]    = useState("");
+  const [chairmanMobile,  setChairmanMobile]  = useState("");
+  const [chairmanEmail,   setChairmanEmail]   = useState("");
+  const [secretaryName,   setSecretaryName]   = useState("");
+  const [secretaryMobile, setSecretaryMobile] = useState("");
+  const [secretaryEmail,  setSecretaryEmail]  = useState("");
+  const [khazanName,      setKhazanName]      = useState("");
+  const [khazanMobile,    setKhazanMobile]    = useState("");
+  const [khazanEmail,     setKhazanEmail]     = useState("");
+  const [leadershipErrors, setLeadershipErrors] = useState<Record<string, string>>({});
   const [addingFamily, setAddingFamily] = useState(false);
   const [newHeadName, setNewHeadName] = useState("");
   const [newHeadAliyah, setNewHeadAliyah] = useState<AliyahStatus>("unknown");
@@ -1923,8 +2017,34 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
 
   function createBranch() {
     if (!setupName.trim()) return;
+
+    // BC-101 leadership validation
+    const errs: Record<string, string> = {};
+    if (!chairmanName.trim())    errs.chairmanName    = "Required";
+    if (!chairmanMobile.trim())  errs.chairmanMobile  = "Required";
+    if (!secretaryName.trim())   errs.secretaryName   = "Required";
+    if (!secretaryMobile.trim()) errs.secretaryMobile = "Required";
+    if (!khazanName.trim())      errs.khazanName      = "Required";
+    if (!khazanMobile.trim())    errs.khazanMobile    = "Required";
+    if (Object.keys(errs).length) { setLeadershipErrors(errs); return; }
+    setLeadershipErrors({});
+
     const city = cities.find(c => c.id === setupCity);
-    const newBranch: Branch = { id: `br${Date.now()}`, name: setupName.trim(), cityId: setupCity, cityName: city?.name || "", established: setupDate, adminName: setupAdmin.trim(), families: [] };
+    const newBranch: Branch = {
+      id: `br${Date.now()}`,
+      name: setupName.trim(),
+      cityId: setupCity,
+      cityName: city?.name || "",
+      established: setupDate,
+      adminName: setupAdmin.trim(),
+      families: [],
+      // TODO (backend BC-101): persist leadership once API supports these fields
+      // leadership: {
+      //   chairman:  { name: chairmanName.trim(),  mobile: chairmanMobile.trim(),  email: chairmanEmail.trim()  },
+      //   secretary: { name: secretaryName.trim(), mobile: secretaryMobile.trim(), email: secretaryEmail.trim() },
+      //   khazan:    { name: khazanName.trim(),     mobile: khazanMobile.trim(),    email: khazanEmail.trim()    },
+      // },
+    };
     setBranch(newBranch);
     saveCensusBranch(newBranch as any);
   }
@@ -1963,7 +2083,60 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
           <div style={{ flex: 1 }}><Field label="LOCAL ADMIN NAME"><input style={inputStyle} placeholder="Your full name" value={setupAdmin} onChange={e => setSetupAdmin(e.target.value)} /></Field></div>
           <div style={{ flex: 1 }}><Field label="ESTABLISHED DATE"><input style={inputStyle} type="date" value={setupDate} onChange={e => setSetupDate(e.target.value)} /></Field></div>
         </div>
-        <button onClick={createBranch} disabled={!setupName.trim()} style={{ padding: "14px", borderRadius: 12, fontWeight: 700, fontSize: 14, border: "none", cursor: setupName.trim() ? "pointer" : "not-allowed", background: setupName.trim() ? "#4f8ef7" : "var(--elevated)", color: setupName.trim() ? "#fff" : "var(--text-muted)" }}>
+
+        {/* ── Branch Leadership (BC-101) ─────────────────────────────── */}
+        <div>
+          {/* Section header */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", color: "var(--text-muted)", whiteSpace: "nowrap" }}>BRANCH LEADERSHIP</span>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {/* Chairman */}
+            <LeadershipCard
+              role="Chairman"
+              icon="👑"
+              name={chairmanName}    onName={setChairmanName}
+              mobile={chairmanMobile} onMobile={setChairmanMobile}
+              email={chairmanEmail}  onEmail={setChairmanEmail}
+              errors={leadershipErrors}
+              fieldPrefix="chairman"
+            />
+            {/* Secretary */}
+            <LeadershipCard
+              role="Secretary"
+              icon="📋"
+              name={secretaryName}    onName={setSecretaryName}
+              mobile={secretaryMobile} onMobile={setSecretaryMobile}
+              email={secretaryEmail}  onEmail={setSecretaryEmail}
+              errors={leadershipErrors}
+              fieldPrefix="secretary"
+            />
+            {/* Khazan */}
+            <LeadershipCard
+              role="Khazan (Prayer Leader)"
+              icon="🎵"
+              name={khazanName}    onName={setKhazanName}
+              mobile={khazanMobile} onMobile={setKhazanMobile}
+              email={khazanEmail}  onEmail={setKhazanEmail}
+              errors={leadershipErrors}
+              fieldPrefix="khazan"
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={createBranch}
+          disabled={!setupName.trim()}
+          style={{
+            padding: "14px", borderRadius: 12, fontWeight: 700, fontSize: 14,
+            border: "none", cursor: setupName.trim() ? "pointer" : "not-allowed",
+            background: setupName.trim() ? "#4f8ef7" : "var(--elevated)",
+            color: setupName.trim() ? "#fff" : "var(--text-muted)",
+          }}
+        >
           Register Branch
         </button>
       </div>

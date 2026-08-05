@@ -1,0 +1,130 @@
+Chief Architect
+
+BC-101 — Branch Leadership Registration
+
+MISSION
+
+Enhance the Local Admin → Create Branch registration form.
+
+Do NOT change the registration workflow.
+
+Do NOT modify backend APIs or business logic unless additional fields already map cleanly.
+
+Only extend the registration form with professional leadership information.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add a new section:
+
+Branch Leadership
+
+This section appears immediately after:
+
+City / Location
+
+and before the Register Branch button.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Create three leadership cards.
+
+1.
+
+Chairman
+
+Fields
+
+• Full Name (required)
+
+• Mobile Number (required)
+
+• Email Address (optional)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2.
+
+Secretary
+
+Fields
+
+• Full Name (required)
+
+• Mobile Number (required)
+
+• Email Address (optional)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3.
+
+Khazan (Prayer Leader)
+
+Fields
+
+• Full Name (required)
+
+• Mobile Number (required)
+
+• Email Address (optional)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Design Requirements
+
+• Match the existing Menashe design system.
+
+• Same spacing, typography, colors, and input styling.
+
+• Each role uses a subtle icon.
+
+• Leadership cards have rounded corners and premium styling.
+
+• Mobile responsive.
+
+• Proper labels and placeholders.
+
+• Accessible labels.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Validation
+
+Chairman Name → required
+
+Chairman Mobile → required
+
+Secretary Name → required
+
+Secretary Mobile → required
+
+Khazan Name → required
+
+Khazan Mobile → required
+
+Email fields remain optional.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If backend persistence for these fields already exists, wire them through.
+
+If it does not exist, keep the fields in the UI with TODO comments for backend mapping. Do not invent database changes in this sprint.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RETURN
+
+SECTION A
+Files modified
+
+SECTION B
+UI changes
+
+SECTION C
+Validation added
+
+SECTION D
+Backend mapping status
+
+SECTION E
+Production readiness
