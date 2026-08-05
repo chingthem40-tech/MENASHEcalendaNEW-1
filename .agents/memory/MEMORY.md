@@ -1,3 +1,4 @@
+- [Menashe Design System (menashe-ds)](menashe-ds.md) — extracted DS; package at artifacts/menashe-ds/; ds-entry at mockup-sandbox/src/ds/menashe-ds/; 3 themes; read AGENTS.md before authoring UI.
 - [RC1 security hardening](rc1-hardening.md) — helmet added, rate-limiter skip fixed, global error handler + JSON 404 added to app.ts; push subscribe no longer accepts caller-supplied userId.
 - [PEP-705 Feedback Center](pep705-feedback-center.md) — full support center; modal key "feedback-center"; 8 views; API at /feedback/*; DB columns added via ALTER TABLE.
 - [Chat SSE abort pattern](chat-sse-abort-pattern.md) — use res.on("close") not req.on("close") in SSE routes; express.json() closes req stream immediately after body parse.
