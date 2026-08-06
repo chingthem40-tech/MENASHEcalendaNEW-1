@@ -55,7 +55,14 @@ export interface BranchLeadership {
   khazan: LeadershipPerson;
 }
 
-export type BranchStatus = "active" | "inactive" | "pending";
+export type BranchStatus =
+  | "draft"          // Newly created, not yet submitted
+  | "pending_review" // Submitted by Local Admin, awaiting Regional review
+  | "approved"       // Approved by Regional Admin, awaiting National activation
+  | "active"         // Activated — fully operational
+  | "suspended"      // Temporarily suspended by National Admin
+  | "archived"       // Permanently archived
+  | "rejected";      // Rejected by Regional Admin
 
 /** A local community branch, grouping families under one admin. */
 export interface Branch {

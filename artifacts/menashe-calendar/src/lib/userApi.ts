@@ -267,3 +267,56 @@ export async function submitCensusMemberEntry(entry: Omit<CensusMemberSubmission
 export async function reviewCensusMemberSubmission(id: string, status: "approved" | "rejected" | "pending", reviewNote?: string): Promise<void> {
   return approveMember(id, status, reviewNote, censusConfig);
 }
+
+// ── DATA-702 — Branch Lifecycle ──────────────────────────────────────────────
+
+/** Submit own branch for Regional Admin review (draft/rejected → pending_review). */
+export async function submitBranchForLifecycleReview(): Promise<CensusBranchApi> {
+  return apiFetch("/census/branch/submit", { method: "POST" });
+}
+
+/** Get the approval timeline for the current user's own branch. */
+export async function fetchBranchHistory(): Promise<BranchReviewEvent[]> {
+  return apiFetch("/census/branch/history");
+}
+
+/** Admin: list all branches, optionally filtered by status. */
+export async function fetchAdminBranches(status?: string): Promise<CensusBranchApi[]> {
+  const qs = status ? `?status=${encodeURIComponent(status)}` : "";
+  return apiFetch(`/census/admin/branches${qs}`);
+}
+
+/** Admin: transition a branch to a new lifecycle status. */
+export async function transitionBranchStatus(
+  branchId: string,
+  action: "approve" | "reject" | "request_changes" | "activate" | "suspend" | "archive" | "restore",
+  note?: string,
+): Promise<CensusBranchApi> {
+  return apiFetch(`/census/admin/branches/${encodeURIComponent(branchId)}/transition`, {
+    method: "POST",
+    body: JSON.stringify({ action, note }),
+  });
+}
+
+/** Get the admin role for the current user (local_admin | regional_admin | national_admin | null). */
+export async function fetchMyAdminRole(): Promise<string | null> {
+  const data = await apiFetch("/census/admin/role");
+  return data?.role ?? null;
+}
+
+/** Admin: get the review history for any branch by ID. */
+export async function fetchAdminBranchHistory(branchId: string): Promise<BranchReviewEvent[]> {
+  return apiFetch(`/census/admin/branches/${encodeURIComponent(branchId)}/history`);
+}
+
+export interface BranchReviewEvent {
+  id: string;
+  branchId: string;
+  actorUserId: string;
+  actorRole: string;
+  action: string;
+  fromStatus: string | null;
+  toStatus: string;
+  note?: string;
+  createdAt: string;
+}

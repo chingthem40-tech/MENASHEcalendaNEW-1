@@ -1,10 +1,17 @@
 import { Router } from "express";
+import { z } from "zod";
 import { pool } from "@workspace/db";
 import { branchSchema, memberSubmissionSchema } from "@workspace/shared-core/census";
 import { requireAuth } from "../lib/requireAuth";
 import { requireAdmin } from "../lib/requireAdmin";
 import { apiError } from "../lib/apiError";
 import { logger } from "../lib/logger";
+import {
+  resolveAdminRole, requireRegionalAdmin, requireNationalAdmin,
+  ACTION_TO_STATUS, ACTION_FROM_STATUSES, ACTION_MIN_ROLE,
+  type BranchAction, type BranchAdminRole,
+} from "../lib/branchAuth";
+import { notifyBranchOwner } from "../lib/branchNotifications";
 
 const router = Router();
 
@@ -103,8 +110,16 @@ router.put("/census/branch", requireAuth, async (req, res) => {
     return apiError.badRequest(res, "Invalid branch data", parsed.error.issues);
   }
   const { id, name, cityId, cityName, adminName, established, logoUrl, synagogueImageUrl, families, leadership, branchStatus } = parsed.data;
+  const isNew = !id;
   const branchId = id || `br_${Date.now()}`;
+  // New branches always start as 'draft' (DATA-702 lifecycle); updates preserve caller-supplied status
+  const resolvedStatus = isNew ? "draft" : (branchStatus || "draft");
   try {
+    const { rows: existing } = await pool.query(
+      "SELECT id FROM census_branches WHERE owner_user_id = $1", [userId]
+    );
+    const alreadyExists = existing.length > 0;
+
     await pool.query(
       `INSERT INTO census_branches (id, owner_user_id, name, city_id, city_name, admin_name, established, logo_url, synagogue_image_url, families, leadership, branch_status, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::jsonb, $11::jsonb, $12, NOW())
@@ -119,19 +134,34 @@ router.put("/census/branch", requireAuth, async (req, res) => {
              synagogue_image_url = EXCLUDED.synagogue_image_url,
              families = EXCLUDED.families,
              leadership = EXCLUDED.leadership,
-             branch_status = EXCLUDED.branch_status,
+             branch_status = CASE
+               WHEN census_branches.branch_status IN ('approved', 'active', 'suspended', 'archived')
+               THEN census_branches.branch_status   -- never downgrade approved/active via PUT
+               ELSE EXCLUDED.branch_status
+             END,
              updated_at = NOW()`,
       [
         branchId, userId, name, cityId || "", cityName || "",
         adminName || null, established || null, logoUrl || null, synagogueImageUrl || null,
         JSON.stringify(families ?? []),
         leadership ? JSON.stringify(leadership) : null,
-        branchStatus || "active",
+        resolvedStatus,
       ]
     );
+
     const { rows: saved } = await pool.query(
       "SELECT * FROM census_branches WHERE owner_user_id = $1", [userId]
     );
+
+    // Record creation event for brand-new branches
+    if (!alreadyExists) {
+      await pool.query(
+        `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status)
+         VALUES ($1, $2, $3, 'local_admin', 'created', NULL, 'draft')`,
+        [`bre_${Date.now()}`, saved[0].id, userId]
+      ).catch(() => {});
+    }
+
     res.json(rowToBranch(saved[0]));
   } catch (err) {
     logger.error({ err }, "census/branch PUT failed");
@@ -333,6 +363,222 @@ router.get("/census/submissions/mine", requireAuth, async (req, res) => {
   } catch (err) {
     logger.error({ err }, "census/submissions/mine GET failed");
     return apiError.internal(res, "Failed to load submission status");
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════
+   DATA-702 — BRANCH LIFECYCLE ENDPOINTS
+══════════════════════════════════════════════════════════════ */
+
+const transitionSchema = z.object({
+  action: z.enum(["submit", "approve", "reject", "request_changes", "activate", "suspend", "archive", "restore"]),
+  note: z.string().max(2000).optional(),
+});
+
+/* ── Local Admin: submit own branch for review ───────────────────────────── */
+
+router.post("/census/branch/submit", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM census_branches WHERE owner_user_id = $1", [userId]
+    );
+    if (rows.length === 0) return apiError.notFound(res, "No branch found");
+    const branch = rows[0];
+    const current: string = branch.branch_status;
+    if (!["draft", "rejected"].includes(current)) {
+      return res.status(409).json({ error: `Cannot submit a branch with status '${current}'` });
+    }
+
+    await pool.query(
+      "UPDATE census_branches SET branch_status = 'pending_review', updated_at = NOW() WHERE id = $1",
+      [branch.id]
+    );
+    await pool.query(
+      `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status)
+       VALUES ($1, $2, $3, 'local_admin', 'submitted', $4, 'pending_review')`,
+      [`bre_${Date.now()}`, branch.id, userId, current]
+    );
+
+    // Notify the owner (themselves, for completeness) and log
+    await notifyBranchOwner(userId, branch.name, "pending_review").catch(() => {});
+    logger.info({ branchId: branch.id, userId }, "branch submitted for review");
+
+    const { rows: updated } = await pool.query("SELECT * FROM census_branches WHERE id = $1", [branch.id]);
+    res.json(rowToBranch(updated[0]));
+  } catch (err) {
+    logger.error({ err }, "census/branch/submit failed");
+    return apiError.internal(res, "Failed to submit branch");
+  }
+});
+
+/* ── Admin: transition branch status (Regional + National) ──────────────── */
+
+router.post("/census/admin/branches/:id/transition", requireRegionalAdmin, async (req, res) => {
+  const { id } = req.params;
+  const adminUserId: string = (req as any).userId;
+  const adminRole: BranchAdminRole = (req as any).adminRole;
+
+  const parsed = transitionSchema.safeParse(req.body);
+  if (!parsed.success) return apiError.badRequest(res, "Invalid request", parsed.error.issues);
+
+  const { action, note } = parsed.data as { action: BranchAction; note?: string };
+
+  // Verify role is sufficient for this action
+  const minRole = ACTION_MIN_ROLE[action];
+  const roleRank: Record<BranchAdminRole, number> = { local_admin: 0, regional_admin: 1, national_admin: 2 };
+  if (roleRank[adminRole] < roleRank[minRole]) {
+    return res.status(403).json({ error: `Action '${action}' requires ${minRole} role` });
+  }
+
+  try {
+    const { rows } = await pool.query("SELECT * FROM census_branches WHERE id = $1", [String(id)]);
+    if (rows.length === 0) return apiError.notFound(res, "Branch not found");
+
+    const branch = rows[0];
+    const current: string = branch.branch_status;
+    const validFrom = ACTION_FROM_STATUSES[action];
+
+    if (!validFrom.includes(current as any)) {
+      return res.status(409).json({ error: `Cannot perform '${action}' on branch with status '${current}'` });
+    }
+
+    const toStatus = ACTION_TO_STATUS[action];
+    await pool.query(
+      "UPDATE census_branches SET branch_status = $2, updated_at = NOW() WHERE id = $1",
+      [String(id), toStatus]
+    );
+    await pool.query(
+      `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status, note)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [`bre_${Date.now()}`, String(id), adminUserId, adminRole, action, current, toStatus, note || null]
+    );
+
+    // Notify the branch owner
+    await notifyBranchOwner(branch.owner_user_id, branch.name, toStatus, note).catch(() => {});
+    logger.info({ branchId: String(id), action, adminUserId, toStatus }, "branch lifecycle transition");
+
+    const { rows: updated } = await pool.query("SELECT * FROM census_branches WHERE id = $1", [String(id)]);
+    res.json(rowToBranch(updated[0]));
+  } catch (err) {
+    logger.error({ err }, "census/admin/branches/:id/transition failed");
+    return apiError.internal(res, "Failed to transition branch status");
+  }
+});
+
+/* ── Admin: list all branches (dashboard) ───────────────────────────────── */
+
+router.get("/census/admin/branches", requireRegionalAdmin, async (req, res) => {
+  const status = req.query["status"] as string | undefined;
+  try {
+    const query = status
+      ? "SELECT * FROM census_branches WHERE branch_status = $1 ORDER BY created_at DESC"
+      : "SELECT * FROM census_branches ORDER BY created_at DESC";
+    const params = status ? [status] : [];
+    const { rows } = await pool.query(query, params);
+    res.json(rows.map(rowToBranch));
+  } catch (err) {
+    logger.error({ err }, "census/admin/branches GET failed");
+    return apiError.internal(res, "Failed to list branches");
+  }
+});
+
+/* ── Branch review history (auth — owner or admin) ──────────────────────── */
+
+router.get("/census/branch/history", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  try {
+    // Resolve owner's branch
+    const { rows: branchRows } = await pool.query(
+      "SELECT id FROM census_branches WHERE owner_user_id = $1", [userId]
+    );
+    if (branchRows.length === 0) { res.json([]); return; }
+    const branchId = branchRows[0].id;
+
+    const { rows } = await pool.query(
+      `SELECT * FROM branch_review_events WHERE branch_id = $1 ORDER BY created_at ASC`,
+      [branchId]
+    );
+    res.json(rows.map((r: any) => ({
+      id: r.id,
+      branchId: r.branch_id,
+      actorUserId: r.actor_user_id,
+      actorRole: r.actor_role,
+      action: r.action,
+      fromStatus: r.from_status,
+      toStatus: r.to_status,
+      note: r.note ?? undefined,
+      createdAt: new Date(r.created_at).toISOString(),
+    })));
+  } catch (err) {
+    logger.error({ err }, "census/branch/history GET failed");
+    return apiError.internal(res, "Failed to load branch history");
+  }
+});
+
+/* ── Admin: get review history for any branch ───────────────────────────── */
+
+router.get("/census/admin/branches/:id/history", requireRegionalAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM branch_review_events WHERE branch_id = $1 ORDER BY created_at ASC",
+      [String(id)]
+    );
+    res.json(rows.map((r: any) => ({
+      id: r.id,
+      branchId: r.branch_id,
+      actorUserId: r.actor_user_id,
+      actorRole: r.actor_role,
+      action: r.action,
+      fromStatus: r.from_status,
+      toStatus: r.to_status,
+      note: r.note ?? undefined,
+      createdAt: new Date(r.created_at).toISOString(),
+    })));
+  } catch (err) {
+    logger.error({ err }, "census/admin/branches/:id/history GET failed");
+    return apiError.internal(res, "Failed to load branch history");
+  }
+});
+
+/* ── Get current user's admin role ──────────────────────────────────────── */
+
+router.get("/census/admin/role", requireAuth, async (req, res) => {
+  const userId = (req as any).userId;
+  const resolved = await resolveAdminRole(req);
+  if (!resolved) {
+    // Check if user owns a branch (local admin)
+    const { rows } = await pool.query(
+      "SELECT id FROM census_branches WHERE owner_user_id = $1", [userId]
+    );
+    res.json({ role: rows.length > 0 ? "local_admin" : null });
+    return;
+  }
+  res.json({ role: resolved.role });
+});
+
+/* ── National Admin: assign regional/national role ──────────────────────── */
+
+router.post("/census/admin/roles", requireNationalAdmin, async (req, res) => {
+  const adminId: string = (req as any).userId;
+  const parsed = z.object({
+    userId: z.string().min(1),
+    role: z.enum(["regional_admin", "national_admin"]),
+  }).safeParse(req.body);
+  if (!parsed.success) return apiError.badRequest(res, "Invalid request", parsed.error.issues);
+
+  try {
+    await pool.query(
+      `INSERT INTO branch_admin_roles (user_id, role, assigned_by)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (user_id) DO UPDATE SET role = EXCLUDED.role, assigned_by = EXCLUDED.assigned_by, assigned_at = NOW()`,
+      [parsed.data.userId, parsed.data.role, adminId]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error({ err }, "census/admin/roles POST failed");
+    return apiError.internal(res, "Failed to assign role");
   }
 });
 

@@ -278,6 +278,39 @@ export async function runMigrations(): Promise<void> {
       ALTER TABLE census_branches ADD COLUMN IF NOT EXISTS branch_status TEXT NOT NULL DEFAULT 'active'
     `);
 
+    // DATA-702: change new branch default from 'active' to 'draft' (idempotent — ALTER DEFAULT does not affect existing rows)
+    await client.query(`
+      ALTER TABLE census_branches ALTER COLUMN branch_status SET DEFAULT 'draft'
+    `);
+
+    // DATA-702: immutable review-event audit trail for branch lifecycle
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS branch_review_events (
+        id            TEXT PRIMARY KEY,
+        branch_id     TEXT NOT NULL REFERENCES census_branches(id) ON DELETE CASCADE,
+        actor_user_id TEXT NOT NULL,
+        actor_role    TEXT NOT NULL,          -- 'local_admin' | 'regional_admin' | 'national_admin'
+        action        TEXT NOT NULL,          -- 'created' | 'submitted' | 'approved' | 'rejected' | 'activated' | 'suspended' | 'archived' | 'restored' | 'changes_requested'
+        from_status   TEXT,
+        to_status     TEXT NOT NULL,
+        note          TEXT,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS branch_review_events_branch_idx ON branch_review_events (branch_id, created_at DESC)
+    `);
+
+    // DATA-702: admin role assignments (regional / national beyond Clerk org:admin)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS branch_admin_roles (
+        user_id     TEXT PRIMARY KEY,
+        role        TEXT NOT NULL,    -- 'regional_admin' | 'national_admin'
+        assigned_by TEXT NOT NULL,
+        assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+
     // Census — branch submissions for global admin review
     await client.query(`
       CREATE TABLE IF NOT EXISTS census_submissions (

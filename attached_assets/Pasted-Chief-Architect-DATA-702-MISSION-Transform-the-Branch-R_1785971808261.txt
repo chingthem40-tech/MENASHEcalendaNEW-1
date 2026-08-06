@@ -1,0 +1,381 @@
+Chief Architect
+
+DATA-702
+
+MISSION
+
+Transform the Branch Registry into a production-grade Branch Management and Approval System.
+
+This is NOT a redesign.
+
+Do NOT change existing registration logic.
+
+Do NOT break existing APIs.
+
+Extend the current architecture professionally.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OBJECTIVE
+
+Every branch should have an official lifecycle.
+
+A newly registered branch should not automatically become fully active.
+
+Instead, it enters an approval workflow managed by Regional and National Administrators.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 1 — Audit Existing System
+
+First audit the current implementation.
+
+Determine:
+
+• Current census_branches schema
+
+• Existing branch_status field
+
+• Existing owner_user_id
+
+• Existing created_by
+
+• Existing admin roles
+
+Reuse everything that already exists.
+
+Do NOT duplicate tables or fields.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 2 — Branch Lifecycle
+
+Implement the following status workflow.
+
+Draft
+
+↓
+
+Pending Review
+
+↓
+
+Approved
+
+↓
+
+Active
+
+↓
+
+Suspended
+
+↓
+
+Archived
+
+Rejected
+
+Each status must have:
+
+• badge color
+
+• icon
+
+• description
+
+• timestamp
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 3 — Approval Workflow
+
+Local Admin
+
+Can:
+
+✓ Create Branch
+
+✓ Edit while Pending Review
+
+Cannot:
+
+✗ Approve
+
+✗ Reject
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Regional Admin
+
+Can:
+
+✓ Review Branch
+
+✓ Request Changes
+
+✓ Approve
+
+✓ Reject
+
+✓ Add Review Notes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+National Admin
+
+Can:
+
+✓ Override decisions
+
+✓ Suspend
+
+✓ Archive
+
+✓ Restore
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 4 — Branch Profile
+
+Create a professional Branch Profile page.
+
+Display:
+
+Branch Logo
+
+Branch Name
+
+Registration ID
+
+Registration Date
+
+Current Status
+
+City
+
+Established Date
+
+Chairman
+
+Secretary
+
+Khazan
+
+Contact Numbers
+
+Branch Statistics
+
+Families
+
+Members
+
+Announcements
+
+Events
+
+Census Progress
+
+Recent Activity
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 5 — Review History
+
+Create an Approval Timeline.
+
+Example
+
+Created
+
+↓
+
+Submitted
+
+↓
+
+Regional Review
+
+↓
+
+Approved
+
+↓
+
+Activated
+
+Every action records:
+
+User
+
+Role
+
+Timestamp
+
+Action
+
+Optional Note
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 6 — Review Notes
+
+Regional Admin can write:
+
+Approval Notes
+
+Correction Requests
+
+Reasons for Rejection
+
+Reasons for Suspension
+
+These become permanent audit records.
+
+Never overwrite history.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 7 — Dashboard
+
+Regional Dashboard
+
+Pending Review
+
+Approved Today
+
+Rejected
+
+Needs Attention
+
+National Dashboard
+
+Total Branches
+
+Pending
+
+Active
+
+Suspended
+
+Archived
+
+Charts
+
+Statistics
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 8 — Notifications
+
+Automatically notify:
+
+Local Admin
+
+Regional Admin
+
+National Admin
+
+Examples
+
+"Your branch has been submitted."
+
+"Your branch requires corrections."
+
+"Your branch has been approved."
+
+"Your branch has been suspended."
+
+Use the existing notification system.
+
+Do NOT build a second notification engine.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 9 — Security
+
+Only authorized roles may change status.
+
+Every transition must verify permissions.
+
+Never trust role information from the frontend.
+
+Always validate on the server.
+
+All changes must be recorded in an immutable audit log.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 10 — Database
+
+Reuse census_branches.
+
+Create additional tables only if absolutely necessary.
+
+Prefer normalized design.
+
+Never duplicate branch information.
+
+All migrations must be idempotent.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+STEP 11 — UI
+
+Match the existing Menashe Design System.
+
+Premium
+
+Professional
+
+Accessible
+
+Responsive
+
+No placeholder UI.
+
+No lorem ipsum.
+
+No temporary buttons.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RETURN ONLY
+
+SECTION A
+
+Architecture audit
+
+SECTION B
+
+Database changes
+
+SECTION C
+
+Workflow implemented
+
+SECTION D
+
+Approval permissions
+
+SECTION E
+
+UI screens added
+
+SECTION F
+
+Notification integration
+
+SECTION G
+
+Security verification
+
+SECTION H
+
+Migration safety
+
+SECTION I
+
+Production readiness
+
+STOP.

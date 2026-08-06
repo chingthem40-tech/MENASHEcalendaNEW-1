@@ -61,7 +61,15 @@ export const branchLeadershipSchema = z.object({
   khazan: leadershipPersonSchema,
 });
 
-export const branchStatusSchema = z.enum(["active", "inactive", "pending"]);
+export const branchStatusSchema = z.enum([
+  "draft",
+  "pending_review",
+  "approved",
+  "active",
+  "suspended",
+  "archived",
+  "rejected",
+]);
 
 /** A local community branch, grouping families under one admin. */
 export const branchSchema = z.object({

@@ -32,7 +32,17 @@ export type AuditEventType =
   | "admin.census.review"
   | "admin.yahrzeit.view"
   | "admin.yahrzeit.delete"
-  | "admin.payment.view";
+  | "admin.payment.view"
+  | "branch.created"
+  | "branch.submitted"
+  | "branch.approved"
+  | "branch.rejected"
+  | "branch.changes_requested"
+  | "branch.activated"
+  | "branch.suspended"
+  | "branch.archived"
+  | "branch.restored"
+  | "branch.role_assigned";
 
 export interface AuditEvent {
   event: AuditEventType;

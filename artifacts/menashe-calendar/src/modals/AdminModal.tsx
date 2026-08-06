@@ -42,7 +42,7 @@ const COVER_COLORS = ["#1a3050","#2a1a40","#1a2a20","#30200a","#1a1a30","#0a2030
 
 type FormMode = "list" | "add" | "edit";
 type FileMode = "url" | "upload";
-type PanelTab = "books" | "users" | "payments" | "broadcast" | "census" | "yahrzeit" | "announce" | "dir";
+type PanelTab = "books" | "users" | "payments" | "broadcast" | "census" | "yahrzeit" | "announce" | "dir" | "branches";
 
 const ROLE_COLORS: Record<string, { bg: string; color: string }> = {
   "Rabbi":            { bg: "rgba(212,168,67,0.18)",  color: "#d4a843" },
@@ -204,6 +204,21 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
   const [censusLoading, setCensusLoading] = useState(false);
   const [reviewingCensus, setReviewingCensus] = useState<string | null>(null);
 
+  // DATA-702 — Branch Management
+  interface AdminBranch {
+    id: string; name: string; cityName: string; adminName?: string;
+    established?: string; branchStatus?: string; createdAt?: string; updatedAt?: string;
+    logoUrl?: string; synagogueImageUrl?: string;
+    leadership?: { chairman?: { name: string; mobile: string }; secretary?: { name: string; mobile: string }; khazan?: { name: string; mobile: string } };
+    families: unknown[];
+  }
+  const [adminBranches, setAdminBranches] = useState<AdminBranch[]>([]);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branchStatusFilter, setBranchStatusFilter] = useState<string>("all");
+  const [transitioningBranch, setTransitioningBranch] = useState<string | null>(null);
+  const [branchNote, setBranchNote] = useState("");
+  const [expandedBranch, setExpandedBranch] = useState<string | null>(null);
+
   const [yahrzeitEntries, setYahrzeitEntries] = useState<YahrzeitEntry[]>([]);
   const [yahrzeitLoading, setYahrzeitLoading] = useState(false);
   const [deletingYahrzeit, setDeletingYahrzeit] = useState<string | null>(null);
@@ -311,6 +326,32 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
       setCensusSubmissions(subs);
       setMemberSubmissions(mems);
     } catch {} finally { setCensusLoading(false); }
+  }
+
+  async function fetchAdminBranches(filterStatus?: string) {
+    setBranchesLoading(true);
+    try {
+      const qs = filterStatus && filterStatus !== "all" ? `?status=${encodeURIComponent(filterStatus)}` : "";
+      const data = await adminFetch(`/census/admin/branches${qs}`);
+      setAdminBranches(data);
+    } catch {} finally { setBranchesLoading(false); }
+  }
+
+  async function transitionBranch(branchId: string, action: string, note?: string) {
+    setTransitioningBranch(branchId);
+    try {
+      await adminFetch(`/census/admin/branches/${encodeURIComponent(branchId)}/transition`, {
+        method: "POST",
+        body: JSON.stringify({ action, note }),
+      });
+      await fetchAdminBranches(branchStatusFilter !== "all" ? branchStatusFilter : undefined);
+      setBranchNote("");
+      setExpandedBranch(null);
+    } catch (err: any) {
+      alert(err?.message ?? "Failed to update branch status");
+    } finally {
+      setTransitioningBranch(null);
+    }
   }
 
   async function reviewCensus(id: string, type: "branch" | "member", status: "approved" | "rejected", reviewNote?: string) {
@@ -558,6 +599,12 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
     }
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (isAdmin && panelTab === "branches") {
+      fetchAdminBranches(branchStatusFilter !== "all" ? branchStatusFilter : undefined);
+    }
+  }, [panelTab, branchStatusFilter]);
+
   if (!isAdmin) {
     return (
       <div className="modal-overlay" onClick={onClose}>
@@ -664,12 +711,17 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
             {usersLoading ? "…" : "↻ Refresh"}
           </button>
         )}
+        {panelTab === "branches" && (
+          <button onClick={() => fetchAdminBranches(branchStatusFilter !== "all" ? branchStatusFilter : undefined)} style={{ padding: "7px 14px", borderRadius: 8, background: "var(--elevated)", border: "1px solid var(--border)", color: "var(--text-muted)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            {branchesLoading ? "…" : "↻ Refresh"}
+          </button>
+        )}
       </div>
 
       {/* ── Tab switcher ── */}
       {mode === "list" && (
         <div style={{ display: "flex", gap: 0, borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
-          {(["books", "users", "payments", "broadcast", "census", "yahrzeit", "announce", "dir"] as PanelTab[]).map(tab => (
+          {(["books", "users", "payments", "broadcast", "census", "branches", "yahrzeit", "announce", "dir"] as PanelTab[]).map(tab => (
             <button
               key={tab}
               onClick={() => setPanelTab(tab)}
@@ -695,6 +747,7 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
                     )}
                   </span>
                 ) : tab === "yahrzeit" ? "🕯️"
+                : tab === "branches" ? "🏛"
                 : tab === "dir" ? "🔍"
                 : (
                 <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
@@ -1115,6 +1168,188 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
             )}
           </>
         )}
+
+        {/* ══════════════════════════════════════════════════════
+            BRANCH MANAGEMENT PANEL
+        ══════════════════════════════════════════════════════ */}
+        {panelTab === "branches" && mode === "list" && (() => {
+          type BranchStatusKey = "draft"|"pending_review"|"approved"|"active"|"suspended"|"archived"|"rejected";
+          const STATUS_CFG: Record<BranchStatusKey, { color: string; bg: string; label: string; icon: string }> = {
+            draft:          { icon: "📝", label: "Draft",          color: "#94a3b8", bg: "rgba(148,163,184,0.12)" },
+            pending_review: { icon: "⏳", label: "Pending Review", color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+            approved:       { icon: "✅", label: "Approved",       color: "#3b82f6", bg: "rgba(59,130,246,0.12)" },
+            active:         { icon: "🟢", label: "Active",         color: "#22c55e", bg: "rgba(34,197,94,0.12)"  },
+            suspended:      { icon: "⚠️", label: "Suspended",      color: "#ef4444", bg: "rgba(239,68,68,0.12)"  },
+            archived:       { icon: "📦", label: "Archived",       color: "#6b7280", bg: "rgba(107,114,128,0.12)"},
+            rejected:       { icon: "✕",  label: "Rejected",       color: "#ef4444", bg: "rgba(239,68,68,0.12)"  },
+          };
+
+          // Actions available per status (admin perspective)
+          const ACTIONS_FOR: Record<string, Array<{ action: string; label: string; color: string }>> = {
+            pending_review: [
+              { action: "approve",          label: "Approve",          color: "#22c55e" },
+              { action: "reject",           label: "Reject",           color: "#ef4444" },
+              { action: "request_changes",  label: "Request Changes",  color: "#f59e0b" },
+            ],
+            approved: [
+              { action: "activate",  label: "Activate",  color: "#22c55e" },
+              { action: "reject",    label: "Reject",    color: "#ef4444" },
+            ],
+            active: [
+              { action: "suspend", label: "Suspend", color: "#f59e0b" },
+              { action: "archive", label: "Archive", color: "#6b7280" },
+            ],
+            suspended: [
+              { action: "restore", label: "Restore", color: "#22c55e" },
+              { action: "archive", label: "Archive", color: "#6b7280" },
+            ],
+            archived: [
+              { action: "restore", label: "Restore", color: "#4f8ef7" },
+            ],
+            rejected: [
+              { action: "approve", label: "Approve", color: "#22c55e" },
+            ],
+            draft: [],
+          };
+
+          const ALL_STATUSES: BranchStatusKey[] = ["draft","pending_review","approved","active","suspended","archived","rejected"];
+          const filtered = branchStatusFilter === "all" ? adminBranches : adminBranches.filter(b => b.branchStatus === branchStatusFilter);
+          const pendingCount = adminBranches.filter(b => b.branchStatus === "pending_review").length;
+
+          return (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {/* Summary strip */}
+              <div style={{ display: "flex", gap: 8 }}>
+                {[
+                  { label: "Total",   value: adminBranches.length,                                                   color: "#94a3b8" },
+                  { label: "Pending", value: pendingCount,                                                            color: "#f59e0b" },
+                  { label: "Active",  value: adminBranches.filter(b => b.branchStatus === "active").length,           color: "#22c55e" },
+                  { label: "Draft",   value: adminBranches.filter(b => b.branchStatus === "draft").length,            color: "#6b7280" },
+                ].map(({ label, value, color }) => (
+                  <div key={label} style={{ flex: 1, textAlign: "center", padding: "10px 4px", borderRadius: 10, background: "var(--elevated)", border: "1px solid var(--border)" }}>
+                    <div style={{ fontSize: 20, fontWeight: 800, color }}>{value}</div>
+                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 2 }}>{label}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Status filter pills */}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <button
+                  onClick={() => setBranchStatusFilter("all")}
+                  style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer", border: "1px solid", borderColor: branchStatusFilter === "all" ? "#d4a843" : "var(--border)", background: branchStatusFilter === "all" ? "rgba(212,168,67,0.12)" : "transparent", color: branchStatusFilter === "all" ? "#d4a843" : "var(--text-muted)" }}
+                >
+                  All
+                </button>
+                {ALL_STATUSES.map(s => {
+                  const c = STATUS_CFG[s];
+                  return (
+                    <button key={s} onClick={() => setBranchStatusFilter(s)}
+                      style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer", border: "1px solid", borderColor: branchStatusFilter === s ? c.color : "var(--border)", background: branchStatusFilter === s ? c.bg : "transparent", color: branchStatusFilter === s ? c.color : "var(--text-muted)" }}>
+                      {c.icon} {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Branch list */}
+              {branchesLoading ? (
+                <div style={{ textAlign: "center", padding: 24, color: "var(--text-muted)", fontSize: 13 }}>Loading…</div>
+              ) : filtered.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 24, color: "var(--text-muted)", fontSize: 13 }}>No branches found.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {filtered.map(branch => {
+                    const statusKey = (branch.branchStatus || "draft") as BranchStatusKey;
+                    const sc = STATUS_CFG[statusKey] || STATUS_CFG.draft;
+                    const actions = ACTIONS_FOR[statusKey] || [];
+                    const isExpanded = expandedBranch === branch.id;
+                    const isActing = transitioningBranch === branch.id;
+
+                    return (
+                      <div key={branch.id} style={{ borderRadius: 14, background: "var(--card)", border: `1px solid ${isExpanded ? sc.color : "var(--border)"}`, overflow: "hidden", transition: "border-color 0.2s" }}>
+                        {/* Branch header row */}
+                        <div
+                          onClick={() => setExpandedBranch(isExpanded ? null : branch.id)}
+                          style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+                        >
+                          {branch.logoUrl ? (
+                            <img src={branch.logoUrl} alt={branch.name} style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                          ) : (
+                            <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--elevated)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🕍</div>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{branch.name}</div>
+                            <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>🇮🇳 {branch.cityName}{branch.established ? ` · Est. ${branch.established}` : ""}</div>
+                          </div>
+                          <div style={{ textAlign: "right", flexShrink: 0 }}>
+                            <div style={{ fontSize: 10, fontWeight: 800, color: sc.color, background: sc.bg, borderRadius: 6, padding: "2px 8px", display: "inline-block" }}>{sc.icon} {sc.label}</div>
+                            <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>{branch.families.length} families</div>
+                          </div>
+                          <span style={{ fontSize: 12, color: "var(--text-muted)", marginLeft: 4 }}>{isExpanded ? "▲" : "▼"}</span>
+                        </div>
+
+                        {/* Expanded actions */}
+                        {isExpanded && (
+                          <div style={{ borderTop: "1px solid var(--border)", padding: "12px 14px", background: "var(--elevated)" }}>
+                            {/* Leadership info */}
+                            {branch.leadership && (
+                              <div style={{ marginBottom: 12 }}>
+                                <div style={{ fontSize: 10, fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.1em", marginBottom: 6 }}>LEADERSHIP</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                  {(["chairman","secretary","khazan"] as const).filter(r => branch.leadership?.[r]?.name).map(role => {
+                                    const p = branch.leadership![role]!;
+                                    const rLabel = role === "chairman" ? "👑" : role === "secretary" ? "📋" : "🎵";
+                                    return (
+                                      <div key={role} style={{ display: "flex", gap: 8, fontSize: 11, color: "var(--text-muted)" }}>
+                                        <span>{rLabel}</span>
+                                        <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{p.name}</span>
+                                        {p.mobile && <span>· {p.mobile}</span>}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Review note input */}
+                            {actions.length > 0 && (
+                              <>
+                                <div style={{ fontSize: 10, fontWeight: 800, color: "var(--text-muted)", letterSpacing: "0.1em", marginBottom: 6 }}>REVIEW NOTE (optional)</div>
+                                <textarea
+                                  value={expandedBranch === branch.id ? branchNote : ""}
+                                  onChange={e => setBranchNote(e.target.value)}
+                                  rows={2}
+                                  placeholder="Add a note for the branch admin…"
+                                  style={{ width: "100%", padding: "8px 10px", borderRadius: 8, background: "var(--card)", border: "1px solid var(--border)", color: "var(--text-primary)", fontSize: 12, resize: "none", outline: "none", boxSizing: "border-box", marginBottom: 10 }}
+                                />
+                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                  {actions.map(({ action, label, color }) => (
+                                    <button
+                                      key={action}
+                                      disabled={isActing}
+                                      onClick={() => transitionBranch(branch.id, action, branchNote || undefined)}
+                                      style={{ padding: "8px 16px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: isActing ? "not-allowed" : "pointer", background: `${color}22`, border: `1px solid ${color}55`, color, opacity: isActing ? 0.5 : 1 }}
+                                    >
+                                      {isActing ? "…" : label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                            {actions.length === 0 && (
+                              <div style={{ fontSize: 12, color: "var(--text-muted)", textAlign: "center", padding: "4px 0" }}>No actions available for this status.</div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* DIRECTORY PANEL */}
         {panelTab === "dir" && mode === "list" && (

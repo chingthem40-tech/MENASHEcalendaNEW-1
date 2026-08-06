@@ -3,6 +3,8 @@ import {
   fetchCensusBranch, saveCensusBranch,
   fetchCensusSubmissions, submitCensusBranchForReview, reviewCensusSubmission,
   fetchCensusMemberSubmissions, submitCensusMemberEntry, reviewCensusMemberSubmission,
+  submitBranchForLifecycleReview, fetchBranchHistory,
+  type BranchReviewEvent,
 } from "../lib/userApi";
 import type {
   AliyahStatus, Relation,
@@ -1941,6 +1943,14 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
   const [saveError, setSaveError] = useState<string | null>(null);
   const [registered, setRegistered] = useState<Branch | null>(null);
 
+  // DATA-702 — lifecycle state
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [branchHistory, setBranchHistory] = useState<BranchReviewEvent[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+
   const logoInputRef = useRef<HTMLInputElement>(null);
   const synagogueInputRef = useRef<HTMLInputElement>(null);
   const [logoSaveError, setLogoSaveError] = useState<string | null>(null);
@@ -1991,13 +2001,36 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
     },
   });
 
-  /* Load branch from DB on first open (if user is signed in) */
+  /* Load branch + history from DB on first open */
   useEffect(() => {
     if (initialBranch) return;
-    fetchCensusBranch().then(b => {
-      if (b) setBranch(b as any);
-    });
+    fetchCensusBranch().then(b => { if (b) setBranch(b as any); });
   }, []);
+
+  useEffect(() => {
+    if (!branch) return;
+    setHistoryLoading(true);
+    fetchBranchHistory()
+      .then(h => setBranchHistory(h))
+      .catch(() => {})
+      .finally(() => setHistoryLoading(false));
+  }, [branch?.id]);
+
+  async function submitForReview() {
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const updated = await submitBranchForLifecycleReview();
+      setBranch(updated as any);
+      const history = await fetchBranchHistory().catch(() => []);
+      setBranchHistory(history);
+    } catch {
+      setSubmitError("Failed to submit — check your connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   /* When a member submission is approved, also add the family into the local branch registry */
   function handleMemberReview(id: string, status: "approved" | "rejected", note?: string) {
@@ -2193,7 +2226,7 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
               { label: "Branch Name", value: registered.name },
               { label: "City", value: registered.cityName },
               ...(registered.adminName ? [{ label: "Local Admin", value: registered.adminName }] : []),
-              { label: "Status", value: "Active ✓" },
+              { label: "Status", value: "📝 Draft — Submit for Review" },
             ].map(({ label, value }) => (
               <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
                 <span style={{ fontSize: 11, color: "var(--text-muted)", fontWeight: 600, flexShrink: 0 }}>{label}</span>
@@ -2219,9 +2252,148 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
 
   const baseUrl = `${window.location.origin}${window.location.pathname}`;
 
+  /* ── STATUS CONFIG ── */
+  type BranchStatusKey = "draft"|"pending_review"|"approved"|"active"|"suspended"|"archived"|"rejected";
+  const STATUS_CONFIG: Record<BranchStatusKey, { icon: string; label: string; color: string; bg: string; border: string; desc: string }> = {
+    draft:          { icon: "📝", label: "Draft",          color: "#94a3b8", bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.25)", desc: "Complete your profile and submit for Regional review." },
+    pending_review: { icon: "⏳", label: "Pending Review", color: "#f59e0b", bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.3)",  desc: "Awaiting Regional Admin review. You will be notified." },
+    approved:       { icon: "✅", label: "Approved",       color: "#3b82f6", bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.25)", desc: "Approved — awaiting National Admin activation." },
+    active:         { icon: "🟢", label: "Active",         color: "#22c55e", bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.25)",  desc: "Fully operational in the official BMC registry." },
+    suspended:      { icon: "⚠️", label: "Suspended",      color: "#ef4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)",  desc: "Temporarily suspended. Contact National Admin." },
+    archived:       { icon: "📦", label: "Archived",       color: "#6b7280", bg: "rgba(107,114,128,0.1)", border: "rgba(107,114,128,0.2)", desc: "This branch has been archived." },
+    rejected:       { icon: "✕",  label: "Rejected",       color: "#ef4444", bg: "rgba(239,68,68,0.1)",   border: "rgba(239,68,68,0.25)",  desc: "Review the feedback below and resubmit." },
+  };
+  const currentStatus = ((branch as any).branchStatus as BranchStatusKey) || "draft";
+  const sc = STATUS_CONFIG[currentStatus] || STATUS_CONFIG.draft;
+  const canSubmit = currentStatus === "draft" || currentStatus === "rejected";
+
   /* ── REGISTRY SCREEN ── */
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* ── STATUS BADGE ── */}
+      <div style={{ padding: "12px 14px", borderRadius: 12, background: sc.bg, border: `1px solid ${sc.border}`, display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 18, flexShrink: 0 }}>{sc.icon}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: sc.color, letterSpacing: "0.06em" }}>
+            {sc.label.toUpperCase()}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.4 }}>{sc.desc}</div>
+          {(branch as any).createdAt && (
+            <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 3 }}>
+              ID: <span style={{ fontFamily: "monospace", color: "var(--text-primary)" }}>{branch.id}</span>
+              {" · Registered "}
+              {new Date((branch as any).createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}
+            </div>
+          )}
+        </div>
+        <button
+          onClick={() => { setShowTimeline(t => !t); setShowProfile(false); }}
+          style={{ fontSize: 11, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", flexShrink: 0, padding: "4px 6px" }}
+        >
+          {showTimeline ? "Hide" : "History"}
+        </button>
+      </div>
+
+      {/* ── APPROVAL TIMELINE ── */}
+      {showTimeline && (
+        <div style={{ borderRadius: 12, background: "var(--card)", border: "1px solid var(--border)", overflow: "hidden" }}>
+          <div style={{ padding: "10px 14px", background: "rgba(212,168,67,0.06)", borderBottom: "1px solid var(--border)" }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#d4a843" }}>APPROVAL TIMELINE</div>
+          </div>
+          {historyLoading ? (
+            <div style={{ padding: 16, textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>Loading…</div>
+          ) : branchHistory.length === 0 ? (
+            <div style={{ padding: 16, textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>No events yet.</div>
+          ) : (
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 0 }}>
+              {branchHistory.map((ev, idx) => {
+                const actionLabels: Record<string, string> = {
+                  created: "Branch Created", submitted: "Submitted for Review",
+                  approved: "Approved by Regional Admin", rejected: "Rejected",
+                  changes_requested: "Changes Requested", activated: "Activated",
+                  suspended: "Suspended", archived: "Archived", restored: "Restored",
+                };
+                const roleLabel: Record<string, string> = {
+                  local_admin: "Local Admin", regional_admin: "Regional Admin", national_admin: "National Admin",
+                };
+                const dotColors: Record<string, string> = {
+                  created: "#4f8ef7", submitted: "#f59e0b", approved: "#22c55e",
+                  rejected: "#ef4444", changes_requested: "#f59e0b", activated: "#22c55e",
+                  suspended: "#ef4444", archived: "#6b7280", restored: "#22c55e",
+                };
+                const isLast = idx === branchHistory.length - 1;
+                return (
+                  <div key={ev.id} style={{ display: "flex", gap: 12, paddingBottom: isLast ? 0 : 12 }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: "50%", background: dotColors[ev.action] || "#94a3b8", border: "2px solid var(--background)", marginTop: 2, flexShrink: 0 }} />
+                      {!isLast && <div style={{ width: 1, flex: 1, background: "var(--border)", margin: "3px 0" }} />}
+                    </div>
+                    <div style={{ flex: 1, paddingBottom: 2 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{actionLabels[ev.action] || ev.action}</div>
+                      <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 1 }}>
+                        {roleLabel[ev.actorRole] || ev.actorRole} · {new Date(ev.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                      {ev.note && <div style={{ fontSize: 11, color: "#d4a843", marginTop: 3, fontStyle: "italic", lineHeight: 1.4 }}>"{ev.note}"</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── SUBMIT FOR REVIEW CTA ── */}
+      {canSubmit && (
+        <div style={{ borderRadius: 12, background: "linear-gradient(135deg, rgba(79,142,247,0.12), rgba(79,142,247,0.04))", border: "1px solid rgba(79,142,247,0.3)", padding: "14px 16px" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#4f8ef7", marginBottom: 4 }}>🚀 Ready to Submit?</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 12, lineHeight: 1.5 }}>
+            Upload your community logo and synagogue photo, then submit your branch for Regional Admin review. You will be notified of the outcome.
+          </div>
+          {submitError && (
+            <div style={{ padding: "8px 10px", borderRadius: 8, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", fontSize: 11, color: "#ef4444", marginBottom: 10 }}>{submitError}</div>
+          )}
+          <button
+            onClick={submitForReview}
+            disabled={submitting}
+            style={{ width: "100%", padding: "12px", borderRadius: 10, fontWeight: 700, fontSize: 13, border: "none", cursor: submitting ? "not-allowed" : "pointer", background: submitting ? "var(--elevated)" : "linear-gradient(135deg, #4f8ef7, #2563eb)", color: submitting ? "var(--text-muted)" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+          >
+            {submitting ? <><span style={{ display: "inline-block", width: 13, height: 13, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />Submitting…</> : "Submit for Review →"}
+          </button>
+        </div>
+      )}
+
+      {/* ── BRANCH PROFILE (collapsible) ── */}
+      {(branch as any).leadership && (
+        <div style={{ borderRadius: 12, background: "var(--card)", border: "1px solid rgba(212,168,67,0.25)", overflow: "hidden" }}>
+          <button
+            onClick={() => setShowProfile(p => !p)}
+            style={{ width: "100%", padding: "10px 14px", background: "rgba(212,168,67,0.06)", border: "none", borderBottom: showProfile ? "1px solid var(--border)" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+          >
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", color: "#d4a843" }}>👥 BRANCH LEADERSHIP</span>
+            <span style={{ fontSize: 11, color: "var(--text-muted)" }}>{showProfile ? "▲ Hide" : "▼ Show"}</span>
+          </button>
+          {showProfile && (
+            <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {(["chairman", "secretary", "khazan"] as const).map(role => {
+                const person = (branch as any).leadership?.[role];
+                if (!person) return null;
+                const roleLabel = role === "chairman" ? "👑 Chairman" : role === "secretary" ? "📋 Secretary" : "🎵 Khazan";
+                return (
+                  <div key={role} style={{ padding: "10px 12px", borderRadius: 10, background: "var(--elevated)", border: "1px solid var(--border)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: "#d4a843", letterSpacing: "0.08em", marginBottom: 4 }}>{roleLabel.toUpperCase()}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{person.name}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>📱 {person.mobile}</div>
+                    {person.email && <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 1 }}>✉️ {person.email}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── ACTION BAR ── */}
       <div style={{ display: "flex", gap: 8 }}>
