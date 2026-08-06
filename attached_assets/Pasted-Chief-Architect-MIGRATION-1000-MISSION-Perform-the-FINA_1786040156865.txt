@@ -1,0 +1,389 @@
+Chief Architect
+
+MIGRATION-1000
+
+MISSION
+
+Perform the FINAL migration audit for the Menashe Platform.
+
+DO NOT migrate anything.
+
+DO NOT modify code.
+
+DO NOT create migrations.
+
+DO NOT change infrastructure.
+
+This is a READ-ONLY architectural audit.
+
+==================================================
+
+BACKGROUND
+
+Current Platform
+
+• Replit Free Tier
+
+• Replit PostgreSQL
+
+• Replit Object Storage
+
+• React (Vite)
+
+• Express API
+
+• Expo Mobile
+
+• Drizzle ORM
+
+• Clerk
+
+• Razorpay
+
+• OpenAI
+
+Target Platform
+
+Frontend
+
+Netlify
+
+Backend
+
+Railway
+
+Database
+
+Supabase PostgreSQL
+
+Storage
+
+Supabase Storage
+
+==================================================
+
+STEP 1
+
+Audit ALL Replit dependencies.
+
+Find every use of:
+
+DATABASE_URL
+
+REPLIT
+
+Object Storage
+
+127.0.0.1
+
+Replit SDK
+
+Environment variables
+
+Build scripts
+
+Deployment scripts
+
+Secrets
+
+==================================================
+
+STEP 2
+
+Database Audit
+
+Inspect:
+
+Drizzle
+
+pg Pool
+
+Raw SQL
+
+Migrations
+
+Foreign keys
+
+Indexes
+
+Triggers
+
+Constraints
+
+Determine:
+
+Can this database move directly to Supabase PostgreSQL?
+
+YES / NO
+
+Explain why.
+
+==================================================
+
+STEP 3
+
+Object Storage Audit
+
+List every API using:
+
+Object uploads
+
+Images
+
+Book covers
+
+Branch logos
+
+Profile photos
+
+Memorial photos
+
+Documents
+
+Determine
+
+Can these migrate directly to Supabase Storage?
+
+List every required code change.
+
+==================================================
+
+STEP 4
+
+Backend Audit
+
+Determine every place assuming:
+
+Replit runtime
+
+Replit networking
+
+Replit deployment
+
+Replit filesystem
+
+Replit ports
+
+Replit startup
+
+Determine compatibility with Railway.
+
+==================================================
+
+STEP 5
+
+Frontend Audit
+
+Determine whether Netlify requires:
+
+_redirects
+
+Headers
+
+Environment variables
+
+SPA routing
+
+PWA changes
+
+API URL changes
+
+==================================================
+
+STEP 6
+
+Mobile Audit
+
+Determine whether Expo requires changes.
+
+Check
+
+API endpoints
+
+Environment variables
+
+Deep links
+
+Push notifications
+
+==================================================
+
+STEP 7
+
+Authentication Audit
+
+Audit Clerk.
+
+Verify migration impact.
+
+List required changes.
+
+==================================================
+
+STEP 8
+
+Payments Audit
+
+Audit Razorpay.
+
+Verify
+
+Webhook URLs
+
+Return URLs
+
+Environment variables
+
+Backend endpoints
+
+==================================================
+
+STEP 9
+
+AI Audit
+
+Audit OpenAI integration.
+
+Verify
+
+Streaming
+
+Timeouts
+
+Environment variables
+
+Railway compatibility
+
+==================================================
+
+STEP 10
+
+Migration Complexity
+
+Score each subsystem.
+
+Database
+
+Storage
+
+API
+
+Frontend
+
+Mobile
+
+Auth
+
+Payments
+
+AI
+
+Notifications
+
+Rate:
+
+0 = no work
+
+10 = major rewrite
+
+==================================================
+
+STEP 11
+
+Migration Time Estimate
+
+Estimate:
+
+Hours
+
+Risk
+
+Downtime
+
+Rollback complexity
+
+==================================================
+
+STEP 12
+
+Final Recommendation
+
+Choose ONE.
+
+A
+
+Remain on Replit
+
+B
+
+Move only frontend to Netlify
+
+C
+
+Move frontend + backend
+
+D
+
+Move entire platform
+
+Explain WHY.
+
+==================================================
+
+STEP 13
+
+Migration Roadmap
+
+If migration is approved,
+
+generate:
+
+Phase 1
+
+Phase 2
+
+Phase 3
+
+Phase 4
+
+No implementation.
+
+Planning only.
+
+==================================================
+
+RETURN ONLY
+
+SECTION A
+
+Current architecture
+
+SECTION B
+
+Replit dependency inventory
+
+SECTION C
+
+Migration blockers
+
+SECTION D
+
+Migration complexity
+
+SECTION E
+
+Compatibility matrix
+
+SECTION F
+
+Estimated migration effort
+
+SECTION G
+
+Recommended architecture
+
+SECTION H
+
+GO / NO-GO decision
+
+STOP.
