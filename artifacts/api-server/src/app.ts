@@ -112,6 +112,7 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use(globalRateLimiter);
 
+app.get("/api", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", router);
 
 // Unknown /api routes — return JSON 404 (not HTML)
@@ -164,7 +165,7 @@ if (process.env.NODE_ENV === "production") {
       }),
     );
     // SPA fallback — all non-API routes return index.html
-    app.get("*", (_req, res) => {
+    app.get("/{*splat}", (_req, res) => {
       res.sendFile(path.join(frontendDir, "index.html"));
     });
   } else {
