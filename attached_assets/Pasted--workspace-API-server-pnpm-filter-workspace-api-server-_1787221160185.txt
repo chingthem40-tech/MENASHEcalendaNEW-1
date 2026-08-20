@@ -1,0 +1,229 @@
+~/workspace$ # API server
+pnpm --filter @workspace/api-server run dev
+
+> @workspace/api-server@0.0.0 dev /home/runner/workspace/artifacts/api-server
+> export NODE_ENV=development && fuser -k 8080/tcp 2>/dev/null; sleep 0.5 && (test -f dist/index.mjs && pnpm run start || (pnpm run build && pnpm run start))
+
+
+> @workspace/api-server@0.0.0 start /home/runner/workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+[10:18:11.383] WARN (1961): VAPID_PRIVATE_KEY not set — push notifications disabled
+[10:18:11.434] INFO (1961): Running startup migrations…
+[10:18:11.516] INFO (1961): Memorial Sanctuary V2 schema ready
+[10:18:11.631] INFO (1961): Schema ready
+[10:18:11.632] INFO (1961): Books table already has data — skipping seed
+    count: 8
+[10:18:11.633] INFO (1961): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:11.633] INFO (1961):   Menashe API — Configuration Summary   
+[10:18:11.633] INFO (1961): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:11.633] INFO (1961):   ✓ Database.............. READY
+[10:18:11.633] INFO (1961):   ✓ Clerk Auth............ READY
+[10:18:11.633] INFO (1961):   ✓ OpenAI................ READY
+[10:18:11.633] INFO (1961):   ✗ Gemini................ NOT CONFIGURED
+[10:18:11.633] INFO (1961):   ✗ Grok.................. NOT CONFIGURED
+[10:18:11.633] INFO (1961):   ✗ Push (VAPID).......... NOT CONFIGURED
+[10:18:11.633] INFO (1961):   ✗ Payments.............. NOT CONFIGURED
+[10:18:11.633] INFO (1961):   ✓ Object Storage........ READY
+[10:18:11.633] INFO (1961):   ○ Environment........... development
+[10:18:11.633] INFO (1961): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:11.633] WARN (1961): Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY are not set. Web push will be silently skipped.
+[10:18:11.633] WARN (1961): Payments are NOT CONFIGURED — RAZORPAY_KEY_ID and/or RAZORPAY_KEY_SECRET are not set. Payment routes will return 503.
+[10:18:11.634] INFO (1961): Server listening
+    port: 8080
+[10:18:11.634] ERROR (1961): Failed to start server
+    err: {
+      "type": "Error",
+      "message": "listen EADDRINUSE: address already in use 0.0.0.0:8080",
+      "stack":
+          Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+              at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+              at listenInCluster (node:net:1965:12)
+              at doListen (node:net:2139:7)
+              at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+      "code": "EADDRINUSE",
+      "errno": -98,
+      "syscall": "listen",
+      "address": "0.0.0.0",
+      "port": 8080
+    }
+ ELIFECYCLE  Command failed with exit code 1.
+
+> @workspace/api-server@0.0.0 build /home/runner/workspace/artifacts/api-server
+> node ./build.mjs
+
+
+  dist/index.mjs                       5.4mb ⚠️
+  dist/pino-worker.mjs               153.5kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.7kb
+  dist/thread-stream-worker.mjs        7.4kb
+  dist/index.mjs.map                  11.1mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           204.0kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+
+⚡ Done in 1145ms
+
+> @workspace/api-server@0.0.0 start /home/runner/workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+[10:18:14.584] WARN (2025): VAPID_PRIVATE_KEY not set — push notifications disabled
+[10:18:14.628] INFO (2025): Running startup migrations…
+[10:18:14.674] INFO (2025): Memorial Sanctuary V2 schema ready
+[10:18:14.722] INFO (2025): Schema ready
+[10:18:14.723] INFO (2025): Books table already has data — skipping seed
+    count: 8
+[10:18:14.723] INFO (2025): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:14.723] INFO (2025):   Menashe API — Configuration Summary   
+[10:18:14.723] INFO (2025): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:14.723] INFO (2025):   ✓ Database.............. READY
+[10:18:14.723] INFO (2025):   ✓ Clerk Auth............ READY
+[10:18:14.723] INFO (2025):   ✓ OpenAI................ READY
+[10:18:14.723] INFO (2025):   ✗ Gemini................ NOT CONFIGURED
+[10:18:14.723] INFO (2025):   ✗ Grok.................. NOT CONFIGURED
+[10:18:14.723] INFO (2025):   ✗ Push (VAPID).......... NOT CONFIGURED
+[10:18:14.723] INFO (2025):   ✗ Payments.............. NOT CONFIGURED
+[10:18:14.723] INFO (2025):   ✓ Object Storage........ READY
+[10:18:14.723] INFO (2025):   ○ Environment........... development
+[10:18:14.723] INFO (2025): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:14.723] WARN (2025): Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY are not set. Web push will be silently skipped.
+[10:18:14.723] WARN (2025): Payments are NOT CONFIGURED — RAZORPAY_KEY_ID and/or RAZORPAY_KEY_SECRET are not set. Payment routes will return 503.
+[10:18:14.725] INFO (2025): Server listening
+    port: 8080
+[10:18:14.725] ERROR (2025): Failed to start server
+    err: {
+      "type": "Error",
+      "message": "listen EADDRINUSE: address already in use 0.0.0.0:8080",
+      "stack":
+          Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+              at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+              at listenInCluster (node:net:1965:12)
+              at doListen (node:net:2139:7)
+              at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+      "code": "EADDRINUSE",
+      "errno": -98,
+      "syscall": "listen",
+      "address": "0.0.0.0",
+      "port": 8080
+    }
+ ELIFECYCLE  Command failed with exit code 1.
+/home/runner/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 dev: `export NODE_ENV=development && fuser -k 8080/tcp 2>/dev/null; sleep 0.5 && (test -f dist/index.mjs && pnpm run start || (pnpm run build && pnpm run start))`
+Exit status 1
+~/workspace$ # API server
+pnpm --filter @workspace/api-server run dev
+
+> @workspace/api-server@0.0.0 dev /home/runner/workspace/artifacts/api-server
+> export NODE_ENV=development && fuser -k 8080/tcp 2>/dev/null; sleep 0.5 && (test -f dist/index.mjs && pnpm run start || (pnpm run build && pnpm run start))
+
+
+> @workspace/api-server@0.0.0 start /home/runner/workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+[10:18:42.598] WARN (2098): VAPID_PRIVATE_KEY not set — push notifications disabled
+[10:18:42.668] INFO (2098): Running startup migrations…
+[10:18:42.736] INFO (2098): Memorial Sanctuary V2 schema ready
+[10:18:42.802] INFO (2098): Schema ready
+[10:18:42.803] INFO (2098): Books table already has data — skipping seed
+    count: 8
+[10:18:42.804] INFO (2098): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:42.804] INFO (2098):   Menashe API — Configuration Summary   
+[10:18:42.804] INFO (2098): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:42.804] INFO (2098):   ✓ Database.............. READY
+[10:18:42.804] INFO (2098):   ✓ Clerk Auth............ READY
+[10:18:42.804] INFO (2098):   ✓ OpenAI................ READY
+[10:18:42.804] INFO (2098):   ✗ Gemini................ NOT CONFIGURED
+[10:18:42.804] INFO (2098):   ✗ Grok.................. NOT CONFIGURED
+[10:18:42.804] INFO (2098):   ✗ Push (VAPID).......... NOT CONFIGURED
+[10:18:42.804] INFO (2098):   ✗ Payments.............. NOT CONFIGURED
+[10:18:42.804] INFO (2098):   ✓ Object Storage........ READY
+[10:18:42.804] INFO (2098):   ○ Environment........... development
+[10:18:42.804] INFO (2098): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:42.804] WARN (2098): Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY are not set. Web push will be silently skipped.
+[10:18:42.804] WARN (2098): Payments are NOT CONFIGURED — RAZORPAY_KEY_ID and/or RAZORPAY_KEY_SECRET are not set. Payment routes will return 503.
+[10:18:42.806] INFO (2098): Server listening
+    port: 8080
+[10:18:42.806] ERROR (2098): Failed to start server
+    err: {
+      "type": "Error",
+      "message": "listen EADDRINUSE: address already in use 0.0.0.0:8080",
+      "stack":
+          Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+              at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+              at listenInCluster (node:net:1965:12)
+              at doListen (node:net:2139:7)
+              at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+      "code": "EADDRINUSE",
+      "errno": -98,
+      "syscall": "listen",
+      "address": "0.0.0.0",
+      "port": 8080
+    }
+ ELIFECYCLE  Command failed with exit code 1.
+
+> @workspace/api-server@0.0.0 build /home/runner/workspace/artifacts/api-server
+> node ./build.mjs
+
+
+  dist/index.mjs                       5.4mb ⚠️
+  dist/pino-worker.mjs               153.5kb
+  dist/pino-file.mjs                 142.1kb
+  dist/pino-pretty.mjs               114.7kb
+  dist/thread-stream-worker.mjs        7.4kb
+  dist/index.mjs.map                  11.1mb
+  dist/pino-worker.mjs.map           256.9kb
+  dist/pino-file.mjs.map             229.0kb
+  dist/pino-pretty.mjs.map           204.0kb
+  dist/thread-stream-worker.mjs.map   12.0kb
+
+⚡ Done in 606ms
+
+> @workspace/api-server@0.0.0 start /home/runner/workspace/artifacts/api-server
+> node --enable-source-maps ./dist/index.mjs
+
+[10:18:44.625] WARN (2155): VAPID_PRIVATE_KEY not set — push notifications disabled
+[10:18:44.682] INFO (2155): Running startup migrations…
+[10:18:44.753] INFO (2155): Memorial Sanctuary V2 schema ready
+[10:18:44.808] INFO (2155): Schema ready
+[10:18:44.811] INFO (2155): Books table already has data — skipping seed
+    count: 8
+[10:18:44.811] INFO (2155): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:44.811] INFO (2155):   Menashe API — Configuration Summary   
+[10:18:44.811] INFO (2155): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:44.811] INFO (2155):   ✓ Database.............. READY
+[10:18:44.811] INFO (2155):   ✓ Clerk Auth............ READY
+[10:18:44.811] INFO (2155):   ✓ OpenAI................ READY
+[10:18:44.811] INFO (2155):   ✗ Gemini................ NOT CONFIGURED
+[10:18:44.811] INFO (2155):   ✗ Grok.................. NOT CONFIGURED
+[10:18:44.811] INFO (2155):   ✗ Push (VAPID).......... NOT CONFIGURED
+[10:18:44.811] INFO (2155):   ✗ Payments.............. NOT CONFIGURED
+[10:18:44.811] INFO (2155):   ✓ Object Storage........ READY
+[10:18:44.811] INFO (2155):   ○ Environment........... development
+[10:18:44.811] INFO (2155): ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[10:18:44.811] WARN (2155): Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY and/or VAPID_PRIVATE_KEY are not set. Web push will be silently skipped.
+[10:18:44.811] WARN (2155): Payments are NOT CONFIGURED — RAZORPAY_KEY_ID and/or RAZORPAY_KEY_SECRET are not set. Payment routes will return 503.
+[10:18:44.813] INFO (2155): Server listening
+    port: 8080
+[10:18:44.813] ERROR (2155): Failed to start server
+    err: {
+      "type": "Error",
+      "message": "listen EADDRINUSE: address already in use 0.0.0.0:8080",
+      "stack":
+          Error: listen EADDRINUSE: address already in use 0.0.0.0:8080
+              at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+              at listenInCluster (node:net:1965:12)
+              at doListen (node:net:2139:7)
+              at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+      "code": "EADDRINUSE",
+      "errno": -98,
+      "syscall": "listen",
+      "address": "0.0.0.0",
+      "port": 8080
+    }
+ ELIFECYCLE  Command failed with exit code 1.
+/home/runner/workspace/artifacts/api-server:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @workspace/api-server@0.0.0 dev: `export NODE_ENV=development && fuser -k 8080/tcp 2>/dev/null; sleep 0.5 && (test -f dist/index.mjs && pnpm run start || (pnpm run build && pnpm run start))`
+Exit status 1
+~/workspace$ 
