@@ -173,9 +173,9 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
       {/* ── App Header ── */}
       <div className="app-header">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/logo.png" alt="Benei Menashe Calendar" style={{ height: 38, width: 38, objectFit: "contain", borderRadius: 8 }} />
+          <img src="/logo.png" alt="Bnei Menashe Calendar" style={{ height: 38, width: 38, objectFit: "contain", borderRadius: 8 }} />
           <div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.1 }}>Benei Menashe</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.1 }}>Bnei Menashe</div>
             <div style={{ fontSize: 9, color: "var(--gold)", letterSpacing: "0.15em", fontWeight: 700 }}>CALENDAR</div>
           </div>
         </div>

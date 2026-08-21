@@ -496,7 +496,7 @@ export default function Landing({ onSignIn }: LandingProps) {
         <nav className="landing-nav">
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             {/* Logo */}
-            <img src="/logo-benei-menashe.png" alt="Benei Menashe Calendar" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(212,175,55,0.35)" }} />
+            <img src="/logo-benei-menashe.png" alt="Bnei Menashe Calendar" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", border: "1px solid rgba(212,175,55,0.35)" }} />
             <span style={{ fontSize: 14, fontWeight: 700, color: "#D4AF37", letterSpacing: ".08em" }}>{t.landingBadge}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -521,7 +521,7 @@ export default function Landing({ onSignIn }: LandingProps) {
           <div className="hero-badge" style={{ marginBottom: 32 }}>
             <img
               src="/logo-benei-menashe.png"
-              alt="Benei Menashe Calendar"
+              alt="Bnei Menashe Calendar"
               style={{
                 width: "clamp(220px, 42vw, 340px)",
                 height: "auto",
