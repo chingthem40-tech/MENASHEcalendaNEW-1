@@ -1,98 +1,83 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 export function Scene2() {
-  const [phase, setPhase] = useState(0);
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 500); // Branding image
-    const t2 = setTimeout(() => setPhase(2), 2000); // UI screens
-    const t3 = setTimeout(() => setPhase(3), 3500); // Features list
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
+  const rows = [
+    ['Shacharit', '06:18', 'Begin the day'],
+    ['Mincha', '16:42', 'Pause + return'],
+    ['Maariv', '20:19', 'Close the day'],
+  ];
 
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center overflow-hidden"
-      initial={{ opacity: 0, scale: 1.1 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, filter: 'blur(10px)', y: -100 }}
-      transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute inset-0 w-full h-screen overflow-hidden"
+      initial={{ opacity: 0, scale: .96, clipPath: 'circle(0% at 80% 50%)' }}
+      animate={{ opacity: 1, scale: 1, clipPath: 'circle(100% at 80% 50%)' }}
+      exit={{ opacity: 0, scale: 1.06, clipPath: 'circle(0% at 20% 50%)' }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="absolute inset-0 flex">
-        
-        {/* Left: Branding & Core Message */}
-        <div className="w-[45%] h-full relative bg-[#02040A] flex flex-col justify-center px-16 border-r border-[#D4AF37]/10 z-20">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={phase >= 1 ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      <div className="relative z-10 h-full flex items-center px-[9vw]">
+        <div className="w-[42vw]">
+          <motion.div className="mono-label text-[.72vw] text-[#d9aa57] mb-[2.2vh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .25 }}>PRAYER / IN ITS PROPER TIME</motion.div>
+          <motion.h2
+            className="text-[4.25vw] leading-[.98] tracking-[-.06em] font-extrabold max-w-[36vw]"
+            initial={{ opacity: 0, y: '3vh' }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: .8, delay: .4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <img 
-              src={`${import.meta.env.BASE_URL}images/branding.png`}
-              alt="Rooted in Heritage"
-              className="w-48 mb-12 mix-blend-screen opacity-90"
-            />
-            <h2 className="font-display text-5xl text-white mb-6 leading-tight">
-              Sacred Time,<br/> Modern Flow.
-            </h2>
-            <p className="font-body text-xl text-[#8391a8] max-w-md font-light">
-              A meticulously crafted Jewish calendar designed specifically for the Menashe community.
-            </p>
-          </motion.div>
+            Know when to <span className="text-[#d9aa57]">begin.</span>
+          </motion.h2>
+          <motion.p className="mt-[2.6vh] text-[1.15vw] leading-[1.5] text-[#c9d1c9]/72 max-w-[26vw]" initial={{ opacity: 0, y: '2vh' }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .9 }}>
+            Location-aware prayer times that move with the sun — not a generic clock.
+          </motion.p>
 
-          <div className="mt-16 space-y-6">
-            {['Zmanim & Prayer Times', 'Parasha & Daf Yomi', 'Jewish Holidays'].map((feat, i) => (
+          <motion.div className="mt-[4vh] flex items-center gap-[.8vw]" initial={{ opacity: 0, x: '-2vw' }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.15 }}>
+            <span className="w-[.55vw] h-[.55vw] rounded-full bg-[#d9aa57]" />
+            <span className="mono-label text-[.62vw] text-[#c9d1c9]/58">JERUSALEM · LIVE ZMANIM</span>
+          </motion.div>
+        </div>
+
+        <motion.div
+          className="absolute right-[10vw] w-[37vw] glass-panel rounded-[1.3vw] p-[2.2vw]"
+          initial={{ opacity: 0, y: '5vh', rotate: 2 }}
+          animate={{ opacity: 1, y: 0, rotate: 0 }}
+          transition={{ duration: 1.05, delay: .35, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="mono-label text-[.62vw] text-[#8c9b91]">PRAYER BOARD</div>
+              <div className="text-[2.05vw] mt-[1vh] tracking-[-.04em]">Today's rhythm</div>
+            </div>
+            <div className="text-right">
+              <div className="serif-note text-[2vw] text-[#f4dca0]">י״ז תמוז</div>
+              <div className="text-[.7vw] text-[#8c9b91] mt-[.35vh]">fast begins 04:16</div>
+            </div>
+          </div>
+          <div className="h-[1px] bg-[#f4dca0]/18 mt-[2.4vh] mb-[1vh]" />
+          <div>
+            {rows.map(([name, time, note], index) => (
               <motion.div
-                key={feat}
-                className="flex items-center space-x-4"
-                initial={{ opacity: 0, x: -20 }}
-                animate={phase >= 3 ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
-                transition={{ duration: 0.8, delay: i * 0.2, ease: 'easeOut' }}
+                key={name}
+                className="flex items-center py-[1.8vh] border-b border-[#f4dca0]/10 last:border-0"
+                initial={{ opacity: 0, x: '2vw' }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: .55, delay: .75 + index * .16 }}
               >
-                <div className="w-2 h-2 bg-[#D4AF37] rotate-45" />
-                <span className="font-body text-lg text-white font-medium tracking-wide uppercase">{feat}</span>
+                <div className="w-[2.4vw] h-[2.4vw] rounded-full border border-[#d9aa57]/35 flex items-center justify-center text-[#d9aa57] text-[.85vw]">
+                  {index + 1}
+                </div>
+                <div className="ml-[1vw] flex-1">
+                  <div className="text-[1.12vw]">{name}</div>
+                  <div className="text-[.7vw] text-[#8c9b91] mt-[.4vh]">{note}</div>
+                </div>
+                <div className="text-[1.55vw] text-[#f4dca0]">{time}</div>
               </motion.div>
             ))}
           </div>
-        </div>
-
-        {/* Right: UI Parallax Showcase */}
-        <div className="w-[55%] h-full relative bg-[#0A1124] overflow-hidden flex items-center justify-center perspective-[1200px]">
-          {/* Radial Glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.1)_0%,transparent_70%)]" />
-
-          {/* Center Main Screen */}
-          <motion.div
-            className="absolute w-[400px] shadow-2xl rounded-2xl overflow-hidden border border-[#D4AF37]/20 z-10"
-            initial={{ opacity: 0, y: 150, rotateX: 20, scale: 0.9 }}
-            animate={phase >= 2 ? { opacity: 1, y: 0, rotateX: 0, scale: 1 } : { opacity: 0, y: 150, rotateX: 20, scale: 0.9 }}
-            transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img src={`${import.meta.env.BASE_URL}images/app1.jpg`} alt="App UI" className="w-full h-auto" />
+          <motion.div className="mt-[2vh] flex justify-between items-center text-[.68vw] text-[#8c9b91]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.8 }}>
+            <span>Next up · Mincha in 02:14:08</span>
+            <span className="w-[6vw] h-[.3vw] bg-[#d9aa57]/20 rounded-full overflow-hidden"><motion.span className="block h-full bg-[#d9aa57]" initial={{ width: 0 }} animate={{ width: '64%' }} transition={{ duration: 1.6, delay: 1.7 }} /></span>
           </motion.div>
-
-          {/* Left Screen (Background) */}
-          <motion.div
-            className="absolute w-[350px] -left-12 opacity-60 rounded-2xl overflow-hidden border border-white/5"
-            initial={{ opacity: 0, x: 100, scale: 0.8, rotateY: 30 }}
-            animate={phase >= 2 ? { opacity: 0.4, x: -20, scale: 0.85, rotateY: 15 } : { opacity: 0, x: 100, scale: 0.8, rotateY: 30 }}
-            transition={{ duration: 1.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img src={`${import.meta.env.BASE_URL}images/cal1.png`} alt="Calendar UI" className="w-full h-auto mix-blend-screen" />
-          </motion.div>
-
-          {/* Right Screen (Background) */}
-          <motion.div
-            className="absolute w-[350px] -right-12 opacity-60 rounded-2xl overflow-hidden border border-white/5"
-            initial={{ opacity: 0, x: -100, scale: 0.8, rotateY: -30 }}
-            animate={phase >= 2 ? { opacity: 0.4, x: 20, scale: 0.85, rotateY: -15 } : { opacity: 0, x: -100, scale: 0.8, rotateY: -30 }}
-            transition={{ duration: 1.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img src={`${import.meta.env.BASE_URL}images/cal2.png`} alt="Calendar UI" className="w-full h-auto mix-blend-screen" />
-          </motion.div>
-
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );

@@ -1,0 +1,23 @@
+kind = "video"
+previewPath = "/"
+title = "Menashe Calendar — Product Overview"
+version = "1.0.0"
+id = "artifacts/menashe-calendar-video"
+videoAspectRatio = "16:9"
+
+[[services]]
+localPort = 5173
+name = "video"
+paths = [ "/" ]
+
+[services.development]
+run = "pnpm --filter @workspace/menashe-calendar-video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/menashe-calendar-video", "run", "build" ]
+publicDir = "artifacts/video/dist/public"
+serve = "static"
+
+[services.env]
+PORT = "5173"
+BASE_PATH = "/"

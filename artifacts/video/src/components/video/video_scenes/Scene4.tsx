@@ -1,84 +1,66 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 export function Scene4() {
-  const [phase, setPhase] = useState(0);
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 800); // Title
-    const t2 = setTimeout(() => setPhase(2), 2500); // Badges
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
-
-  // Split text for staggering
-  const titleLetters = "BNEI MENASHE".split("");
-
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center overflow-hidden bg-[#02040A]/50 backdrop-blur-sm"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute inset-0 w-full h-screen overflow-hidden"
+      initial={{ opacity: 0, scale: 1.08, clipPath: 'polygon(50% 0, 50% 0, 50% 100%, 50% 100%)' }}
+      animate={{ opacity: 1, scale: 1, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' }}
+      exit={{ opacity: 0, scale: .96, clipPath: 'polygon(50% 0, 50% 0, 50% 100%, 50% 100%)' }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        
-        {/* Glow behind text */}
-        <motion.div 
-          className="absolute w-[600px] h-[600px] bg-[#D4AF37] rounded-full blur-[150px] opacity-10"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        />
-
-        {/* Hero Title */}
-        <div className="relative z-10 flex overflow-hidden mb-6">
-          {titleLetters.map((letter, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, y: 100, rotateX: -90 }}
-              animate={phase >= 1 ? { opacity: 1, y: 0, rotateX: 0 } : { opacity: 0, y: 100, rotateX: -90 }}
-              transition={{ 
-                duration: 1.2, 
-                delay: i * 0.08, 
-                ease: [0.16, 1, 0.3, 1] 
-              }}
-              className="font-display text-8xl md:text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#FFF2C8] via-[#D4AF37] to-[#8C6D14] drop-shadow-[0_10px_20px_rgba(212,175,55,0.3)] mx-1"
-              style={{ transformOrigin: 'bottom center' }}
-            >
-              {letter === " " ? "\u00A0" : letter}
-            </motion.span>
-          ))}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(217,170,87,.14),transparent_34%),linear-gradient(115deg,#071312,#0d211d_55%,#182a25)]" />
+      <div className="relative z-10 h-full px-[9vw] flex items-center">
+        <div className="w-[39vw]">
+          <motion.div className="mono-label text-[.72vw] text-[#d9aa57] mb-[2.2vh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .3 }}>BUILT TO LAST / PRODUCTION READY</motion.div>
+          <motion.h2 className="text-[4vw] leading-[.98] tracking-[-.06em] font-extrabold max-w-[34vw]" initial={{ opacity: 0, y: '3vh' }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .85, delay: .45, ease: [0.16, 1, .3, 1] }}>
+            Sacred experience.<br /><span className="text-[#d9aa57]">Serious foundation.</span>
+          </motion.h2>
+          <motion.p className="mt-[2.8vh] text-[1.1vw] leading-[1.5] text-[#c9d1c9]/72 max-w-[25vw]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0 }}>
+            A fast web app, mobile companion, and API architecture designed to keep community life in rhythm.
+          </motion.p>
+          <motion.div className="mt-[4vh] flex gap-[.7vw]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3 }}>
+            <span className="mono-label text-[.58vw] px-[.8vw] py-[.7vh] border border-[#d9aa57]/40 text-[#f4dca0] rounded-full">WEB EXPERIENCE</span>
+            <span className="mono-label text-[.58vw] px-[.8vw] py-[.7vh] border border-[#8ea8a0]/35 text-[#c9d1c9] rounded-full">MOBILE</span>
+          </motion.div>
         </div>
 
-        {/* Subtitle */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-          animate={phase >= 1 ? { opacity: 1, scale: 1, filter: 'blur(0px)' } : { opacity: 0, scale: 0.9, filter: 'blur(10px)' }}
-          transition={{ duration: 1.5, delay: 1.5, ease: 'easeOut' }}
-          className="z-10"
-        >
-          <p className="font-body text-xl tracking-[0.4em] uppercase text-[#d4a843] font-light">
-            Rooted in Heritage
-          </p>
-        </motion.div>
+        <div className="absolute right-[8vw] w-[38vw] h-[62vh]">
+          <motion.div className="absolute inset-0 rounded-[1.2vw] border border-[#f4dca0]/12" animate={{ rotate: [0, 2, 0], scale: [1, 1.02, 1] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute top-[4vh] left-[3vw] w-[22vw] glass-panel rounded-[1vw] p-[1.5vw]" initial={{ opacity: 0, x: '2vw' }} animate={{ opacity: 1, x: 0 }} transition={{ delay: .7, duration: .8 }}>
+            <div className="flex items-center justify-between">
+              <div className="mono-label text-[.62vw] text-[#8ea8a0]">SERVICE MAP</div>
+              <span className="text-[.65vw] text-[#d9aa57]">LIVE</span>
+            </div>
+            <div className="mt-[2.2vh] space-y-[1.8vh]">
+              {[
+                ['WEB APP', 'calendar + community', '#d9aa57'],
+                ['API', 'zmanim + notifications', '#8ea8a0'],
+                ['MOBILE', 'daily experience', '#c49b62'],
+              ].map(([name, note, color], i) => (
+                <motion.div key={name} className="flex items-center" initial={{ opacity: 0, x: '-1vw' }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1 + i * .18 }}>
+                  <div className="w-[.7vw] h-[.7vw] rounded-full mr-[.8vw]" style={{ backgroundColor: color }} />
+                  <div><div className="text-[.85vw]">{name}</div><div className="text-[.62vw] text-[#8c9b91] mt-[.25vh]">{note}</div></div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+          <motion.div className="absolute right-[1.5vw] bottom-[3vh] w-[17vw] h-[32vh] rounded-[1vw] overflow-hidden border border-[#f4dca0]/20 shadow-[0_1.8vw_4vw_rgba(0,0,0,.25)]" initial={{ opacity: 0, y: '4vh', rotate: 4 }} animate={{ opacity: 1, y: 0, rotate: 3 }} transition={{ delay: 1.2, duration: .9 }}>
+            <img src={`${import.meta.env.BASE_URL}images/app1.jpg`} alt="Community tools" className="w-full h-full object-cover" />
+          </motion.div>
+          <motion.div className="absolute left-[0vw] bottom-[1vh] glass-panel rounded-[.8vw] px-[1vw] py-[1.2vh] w-[15vw]" initial={{ opacity: 0, y: '2vh' }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.55 }}>
+            <div className="mono-label text-[.52vw] text-[#8c9b91]">SYNCED</div>
+            <div className="text-[1.02vw] mt-[.6vh] text-[#f4dca0]">One calendar. Every layer.</div>
+          </motion.div>
+        </div>
 
-        {/* Platforms */}
-        <motion.div
-          className="flex space-x-8 mt-16 z-10"
-          initial={{ opacity: 0, y: 30 }}
-          animate={phase >= 2 ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <div className="flex items-center space-x-3 bg-white/5 border border-white/10 rounded-full px-6 py-3 backdrop-blur-md">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-            <span className="font-body text-white tracking-wider">WEB EXPERIENCE</span>
-          </div>
-          <div className="flex items-center space-x-3 bg-white/5 border border-white/10 rounded-full px-6 py-3 backdrop-blur-md">
-            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm-2 20h-4v-1h4v1zm3.25-3H6.75V4h10.5v14z"/></svg>
-            <span className="font-body text-white tracking-wider">MOBILE APP</span>
+        <motion.div className="absolute left-[9vw] bottom-[12vh] flex items-center gap-[1.1vw]" initial={{ opacity: 0, letterSpacing: '.4em' }} animate={{ opacity: 1, letterSpacing: '.15em' }} transition={{ delay: 1.8, duration: 1.1 }}>
+          <img src={`${import.meta.env.BASE_URL}images/cal3.png`} alt="Benei Menashe Calendar" className="w-[4.3vw] h-[4.3vw] object-contain rounded-full" />
+          <div>
+            <div className="text-[1.7vw] font-extrabold tracking-[-.04em]">MENASHE</div>
+            <div className="mono-label text-[.67vw] text-[#d9aa57] mt-[.4vh]">THE LIVING JOURNEY</div>
           </div>
         </motion.div>
-
       </div>
     </motion.div>
   );

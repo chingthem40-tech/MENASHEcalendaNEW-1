@@ -1,59 +1,93 @@
 import { motion } from 'framer-motion';
 
 export function Scene0() {
+  const title = 'Time, held sacred.';
+
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, filter: 'blur(10px)', scale: 1.1 }}
-      transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute inset-0 w-full h-screen overflow-hidden"
+      initial={{ opacity: 0, clipPath: 'circle(0% at 50% 50%)' }}
+      animate={{ opacity: 1, clipPath: 'circle(100% at 50% 50%)' }}
+      exit={{ opacity: 0, scale: 1.12, clipPath: 'circle(0% at 50% 50%)' }}
+      transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
     >
-      {/* Hero Image Background */}
       <motion.div
-        className="absolute inset-0 w-full h-full opacity-60"
-        initial={{ scale: 1.2, opacity: 0 }}
-        animate={{ scale: 1, opacity: 0.5 }}
-        transition={{ duration: 8, ease: 'easeOut' }}
-      >
-        <img
-          src={`${import.meta.env.BASE_URL}images/hero-jerusalem.png`}
-          alt="Jerusalem"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#02040A] via-transparent to-[#02040A] opacity-90" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#02040A] via-transparent to-transparent opacity-80" />
-      </motion.div>
+        className="absolute top-[10vh] right-[7vw] w-[38vw] h-[38vw] rounded-full border border-[#d9aa57]/18"
+        animate={{ rotate: [0, 8, 0], scale: [1, 1.04, 1] }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute top-[16vh] right-[13vw] w-[26vw] h-[26vw] rounded-full border border-[#8ea8a0]/16"
+        animate={{ rotate: [0, -14, 0], scale: [1.04, .98, 1.04] }}
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+      />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-10">
+      <div className="relative z-10 h-full flex items-center px-[9vw]">
+        <div className="w-[55vw]">
+          <motion.div
+            className="flex items-center gap-[1vw] mb-[3.4vh]"
+            initial={{ opacity: 0, x: -2vw }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: .7, delay: .35, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="h-[1px] w-[4vw] bg-[#d9aa57] line-draw" />
+            <span className="mono-label text-[.78vw] text-[#f4dca0]">BENEI MENASHE / DIGITAL LUACH</span>
+          </motion.div>
+
+          <motion.h1
+            className="font-bold tracking-[-.065em] leading-[.95] text-[7.8vw] max-w-[48vw] gold-gradient-text"
+            initial={{ opacity: 0, y: '4vh', rotateX: -24 }}
+            animate={{ opacity: 1, y: 0, rotateX: 0 }}
+            transition={{ duration: 1.05, delay: .55, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {title}
+          </motion.h1>
+
+          <motion.p
+            className="mt-[3.6vh] text-[1.35vw] leading-[1.45] tracking-[-.01em] text-[#c9d1c9]/78 max-w-[30vw]"
+            initial={{ opacity: 0, y: '2vh' }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: .8, delay: 1.15, ease: [0.16, 1, 0.3, 1] }}
+          >
+            The sacred Jewish calendar, reimagined for the journey of the Menashe community.
+          </motion.p>
+        </div>
+
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 2, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="overflow-hidden mb-6"
+          className="absolute right-[10vw] top-[24vh] w-[26vw] h-[48vh] rounded-[1.3vw] border border-[#f4dca0]/20 glass-panel overflow-hidden"
+          initial={{ opacity: 0, y: '8vh', rotate: 5, scale: .88 }}
+          animate={{ opacity: 1, y: 0, rotate: -4, scale: 1 }}
+          transition={{ duration: 1.2, delay: .8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-[#D4AF37] font-body tracking-[0.3em] uppercase text-sm md:text-xl font-light mb-2">
-            The Lost Tribe of Menashe
-          </h2>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,rgba(217,170,87,.24),transparent_35%)]" />
+          <div className="relative p-[1.8vw] h-full">
+            <div className="mono-label text-[.62vw] text-[#8ea8a0]">TODAY / JERUSALEM</div>
+            <div className="mt-[3vh] text-right">
+              <div className="serif-note text-[5.4vw] leading-none text-[#f4dca0]">י״ז</div>
+              <div className="text-[1.3vw] mt-[1vh] text-[#f5f0e7]">Tammuz 5786</div>
+              <div className="text-[.82vw] mt-[.5vh] text-[#8c9b91]">Wednesday · 2 July 2026</div>
+            </div>
+            <div className="absolute left-[1.8vw] right-[1.8vw] bottom-[2.4vw]">
+              <div className="h-[1px] bg-[#f4dca0]/24 mb-[1.5vw]" />
+              <div className="flex items-end justify-between">
+                <div>
+                  <div className="mono-label text-[.58vw] text-[#8c9b91]">NEXT MOMENT</div>
+                  <div className="text-[1.6vw] text-[#f5f0e7] mt-[.4vh]">Mincha</div>
+                </div>
+                <div className="text-[2.1vw] text-[#d9aa57]">16:42</div>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, filter: 'blur(20px)', y: 40 }}
-          animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
-          transition={{ duration: 2.5, delay: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute bottom-[13vh] left-[9vw] mono-label text-[.62vw] text-[#c9d1c9]/55"
+          initial={{ opacity: 0, letterSpacing: '.5em' }}
+          animate={{ opacity: 1, letterSpacing: '.18em' }}
+          transition={{ duration: 1.2, delay: 1.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 className="font-display text-5xl md:text-7xl lg:text-8xl text-white font-medium tracking-tight leading-tight max-w-5xl gold-gradient-text drop-shadow-2xl">
-            A Living Journey <br/> of Faith and Return
-          </h1>
+          OUR HERITAGE · OUR TIME · OUR FUTURE
         </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, width: 0 }}
-          animate={{ opacity: 1, width: '100px' }}
-          transition={{ duration: 1.5, delay: 3, ease: 'easeInOut' }}
-          className="h-[1px] bg-[#d4a843] mt-12 mx-auto"
-        />
       </div>
     </motion.div>
   );

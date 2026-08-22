@@ -1,107 +1,61 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 
 export function Scene3() {
-  const [phase, setPhase] = useState(0);
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 500); // Screen 1
-    const t2 = setTimeout(() => setPhase(2), 2000); // Screen 2
-    const t3 = setTimeout(() => setPhase(3), 4000); // Screen 3
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, []);
-
   return (
     <motion.div
-      className="absolute inset-0 flex items-center justify-center overflow-hidden"
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.2, filter: 'blur(10px)' }}
-      transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+      className="absolute inset-0 w-full h-screen overflow-hidden"
+      initial={{ opacity: 0, clipPath: 'inset(50% 0 50% 0)' }}
+      animate={{ opacity: 1, clipPath: 'inset(0% 0 0% 0)' }}
+      exit={{ opacity: 0, clipPath: 'inset(0 0 100% 0)' }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="absolute inset-0 w-full h-full flex items-center justify-center">
-        
-        {/* Dynamic Text Center Overlay */}
-        <div className="absolute z-30 w-full flex justify-center mt-64 pointer-events-none">
-          <div className="bg-[#02040A]/80 backdrop-blur-md px-10 py-6 rounded-2xl border border-[#D4AF37]/30 text-center shadow-[0_0_50px_rgba(212,175,55,0.1)]">
-            <AnimateText phase={phase} />
+      <motion.div className="absolute left-0 top-0 w-[60vw] h-full overflow-hidden" initial={{ scale: 1.15 }} animate={{ scale: 1 }} transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}>
+        <img src={`${import.meta.env.BASE_URL}images/yishai.png`} alt="Yishai Memorial landscape" className="w-full h-full object-cover opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#071312]/35 to-[#071312]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#071312] via-transparent to-[#071312]/10" />
+      </motion.div>
+      <div className="absolute left-0 top-0 w-[60vw] h-full bg-[#071312]/15" />
+
+      <div className="relative z-10 h-full px-[9vw] flex items-center">
+        <div className="w-[34vw]">
+          <motion.div className="mono-label text-[.72vw] text-[#d9aa57] mb-[2.2vh]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: .3 }}>REMEMBRANCE / NEVER OUT OF REACH</motion.div>
+          <motion.h2 className="text-[4.35vw] leading-[.96] tracking-[-.06em] font-extrabold" initial={{ opacity: 0, y: '3vh' }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .85, delay: .46, ease: [0.16, 1, .3, 1] }}>
+            A sanctuary for the <span className="text-[#d9aa57]">names</span> we carry.
+          </motion.h2>
+          <motion.p className="mt-[2.8vh] text-[1.12vw] leading-[1.5] text-[#c9d1c9]/76 max-w-[25vw]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.05 }}>
+            The 3D Memorial Sanctuary turns remembrance into a place — quiet, shared, and always present.
+          </motion.p>
+          <motion.div className="mt-[4vh] flex gap-[.7vw]" initial={{ opacity: 0, y: '2vh' }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.35 }}>
+            {['MEMORIALS', 'FAMILY', 'COMMUNITY'].map((label) => <span key={label} className="mono-label text-[.57vw] px-[.75vw] py-[.65vh] rounded-full border border-[#f4dca0]/18 text-[#f4dca0]/78">{label}</span>)}
+          </motion.div>
+        </div>
+
+        <motion.div
+          className="absolute right-[8vw] top-[17vh] w-[31vw] h-[57vh] glass-panel rounded-[1.1vw] overflow-hidden p-[.55vw] shadow-[0_2vw_5vw_rgba(0,0,0,.36)]"
+          initial={{ opacity: 0, x: '6vw', rotateY: -18, scale: .9 }}
+          animate={{ opacity: 1, x: 0, rotateY: 0, scale: 1 }}
+          transition={{ duration: 1.15, delay: .6, ease: [0.16, 1, 0.3, 1] }}
+          style={{ perspective: 1000 }}
+        >
+          <div className="relative h-full rounded-[.8vw] overflow-hidden">
+            <img src={`${import.meta.env.BASE_URL}images/hero-jerusalem.png`} alt="Memorial sanctuary concept" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#071312]/95 via-transparent to-[#071312]/10" />
+            <div className="absolute left-[1.2vw] top-[1.2vw] right-[1.2vw] flex justify-between">
+              <span className="mono-label text-[.55vw] text-[#f4dca0]">SANCTUARY / 03D</span>
+              <span className="w-[.5vw] h-[.5vw] rounded-full bg-[#d9aa57] shadow-[0_0_1vw_rgba(217,170,87,.5)]" />
+            </div>
+            <div className="absolute left-[1.3vw] bottom-[1.4vw]">
+              <div className="text-[1.35vw] text-[#f5f0e7]">Yishai Memorial</div>
+              <div className="text-[.68vw] text-[#c9d1c9]/68 mt-[.45vh]">Or ilui neshama · a place to remember</div>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Floating Screens */}
-        <div className="relative w-full h-full perspective-[1500px]">
-          
-          {/* Feature 1: Siddur / Prayer Board */}
-          <motion.div
-            className="absolute top-[10%] left-[15%] w-[400px] shadow-2xl rounded-2xl overflow-hidden border border-white/10"
-            initial={{ opacity: 0, z: -1000, x: -200, rotateY: 30 }}
-            animate={phase >= 1 ? { opacity: phase >= 2 ? 0.3 : 1, z: phase >= 2 ? -500 : 0, x: 0, rotateY: 15 } : { opacity: 0, z: -1000, x: -200, rotateY: 30 }}
-            transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img src={`${import.meta.env.BASE_URL}images/app2.jpg`} alt="Siddur" className="w-full h-auto" />
-            <div className="absolute inset-0 bg-[#D4AF37]/10 mix-blend-overlay" />
-          </motion.div>
-
-          {/* Feature 2: 3D Sanctuary */}
-          <motion.div
-            className="absolute top-[15%] right-[15%] w-[450px] shadow-2xl rounded-2xl overflow-hidden border border-[#D4AF37]/30 z-10"
-            initial={{ opacity: 0, z: -800, x: 200, rotateY: -30 }}
-            animate={phase >= 2 ? { opacity: phase >= 3 ? 0.3 : 1, z: phase >= 3 ? -300 : 100, x: 0, rotateY: -10 } : { opacity: 0, z: -800, x: 200, rotateY: -30 }}
-            transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img src={`${import.meta.env.BASE_URL}images/app3.jpg`} alt="3D Sanctuary" className="w-full h-auto" />
-          </motion.div>
-
-          {/* Feature 3: AI Rav Menashe */}
-          <motion.div
-            className="absolute top-[20%] left-[30%] w-[420px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-2xl overflow-hidden border border-[#D4AF37]/50 z-20"
-            initial={{ opacity: 0, z: -600, y: 300, rotateX: 45 }}
-            animate={phase >= 3 ? { opacity: 1, z: 200, y: 0, rotateX: 0 } : { opacity: 0, z: -600, y: 300, rotateX: 45 }}
-            transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img src={`${import.meta.env.BASE_URL}images/app4.jpg`} alt="AI Rav" className="w-full h-auto" />
-            <div className="absolute inset-0 ring-1 ring-inset ring-white/20 rounded-2xl" />
-          </motion.div>
-
-        </div>
+        <motion.div className="absolute right-[37vw] bottom-[13vh] glass-panel rounded-[.8vw] p-[1vw] w-[12vw]" initial={{ opacity: 0, y: '3vh' }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4 }}>
+          <img src={`${import.meta.env.BASE_URL}images/app3.jpg`} alt="Library and prayer books" className="w-full h-[15vh] object-cover rounded-[.5vw] opacity-80" />
+          <div className="mono-label text-[.5vw] text-[#8ea8a0] mt-[.8vh]">LIBRARY / SIDDUR</div>
+        </motion.div>
       </div>
     </motion.div>
   );
-}
-
-function AnimateText({ phase }: { phase: number }) {
-  if (phase === 1) {
-    return (
-      <motion.h2 
-        key="p1"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-        className="font-display text-4xl text-white font-medium"
-      >
-        Complete <span className="text-[#D4AF37]">Siddur</span> Library
-      </motion.h2>
-    );
-  }
-  if (phase === 2) {
-    return (
-      <motion.h2 
-        key="p2"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-        className="font-display text-4xl text-white font-medium"
-      >
-        3D <span className="text-[#D4AF37]">Memorial</span> Sanctuary
-      </motion.h2>
-    );
-  }
-  if (phase === 3) {
-    return (
-      <motion.h2 
-        key="p3"
-        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-        className="font-display text-4xl text-white font-medium"
-      >
-        AI <span className="text-[#D4AF37]">Rav Menashe</span> Wisdom
-      </motion.h2>
-    );
-  }
-  return null;
 }
