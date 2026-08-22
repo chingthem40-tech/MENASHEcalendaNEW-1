@@ -1,0 +1,209 @@
+PROJECT TASK: MENASHE Calendar — Production-Ready Push Notification System
+
+OBJECTIVE
+
+Implement a reliable, production-ready notification system for the MENASHE Calendar that can deliver important Jewish-calendar notifications when the web app is not open and, where supported by the device/browser, when the phone screen is locked.
+
+IMPORTANT: Before making any changes, inspect the existing project architecture and notification implementation. Reuse the existing notification infrastructure and environment variables wherever possible. Do NOT create a second, competing notification system.
+
+EXISTING NOTIFICATION CONFIGURATION
+
+The project already contains VAPID-related environment variables, including:
+
+- VAPID_PUBLIC_KEY
+- VAPID_SUBJECT
+- VITE_VAPID_PUBLIC_KEY
+
+Inspect how these variables are currently used throughout the application.
+
+Reuse the existing VAPID configuration and notification code if it already exists.
+
+Do NOT:
+- Generate a second VAPID key unnecessarily.
+- Create duplicate service workers.
+- Create a second push-subscription system.
+- Replace existing notification functionality that already works.
+- Expose private secrets in frontend code.
+- Hard-code credentials or API keys.
+
+PHASE 1 — AUDIT THE EXISTING SYSTEM
+
+Before implementing anything:
+
+1. Inspect the frontend architecture.
+2. Inspect the API/server architecture.
+3. Search for existing:
+   - Service worker code
+   - Push notification code
+   - Notification subscription logic
+   - VAPID configuration
+   - Web Push libraries
+   - Notification endpoints
+   - Notification database/storage
+   - Scheduled jobs or cron functionality
+4. Determine exactly what already exists.
+5. Reuse existing functionality instead of duplicating it.
+6. Identify anything incomplete or incorrectly configured.
+7. Provide a short implementation plan before making major architectural changes.
+
+PHASE 2 — PUSH NOTIFICATION SYSTEM
+
+Implement or complete Web Push notifications using the existing project architecture.
+
+Requirements:
+
+- Request notification permission from the user in a clear UX flow.
+- Register the service worker correctly.
+- Create and maintain push subscriptions.
+- Store subscriptions securely on the server if persistent storage is required.
+- Send notifications from the server.
+- Handle expired or invalid subscriptions.
+- Prevent duplicate subscriptions and duplicate notifications.
+- Support multiple user devices where appropriate.
+- Keep private VAPID/server credentials server-side.
+- Use VITE_VAPID_PUBLIC_KEY only where a browser-side public key is required.
+- Make the implementation work in both development and production.
+
+PHASE 3 — MENASHE CALENDAR NOTIFICATIONS
+
+Integrate notifications with the application's existing Jewish-calendar data.
+
+Do NOT hard-code Hebrew dates.
+
+Use the existing calendar calculations/data already implemented by MENASHE Calendar.
+
+Support notifications such as:
+
+TODAY:
+"Today — 6th of Elul"
+"Do you repent? Take a moment for reflection."
+
+TOMORROW:
+"Tomorrow — Tzom Gedaliah"
+"Tomorrow is Tzom Gedaliah."
+
+Also support, where the existing calendar provides the necessary data:
+
+- Jewish holidays
+- Fast days
+- Erev holiday reminders
+- Special Jewish dates
+- Important calendar events
+- Daily Hebrew-date reminders
+
+Use the user's local timezone when determining notification timing.
+
+PHASE 4 — USER NOTIFICATION SETTINGS
+
+Add a professional notification settings interface.
+
+Users should be able to:
+
+- Enable notifications
+- Disable notifications
+- Send a test notification
+- Enable/disable daily Jewish-date reminders
+- Enable/disable holiday notifications
+- Enable/disable fast-day notifications
+- Enable/disable special-event notifications
+
+The UI should clearly show whether notifications are:
+
+- Enabled
+- Disabled
+- Permission denied
+- Unsupported by the current browser/device
+
+PHASE 5 — TEST NOTIFICATION
+
+Add a "Send Test Notification" function.
+
+When the user activates it:
+
+1. Verify that notification permission exists.
+2. Verify that a valid push subscription exists.
+3. Send a test notification through the existing server notification infrastructure.
+4. Display a useful error message if anything is missing.
+
+Example:
+
+Title:
+"MENASHE Calendar"
+
+Body:
+"Test notification — your MENASHE notifications are working."
+
+PHASE 6 — LOCK-SCREEN SUPPORT
+
+Use standard Web Push behavior so notifications can appear on supported device lock screens when the operating system/browser allows it.
+
+Do NOT claim that a normal web application can force a full-screen alarm-style notification.
+
+If true full-screen interruption requires a native Android application or special OS permission, document that limitation clearly.
+
+The web implementation should still provide the best possible lock-screen notification experience.
+
+PHASE 7 — RELIABILITY
+
+The implementation must:
+
+- Avoid duplicate notifications.
+- Avoid sending notifications repeatedly for the same event.
+- Handle users with multiple devices.
+- Handle expired push subscriptions.
+- Handle denied notification permissions.
+- Handle unsupported browsers.
+- Handle service-worker registration failures.
+- Log meaningful server-side errors.
+- Fail gracefully without breaking the calendar application.
+
+PHASE 8 — SECURITY
+
+Do not expose:
+
+- Private VAPID keys
+- Clerk secret keys
+- API secrets
+- Database credentials
+- Server credentials
+
+Never place private credentials in frontend JavaScript or VITE variables unless they are explicitly intended to be public.
+
+PHASE 9 — PRODUCTION COMPATIBILITY
+
+The implementation must work with the current MENASHE Calendar deployment architecture.
+
+Do not replace the current framework, authentication system, API architecture, or calendar system.
+
+Preserve all existing functionality.
+
+Before finishing:
+
+1. Run the project's typecheck.
+2. Run the project's build.
+3. Run available tests.
+4. Fix errors caused by the implementation.
+5. Verify that the production build succeeds.
+6. Verify that the notification service worker is included correctly in the production build.
+7. Verify that the existing VAPID environment variables are actually being used.
+
+FINAL REPORT
+
+After implementation, provide a concise report containing:
+
+1. What notification functionality already existed.
+2. What you reused.
+3. What you added or fixed.
+4. Which existing environment variables are required.
+5. Whether any new environment variables are actually necessary.
+6. How to enable notifications as a user.
+7. How to send a test notification.
+8. How to test a lock-screen notification on Android/iPhone.
+9. Any browser/OS limitations.
+10. Any remaining production configuration required.
+
+CRITICAL INSTRUCTION
+
+Do not create a parallel notification architecture.
+
+The existing MENASHE Calendar notification/VAPID infrastructure is the source of truth. Inspect it first, reuse it, and improve it only where necessary.
