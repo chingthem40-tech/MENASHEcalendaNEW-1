@@ -10,11 +10,15 @@ import {
   type RemembranceEvent,
 } from "../lib/remembranceApi";
 import { getNextRemembranceOccurrence } from "../lib/remembrance";
+import { saveUserProfile } from "../lib/userApi";
 
 export type NotificationPrefs = {
+  dailyDate: boolean;
   shabbat: boolean;
   havdalah: boolean;
   holiday: boolean;
+  fastDay: boolean;
+  specialEvent: boolean;
   omer: boolean;
   prayers: boolean;
   parasha: boolean;
@@ -156,7 +160,9 @@ export function useNotifications(location: Location) {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<NotificationPrefs>;
         const defaults: NotificationPrefs = {
+          dailyDate: true,
           shabbat: false, havdalah: false, holiday: false,
+          fastDay: false, specialEvent: false,
           omer: false, prayers: false, parasha: false,
           shema: false, shabbatDigest: false, yahrzeit: false,
         };
@@ -164,7 +170,9 @@ export function useNotifications(location: Location) {
       }
     } catch {}
     return {
+      dailyDate: true,
       shabbat: false, havdalah: false, holiday: false,
+      fastDay: false, specialEvent: false,
       omer: false, prayers: false, parasha: false,
       shema: false, shabbatDigest: false, yahrzeit: false,
     };
@@ -499,9 +507,10 @@ export function useNotifications(location: Location) {
       const next: NotificationPrefs = { ...prefs, [key]: value };
       setPrefs(next);
       try { localStorage.setItem(PREFS_KEY, JSON.stringify(next)); } catch {}
+      void saveUserProfile({ notifPrefs: next, leadTime });
       return true;
     },
-    [prefs]
+    [prefs, leadTime]
   );
 
   const updateLeadTime = useCallback((mins: LeadTime) => {

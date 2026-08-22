@@ -79,7 +79,10 @@ export async function sendPushToUser(
   userId: string,
   payload: { title: string; body: string; tag: string; icon?: string },
 ): Promise<boolean> {
-  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return true;
+  if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+    logger.warn({ userId }, "sendPushToUser: VAPID is not configured");
+    return false;
+  }
   let rows: Array<{ endpoint: string; p256dh: string; auth: string }>;
   try {
     const result = await pool.query(
@@ -303,21 +306,24 @@ router.get("/push/vapid-public-key", (_req, res) => {
   res.json({ publicKey: VAPID_PUBLIC });
 });
 
-router.post("/push/subscribe", pushSubscribeRateLimiter, async (req, res) => {
+router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req, res) => {
   const { subscription, schedule } = req.body as {
     subscription: webpush.PushSubscription;
     schedule: ScheduleItem[];
   };
-  if (!subscription?.endpoint) {
+  if (!subscription?.endpoint || !subscription.keys?.p256dh || !subscription.keys?.auth) {
     res.status(400).json({ error: "Missing subscription" });
     return;
   }
-  // Derive userId from the authenticated Clerk session only — never trust the
-  // caller-supplied userId (IDOR / notification-hijacking risk).
-  const { userId } = safeGetAuth(req);
+  const userId = (req as any).userId as string;
   const id = subId(subscription.endpoint);
   try {
-    await dbUpsert(id, subscription, schedule ?? [], userId ?? null);
+    const uniqueSchedule = Array.from(
+      new Map((Array.isArray(schedule) ? schedule : [])
+        .filter((item) => Number.isFinite(item?.fireAt) && item?.title && item?.body && item?.tag)
+        .map((item) => [item.tag, item])).values(),
+    );
+    await dbUpsert(id, subscription, uniqueSchedule, userId);
     res.json({ ok: true, id });
   } catch (err) {
     logger.error({ err }, "push/subscribe: db error");
@@ -325,12 +331,13 @@ router.post("/push/subscribe", pushSubscribeRateLimiter, async (req, res) => {
   }
 });
 
-router.delete("/push/unsubscribe", async (req, res) => {
+router.delete("/push/unsubscribe", requireAuth, async (req, res) => {
   const { endpoint } = req.body as { endpoint: string };
   if (!endpoint) { res.status(400).json({ error: "Missing endpoint" }); return; }
   const id = subId(endpoint);
   try {
-    await dbRemove(id);
+    const userId = (req as any).userId as string;
+    await pool.query("DELETE FROM push_subscriptions WHERE id = $1 AND user_id = $2", [id, userId]);
     res.json({ ok: true });
   } catch (err) {
     logger.error({ err }, "push/unsubscribe: db error");
@@ -473,20 +480,21 @@ router.delete("/push/broadcast/scheduled/:id", requireAdmin, async (req, res) =>
 });
 
 router.post("/push/send-test", requireAuth, async (req, res) => {
-  const { subscription } = req.body as { subscription: webpush.PushSubscription };
-  if (!subscription?.endpoint) { res.status(400).json({ error: "Missing subscription" }); return; }
+  const userId = (req as any).userId as string;
   try {
-    await webpush.sendNotification(
-      subscription,
-      JSON.stringify({
-        title: "✡ Menashe Calendar",
-        body: "Background push notifications are working! Shabbat Shalom.",
-        tag: "push-test",
-        icon: "/favicon.svg",
-      })
-    );
+    const sent = await sendPushToUser(userId, {
+      title: "MENASHE Calendar",
+      body: "Test notification — your MENASHE notifications are working.",
+      tag: "push-test",
+      icon: "/favicon.svg",
+    });
+    if (!sent) {
+      res.status(503).json({ error: "Push delivery is not configured or could not reach your device." });
+      return;
+    }
     res.json({ ok: true });
   } catch (err: any) {
+    logger.error({ err, userId }, "push/send-test: delivery failed");
     res.status(500).json({ error: err?.message ?? "Send failed" });
   }
 });

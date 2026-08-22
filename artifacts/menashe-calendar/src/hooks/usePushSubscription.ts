@@ -40,6 +40,11 @@ function fmt2(date: Date, tz: string): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", timeZone: tz });
 }
 
+function ordinal(n: number): string {
+  const suffix = n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th";
+  return `${n}${suffix}`;
+}
+
 function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime): ScheduleItem[] {
   const items: ScheduleItem[] = [];
   const now = Date.now();
@@ -47,6 +52,21 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
   function add(fireAt: Date, title: string, body: string, tag: string) {
     const ms = fireAt.getTime();
     if (ms > now) items.push({ fireAt: ms, title, body, tag });
+  }
+
+  if (prefs.dailyDate) {
+    const base = new Date();
+    base.setHours(0, 0, 0, 0);
+    for (let i = 0; i <= 8; i++) {
+      const date = new Date(base);
+      date.setDate(base.getDate() + i);
+      const hebrew = new HDate(date);
+      const label = `${ordinal(hebrew.getDate())} of ${HDate.getMonthName(hebrew.getMonth(), hebrew.getFullYear())}`;
+      const fireAt = new Date(date);
+      fireAt.setHours(8, 0, 0, 0);
+      const relative = i === 0 ? "Today" : i === 1 ? "Tomorrow" : date.toLocaleDateString("en-US", { weekday: "long" });
+      add(fireAt, `${relative} — ${label}`, i === 0 ? "Take a moment for reflection." : `The Hebrew date is ${label}.`, `daily-hebrew-date-${date.toISOString().slice(0, 10)}`);
+    }
   }
 
   if (prefs.shabbat || prefs.havdalah || prefs.shabbatDigest || prefs.parasha) {
@@ -92,12 +112,18 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
     }
   }
 
-  if (prefs.holiday) {
+  if (prefs.holiday || prefs.fastDay || prefs.specialEvent) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const end = new Date(today);
     end.setDate(end.getDate() + 45);
-    const events = HebrewCalendar.calendar({ start: today, end, il: true, isHebrewYear: false, mask: flags.CHAG | flags.MODERN_HOLIDAY });
+    const events = HebrewCalendar.calendar({
+      start: today,
+      end,
+      il: true,
+      isHebrewYear: false,
+      mask: flags.CHAG | flags.MODERN_HOLIDAY | flags.MINOR_FAST | flags.MAJOR_FAST | flags.ROSH_CHODESH | flags.SPECIAL_SHABBAT,
+    });
     const seen = new Set<string>();
     for (const ev of events) {
       const date = ev.getDate().greg();
@@ -105,11 +131,15 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
       const name = ev.render("en");
       if (seen.has(name)) continue;
       seen.add(name);
+      const isFast = Boolean(ev.flags & (flags.MINOR_FAST | flags.MAJOR_FAST));
+      const isSpecial = Boolean(ev.flags & (flags.ROSH_CHODESH | flags.SPECIAL_SHABBAT));
+      if ((isFast && !prefs.fastDay) || (isSpecial && !prefs.specialEvent) || (!isFast && !isSpecial && !prefs.holiday)) continue;
       const dayBefore = new Date(date);
       dayBefore.setDate(dayBefore.getDate() - 1);
       dayBefore.setHours(8, 0, 0, 0);
       const dateStr = date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      add(dayBefore, `✡ ${name} Begins Tomorrow`, `${name} starts tomorrow, ${dateStr}. Chag Sameach to the Bnei Menashe community!`, `holiday-push-${name.replace(/\s+/g, "-").toLowerCase()}`);
+      const category = isFast ? "fast" : isSpecial ? "special" : "holiday";
+      add(dayBefore, `${isFast ? "⚠️" : "✡"} ${name} Tomorrow`, isFast ? `Tomorrow is ${name}. Plan your fast and reflection.` : `${name} begins tomorrow, ${dateStr}. Chag Sameach to the Bnei Menashe community!`, `${category}-push-${name.replace(/\s+/g, "-").toLowerCase()}`);
     }
   }
 
@@ -166,19 +196,25 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
 
 async function getVapidPublicKey(): Promise<string | null> {
   try {
-    const res = await fetch(`${API_BASE}/push/vapid-public-key`);
+    const res = await fetch(`${API_BASE}/push/vapid-public-key`, { credentials: "include" });
     if (!res.ok) return null;
     const { publicKey } = await res.json();
     return publicKey ?? null;
   } catch { return null; }
 }
 
-async function postSubscription(subscription: PushSubscription, schedule: ScheduleItem[], userId?: string | null): Promise<boolean> {
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await (window as any).Clerk?.session?.getToken() ?? null;
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+async function postSubscription(subscription: PushSubscription, schedule: ScheduleItem[]): Promise<boolean> {
   try {
     const res = await fetch(`${API_BASE}/push/subscribe`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subscription: subscription.toJSON(), schedule, userId: userId ?? undefined }),
+      headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+      credentials: "include",
+      body: JSON.stringify({ subscription: subscription.toJSON(), schedule }),
     });
     return res.ok;
   } catch { return false; }
@@ -186,15 +222,16 @@ async function postSubscription(subscription: PushSubscription, schedule: Schedu
 
 async function deleteSubscription(endpoint: string): Promise<void> {
   try {
-    await fetch(`${API_BASE}/push/unsubscribe`, {
+      await fetch(`${API_BASE}/push/unsubscribe`, {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        credentials: "include",
       body: JSON.stringify({ endpoint }),
     });
   } catch {}
 }
 
-export function usePushSubscription(location: Location, prefs: NotificationPrefs, leadTime: LeadTime, userId?: string | null) {
+export function usePushSubscription(location: Location, prefs: NotificationPrefs, leadTime: LeadTime, _userId?: string | null) {
   const [isSubscribed, setIsSubscribed] = useState<boolean>(() => {
     try { return localStorage.getItem(SW_KEY) === "true"; } catch { return false; }
   });
@@ -216,11 +253,11 @@ export function usePushSubscription(location: Location, prefs: NotificationPrefs
       if (!cancelled && existing) {
         subRef.current = existing;
         const schedule = buildSchedule(prefs, location, leadTime);
-        await postSubscription(existing, schedule, userId);
+         await postSubscription(existing, schedule);
       }
     })();
     return () => { cancelled = true; };
-  }, [isSupported, isSubscribed, location, prefs, leadTime, userId]);
+  }, [isSupported, isSubscribed, location, prefs, leadTime]);
 
   const subscribe = useCallback(async (): Promise<boolean> => {
     if (!isSupported) { setError("Push notifications are not supported in this browser."); return false; }
@@ -242,7 +279,7 @@ export function usePushSubscription(location: Location, prefs: NotificationPrefs
       }
       subRef.current = sub;
       const schedule = buildSchedule(prefs, location, leadTime);
-      const ok = await postSubscription(sub, schedule, userId);
+       const ok = await postSubscription(sub, schedule);
       if (!ok) { setError("Failed to register with server."); return false; }
       setIsSubscribed(true);
       try { localStorage.setItem(SW_KEY, "true"); } catch {}
@@ -253,7 +290,7 @@ export function usePushSubscription(location: Location, prefs: NotificationPrefs
     } finally {
       setIsLoading(false);
     }
-  }, [isSupported, prefs, location, leadTime, userId]);
+  }, [isSupported, prefs, location, leadTime]);
 
   const unsubscribe = useCallback(async () => {
     setIsLoading(true);
@@ -277,8 +314,8 @@ export function usePushSubscription(location: Location, prefs: NotificationPrefs
     try {
       const res = await fetch(`${API_BASE}/push/send-test`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription: sub.toJSON() }),
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        credentials: "include",
       });
       return res.ok;
     } catch { return false; }
