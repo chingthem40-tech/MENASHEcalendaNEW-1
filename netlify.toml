@@ -1,0 +1,3 @@
+[build]
+  command = "pnpm --filter @workspace/menashe-calendar run build"
+  publish = "artifacts/menashe-calendar/dist/public"
