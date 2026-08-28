@@ -1,8 +1,9 @@
 # Netlify redirect rules for the Menashe Calendar SPA
 #
 # 1. Proxy /api/* to the production API server.
-#    Replace the placeholder URL with your deployed API server domain.
-#    Example: https://api.menashecalendar.app/api/:splat
+#    The Netlify build replaces this placeholder using NETLIFY_API_URL.
+#    NETLIFY_API_URL must be the HTTPS origin of the deployed Express API,
+#    without a path, query string, or trailing slash.
 #
 /api/*  https://YOUR_API_SERVER_URL/api/:splat  200
 
