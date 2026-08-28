@@ -252,7 +252,6 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
                   key={h.en}
                   role="columnheader"
                   aria-label={FULL_DAY_NAMES[idx]}
-                  scope="col"
                   style={{
                     textAlign: "center",
                     padding: "8px 2px 6px",
