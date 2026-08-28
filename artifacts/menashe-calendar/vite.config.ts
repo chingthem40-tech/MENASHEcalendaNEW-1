@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { writeFileSync } from "fs";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 import { VitePWA } from "vite-plugin-pwa";
 
@@ -16,6 +17,115 @@ if (Number.isNaN(port) || port <= 0) {
 const basePath = process.env.BASE_PATH ?? "";
 
 const apiTarget = process.env.API_URL ?? "http://localhost:8080";
+
+function validateNetlifyApiUrl(rawValue: string | undefined): string {
+  const value = rawValue?.trim();
+
+  if (!value) {
+    throw new Error(
+      "NETLIFY_API_URL is required for production Netlify builds. Set it to the HTTPS base URL of the deployed API server.",
+    );
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(
+      "NETLIFY_API_URL must be a valid HTTPS URL for the deployed API server.",
+    );
+  }
+
+  const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, "");
+  const lowerValue = value.toLowerCase();
+  const isReplitDevelopmentUrl =
+    hostname === "replit.dev" ||
+    hostname.endsWith(".replit.dev") ||
+    hostname === "repl.co" ||
+    hostname.endsWith(".repl.co");
+  const hasPlaceholder = [
+    "your_api_server_url",
+    "your-api-server-url",
+    "your-api-server",
+    "example.com",
+    "example.org",
+    "example.net",
+    "placeholder",
+    "change-me",
+    "changeme",
+    "replace-me",
+  ].some((marker) => lowerValue.includes(marker));
+
+  if (parsed.protocol !== "https:") {
+    throw new Error(
+      "NETLIFY_API_URL must use HTTPS for production Netlify builds.",
+    );
+  }
+
+  if (
+    hostname === "localhost" ||
+    hostname.endsWith(".localhost") ||
+    hostname === "127.0.0.1" ||
+    hostname === "0.0.0.0" ||
+    hostname === "::1" ||
+    isReplitDevelopmentUrl
+  ) {
+    throw new Error(
+      "NETLIFY_API_URL must point to the deployed production API, not localhost, a loopback address, or a Replit development URL.",
+    );
+  }
+
+  if (hasPlaceholder) {
+    throw new Error(
+      "NETLIFY_API_URL must be a real production API URL, not a placeholder.",
+    );
+  }
+
+  if (parsed.username || parsed.password) {
+    throw new Error(
+      "NETLIFY_API_URL must not contain embedded credentials.",
+    );
+  }
+
+  if (parsed.pathname !== "/" && parsed.pathname !== "") {
+    throw new Error(
+      "NETLIFY_API_URL must be the API server origin without a path; the existing rewrite adds /api/:splat.",
+    );
+  }
+
+  return value.replace(/\/+$/, "");
+}
+
+function netlifyRedirectsPlugin(): Plugin {
+  let outputDir: string | undefined;
+  let productionRedirects: string | undefined;
+
+  return {
+    name: "netlify-production-redirects",
+
+    configResolved(config) {
+      outputDir = config.build.outDir;
+
+      if (config.command === "build" && config.mode === "production") {
+        const apiUrl = validateNetlifyApiUrl(process.env.NETLIFY_API_URL);
+        productionRedirects = [
+          "# Netlify redirect rules for the Menashe Calendar SPA",
+          "# API proxy target is supplied at build time via NETLIFY_API_URL.",
+          `/api/*  ${apiUrl}/api/:splat  200`,
+          "",
+          "# SPA fallback — all other routes serve index.html.",
+          "/*  /index.html  200",
+          "",
+        ].join("\n");
+      }
+    },
+
+    writeBundle() {
+      if (!outputDir || !productionRedirects) return;
+      writeFileSync(path.join(outputDir, "_redirects"), productionRedirects);
+    },
+  };
+}
 
 /**
  * prefetchLazyChunksPlugin
@@ -124,6 +234,7 @@ export default defineConfig({
     react(),
     tailwindcss({ optimize: false }),
     runtimeErrorOverlay(),
+    netlifyRedirectsPlugin(),
     prefetchLazyChunksPlugin(),
     // Workbox PWA — injectManifest mode:
     // • Compiles src/sw.ts into dist/public/sw.js via a separate Vite sub-build

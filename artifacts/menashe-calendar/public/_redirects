@@ -1,11 +1,7 @@
-# Netlify redirect rules for the Menashe Calendar SPA
+# Netlify redirect rules for the Menashe Calendar SPA.
+# The production API proxy rule is generated during `vite build` from
+# NETLIFY_API_URL; keeping a placeholder URL here would make accidental
+# deployments route requests to a non-existent backend.
 #
-# 1. Proxy /api/* to the production API server.
-#    Replace the placeholder URL with your deployed API server domain.
-#    Example: https://api.menashecalendar.app/api/:splat
-#
-/api/*  https://YOUR_API_SERVER_URL/api/:splat  200
-
-# 2. SPA fallback — all other routes serve index.html so that Wouter
-#    history-mode routing works on direct navigation and browser refresh.
+# This fallback remains in the public source tree for non-production previews.
 /*  /index.html  200

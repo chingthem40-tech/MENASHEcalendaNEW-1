@@ -150,23 +150,3 @@ PUBLIC_OBJECT_SEARCH_PATHS = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4
 
 [objectStorage]
 defaultBucketID = "replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434"
-
-[[ports]]
-localPort = 8080
-externalPort = 80
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 8082
-externalPort = 3000
-
-[[ports]]
-localPort = 21636
-externalPort = 3001
-
-[[ports]]
-localPort = 25726
-externalPort = 3002
