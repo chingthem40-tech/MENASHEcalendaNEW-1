@@ -1,5 +1,6 @@
 # Menashe Calendar
 
+
 ## Setup Status (as of 2026-08-29)
 
 Project imported from GitHub and set up on Replit:
@@ -33,7 +34,8 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 ### Other useful commands
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — build all packages
-- `pnpm --filter @workspace/api-server run dev` — rebuild + start API server in isolation
+- `pnpm --filter @workspace/api-server run db:bootstrap` — explicitly apply development schema/bootstrap changes
+- `pnpm --filter @workspace/api-server run dev` — bootstrap development DB, then start API server
 - `pnpm --filter @workspace/menashe-calendar run build` — production frontend build
 
 ### Production API
@@ -122,7 +124,7 @@ lib/
 - Hebrew calendar calculations done client-side with `@hebcal/core`.
 - Zmanim (prayer times) calculated client-side with `suncalc`.
 - Auth uses Clerk; API calls attach Bearer token via `window.Clerk?.session?.getToken()` (cookies alone don't work through Replit's proxy).
-- Admin access uses a PIN header (`x-admin-pin`) in addition to Clerk auth for admin routes.
+- Admin access is enforced server-side by a valid Clerk session carrying the `org:admin` organization role.
 - 3D scene files strip Cartographer `data-component-name` props at build time (R3F 9.x throws on hyphenated props).
 
 ## User preferences

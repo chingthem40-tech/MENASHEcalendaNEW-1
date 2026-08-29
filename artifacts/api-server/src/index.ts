@@ -1,6 +1,5 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { runMigrations } from "./migrate";
 import { config, printConfigSummary } from "./lib/config";
 import {
   startPushScheduler,
@@ -13,19 +12,12 @@ import {
 import { startAnnouncementScheduler } from "./routes/announcements";
 
 async function start() {
-  if (config.nodeEnv === "development") {
-    try {
-      await runMigrations();
-    } catch (err) {
-      logger.error({ err }, "Development migration failed — aborting startup");
-      process.exit(1);
-    }
-  } else {
-    logger.info(
-      { environment: config.nodeEnv },
-      "Production runtime assumes the database schema was initialized during Publish",
-    );
-  }
+  logger.info(
+    { environment: config.nodeEnv },
+    config.nodeEnv === "production"
+      ? "Production startup — database schema changes are disabled"
+      : "Application startup — run pnpm db:bootstrap separately when schema changes are needed",
+  );
 
   // Print a configuration summary so operators can confirm readiness at a
   // glance without exposing any secret values in logs.

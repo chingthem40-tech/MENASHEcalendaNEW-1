@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "export NODE_ENV=development && fuser -k 8080/tcp 2>/dev/null; sleep 0.5 && (test -f dist/index.mjs && pnpm run start || (pnpm run build && pnpm run start))",
-    "dev:rebuild": "export NODE_ENV=development && pnpm run build && pnpm run start",
+    "db:bootstrap": "export NODE_ENV=development && tsx src/bootstrap.ts",
+    "dev": "export NODE_ENV=development && fuser -k \"${PORT:-8080}/tcp\" 2>/dev/null; sleep 0.5 && pnpm run db:bootstrap && (test -f dist/index.mjs && pnpm run start || (pnpm run build && pnpm run start))",
+    "dev:rebuild": "export NODE_ENV=development && pnpm run db:bootstrap && pnpm run build && pnpm run start",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",

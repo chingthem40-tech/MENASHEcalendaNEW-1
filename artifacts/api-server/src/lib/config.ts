@@ -4,9 +4,9 @@
  * Central configuration validation for the Menashe API server.
  *
  * Rules:
- *  - DATABASE_URL always aborts startup when absent.
- *  - Production also requires matching live Clerk credentials.
- *  - All other missing variables degrade gracefully with a logged warning.
+ *  - DATABASE_URL is required in every environment.
+ *  - Production requires a valid, live Clerk key pair.
+ *  - Optional services degrade gracefully with a logged warning.
  *  - Secret values are NEVER logged — only presence/absence.
  */
 
@@ -14,45 +14,16 @@ import { logger } from "./logger";
 
 // ── Resolve raw env values ────────────────────────────────────────────────────
 
-const clerkSecretKey   = process.env.CLERK_SECRET_KEY    || null;
-const clerkPublishKey  = process.env.CLERK_PUBLISHABLE_KEY || null;
-const openaiKey        = process.env.OPENAI_API_KEY      || null;
-const googleKey        = process.env.GOOGLE_API_KEY      || null;
-const grokKey          = process.env.GROK_API_KEY        || null;
-const vapidPublicKey   = process.env.VAPID_PUBLIC_KEY    || null;
-const vapidPrivateKey  = process.env.VAPID_PRIVATE_KEY   || null;
-const vapidSubject     = process.env.VAPID_SUBJECT       || null;
-const razorpayKeyId    = process.env.RAZORPAY_KEY_ID     || null;
-const razorpaySecret   = process.env.RAZORPAY_KEY_SECRET || null;
-const nodeEnv           = process.env.NODE_ENV ?? "production";
-
-function keyEnvironment(key: string | null): "live" | "test" | "unknown" | null {
-  if (!key) return null;
-  if (key.startsWith("pk_live_") || key.startsWith("sk_live_")) return "live";
-  if (key.startsWith("pk_test_") || key.startsWith("sk_test_")) return "test";
-  return "unknown";
-}
-
-const clerkSecretEnvironment = keyEnvironment(clerkSecretKey);
-const clerkPublishEnvironment = keyEnvironment(clerkPublishKey);
-const clerkConfigurationReady =
-  clerkSecretEnvironment !== null &&
-  clerkSecretEnvironment !== "unknown" &&
-  clerkSecretEnvironment === clerkPublishEnvironment;
-
-if (nodeEnv === "production") {
-  const productionClerkIsReady =
-    clerkConfigurationReady &&
-    clerkSecretEnvironment === "live" &&
-    clerkPublishEnvironment === "live";
-  if (!productionClerkIsReady) {
-    logger.fatal(
-      "Production Clerk configuration is invalid — CLERK_SECRET_KEY and " +
-      "CLERK_PUBLISHABLE_KEY must both be present and use the live Clerk environment.",
-    );
-    process.exit(1);
-  }
-}
+const clerkSecretKey = process.env.CLERK_SECRET_KEY || null;
+const clerkPublishKey = process.env.CLERK_PUBLISHABLE_KEY || null;
+const openaiKey = process.env.OPENAI_API_KEY || null;
+const googleKey = process.env.GOOGLE_API_KEY || null;
+const grokKey = process.env.GROK_API_KEY || null;
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || null;
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || null;
+const vapidSubject = process.env.VAPID_SUBJECT || null;
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID || null;
+const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || null;
 
 // ── PORT ─────────────────────────────────────────────────────────────────────
 
@@ -69,16 +40,72 @@ const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) {
   logger.fatal(
     "DATABASE_URL is not set. A PostgreSQL connection string is required. " +
-    "Add it as a secret before starting the server.",
+      "Add it as a secret before starting the server.",
   );
   process.exit(1);
+}
+
+type ClerkKeyKind = "publishable" | "secret";
+
+function clerkKeyMetadata(
+  value: string | null,
+  kind: ClerkKeyKind,
+): {
+  present: boolean;
+  environment: "live" | "test" | "unknown";
+  shapeValid: boolean;
+} {
+  if (!value) {
+    return { present: false, environment: "unknown", shapeValid: false };
+  }
+  const prefix = kind === "publishable" ? "pk" : "sk";
+  const match = value
+    .trim()
+    .match(new RegExp(`^${prefix}_(live|test)_[A-Za-z0-9_-]+$`));
+  return {
+    present: true,
+    environment:
+      match?.[1] === "live"
+        ? "live"
+        : match?.[1] === "test"
+          ? "test"
+          : "unknown",
+    shapeValid: !!match,
+  };
+}
+
+const clerkPublishMetadata = clerkKeyMetadata(clerkPublishKey, "publishable");
+const clerkSecretMetadata = clerkKeyMetadata(clerkSecretKey, "secret");
+const nodeEnv = process.env.NODE_ENV ?? "development";
+
+if (nodeEnv === "production") {
+  if (!clerkPublishMetadata.present || !clerkSecretMetadata.present) {
+    throw new Error(
+      "Production Clerk configuration requires both publishable and secret keys",
+    );
+  }
+  if (!clerkPublishMetadata.shapeValid || !clerkSecretMetadata.shapeValid) {
+    throw new Error("Production Clerk configuration contains a malformed key");
+  }
+  if (
+    clerkPublishMetadata.environment !== "live" ||
+    clerkSecretMetadata.environment !== "live"
+  ) {
+    throw new Error("Production Clerk configuration must use live keys");
+  }
+  const webPublishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
+  if (webPublishableKey && webPublishableKey !== clerkPublishKey?.trim()) {
+    throw new Error(
+      "Production Clerk publishable key must match the web application key",
+    );
+  }
 }
 
 // ── Exported config (read-only, no secret values) ────────────────────────────
 
 export const config = {
   // Server
-  port:    portNum,
+  port: portNum,
   nodeEnv,
   logLevel: process.env.LOG_LEVEL ?? "info",
 
@@ -92,7 +119,7 @@ export const config = {
   // AI providers — gateway uses whichever keys are present
   openaiApiKey: openaiKey,
   googleApiKey: googleKey,
-  grokApiKey:   grokKey,
+  grokApiKey: grokKey,
 
   // Push notifications
   vapidPublicKey,
@@ -108,11 +135,11 @@ export const config = {
 
   // Derived feature flags — safe to log (booleans only, no key material)
   features: {
-    auth:     clerkConfigurationReady,
-    openai:   !!openaiKey,
-    gemini:   !!googleKey,
-    grok:     !!grokKey,
-    push:     !!vapidPublicKey && !!vapidPrivateKey && !!vapidSubject,
+    auth: !!clerkSecretKey && !!clerkPublishKey,
+    openai: !!openaiKey,
+    gemini: !!googleKey,
+    grok: !!grokKey,
+    push: !!vapidPublicKey && !!vapidPrivateKey && !!vapidSubject,
     payments: !!razorpayKeyId && !!razorpaySecret,
   },
 } as const;
@@ -128,7 +155,7 @@ function row(label: string, status: Status): string {
 
 /**
  * Print a human-readable configuration summary to the log.
- * Call this once after environment-specific startup preparation, before `app.listen`.
+ * Call this once before `app.listen`.
  * No secret values are included — only feature readiness.
  */
 export function printConfigSummary(): void {
@@ -137,14 +164,14 @@ export function printConfigSummary(): void {
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     "  Menashe API — Configuration Summary   ",
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-    row("Database",       "READY"),  // already exited if missing
-    row("Clerk Auth",     features.auth     ? "READY" : "DISABLED"),
-    row("OpenAI",         features.openai   ? "READY" : "NOT CONFIGURED"),
-    row("Gemini",         features.gemini   ? "READY" : "NOT CONFIGURED"),
-    row("Grok",           features.grok     ? "READY" : "NOT CONFIGURED"),
-    row("Push (VAPID)",   features.push     ? "READY" : "NOT CONFIGURED"),
-    row("Payments",       features.payments ? "READY" : "NOT CONFIGURED"),
-    row("Object Storage", "READY"),  // Replit sidecar always available
+    row("Database", "READY"), // already exited if missing
+    row("Clerk Auth", features.auth ? "READY" : "DISABLED"),
+    row("OpenAI", features.openai ? "READY" : "NOT CONFIGURED"),
+    row("Gemini", features.gemini ? "READY" : "NOT CONFIGURED"),
+    row("Grok", features.grok ? "READY" : "NOT CONFIGURED"),
+    row("Push (VAPID)", features.push ? "READY" : "NOT CONFIGURED"),
+    row("Payments", features.payments ? "READY" : "NOT CONFIGURED"),
+    row("Object Storage", "READY"), // Replit sidecar always available
     `  ○ ${"Environment".padEnd(22, ".")} ${nodeEnv}`,
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
   ];
@@ -156,25 +183,25 @@ export function printConfigSummary(): void {
   if (!features.auth) {
     logger.warn(
       "Clerk Auth is DISABLED — CLERK_SECRET_KEY and/or CLERK_PUBLISHABLE_KEY " +
-      "are not set. All authenticated routes will return 401.",
+        "are not set. All authenticated routes will return 401.",
     );
   }
   if (!features.openai && !features.gemini && !features.grok) {
     logger.warn(
       "AI is NOT CONFIGURED — none of OPENAI_API_KEY, GOOGLE_API_KEY, or " +
-      "GROK_API_KEY are set. The /api/chat endpoint will return 503.",
+        "GROK_API_KEY are set. The /api/chat endpoint will return 503.",
     );
   }
   if (!features.push) {
     logger.warn(
       "Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY, " +
-      "VAPID_PRIVATE_KEY, and VAPID_SUBJECT must all be valid.",
+        "VAPID_PRIVATE_KEY, and VAPID_SUBJECT must all be valid.",
     );
   }
   if (!features.payments) {
     logger.warn(
       "Payments are NOT CONFIGURED — RAZORPAY_KEY_ID and/or " +
-      "RAZORPAY_KEY_SECRET are not set. Payment routes will return 503.",
+        "RAZORPAY_KEY_SECRET are not set. Payment routes will return 503.",
     );
   }
 }

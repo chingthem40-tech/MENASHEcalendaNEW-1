@@ -1,9 +1,12 @@
-import express, { type Express, type Request, type Response, type NextFunction } from "express";
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
-import path from "path";
-import fs from "fs";
 import { clerkMiddleware } from "@clerk/express";
 import { publishableKeyFromHost } from "@clerk/shared/keys";
 import {
@@ -48,33 +51,71 @@ app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 // In development (NODE_ENV !== 'production'), allow all origins for convenience.
 export function buildAllowedOrigins(): string[] | boolean {
   if (process.env.ALLOWED_ORIGINS) {
-    return process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim());
-  }
-  if (process.env.NODE_ENV !== "production") return true;
-  // Production fallback: derive from Replit-managed REPLIT_DOMAINS
-  const replitDomains = process.env.REPLIT_DOMAINS;
-  if (replitDomains) {
-    const origins = replitDomains
-      .split(",")
-      .map((d) => `https://${d.trim()}`);
-    logger.info({ origins }, "ALLOWED_ORIGINS not set — using REPLIT_DOMAINS as CORS allowlist");
+    const origins = process.env.ALLOWED_ORIGINS.split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+    if (origins.length === 0) {
+      throw new Error("ALLOWED_ORIGINS must contain at least one origin");
+    }
+    for (const origin of origins) {
+      let parsed: URL;
+      try {
+        parsed = new URL(origin);
+      } catch {
+        throw new Error("ALLOWED_ORIGINS contains an invalid origin");
+      }
+      if (
+        parsed.protocol !== "https:" ||
+        parsed.username ||
+        parsed.password ||
+        parsed.pathname !== "/" ||
+        parsed.search ||
+        parsed.hash
+      ) {
+        throw new Error(
+          "ALLOWED_ORIGINS must contain HTTPS origins without paths or credentials",
+        );
+      }
+    }
     return origins;
   }
-  logger.warn("ALLOWED_ORIGINS and REPLIT_DOMAINS are both unset — CORS will reject cross-origin requests");
+  if (process.env.NODE_ENV !== "production") return true;
+  const replitDomains = process.env.REPLIT_DOMAINS;
+  if (replitDomains) {
+    const origins = replitDomains.split(",").map((d) => `https://${d.trim()}`);
+    logger.info(
+      { origins },
+      "ALLOWED_ORIGINS not set — using REPLIT_DOMAINS as CORS allowlist",
+    );
+    return origins;
+  }
+  logger.warn(
+    "ALLOWED_ORIGINS and REPLIT_DOMAINS are both unset — CORS will reject cross-origin requests",
+  );
   return false;
 }
 const allowedOrigins = buildAllowedOrigins();
 
-app.use(cors({ credentials: true, origin: allowedOrigins }));
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins === true) {
+        callback(null, true);
+        return;
+      }
+      if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Origin not allowed by CORS"));
+    },
+  }),
+);
 
-// Security headers — applied to every response
 app.use(
   helmet({
-    // CSP is omitted here; it is handled by the frontend's own meta tags
-    // and Vite's output. Enabling a strict CSP at the API level breaks the
-    // SPA fallback in production. Set it per-route or via CDN headers.
     contentSecurityPolicy: false,
-    // HSTS — tell browsers to always use HTTPS (1 year)
     strictTransportSecurity: {
       maxAge: 31_536_000,
       includeSubDomains: true,
@@ -85,12 +126,6 @@ app.use(
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 
-// Guard: clerkMiddleware throws assertValidSecretKey when CLERK_SECRET_KEY is
-// absent, which returns HTTP 500 for every request and blocks all routes —
-// including unauthenticated ones like POST /chat.  Only attach it when the
-// key is actually present; routes using requireAuth will still return 401
-// correctly because getAuth(req) gracefully returns null auth when the
-// middleware was not installed.
 if (process.env.CLERK_SECRET_KEY) {
   app.use(
     clerkMiddleware((req) => ({
@@ -103,11 +138,10 @@ if (process.env.CLERK_SECRET_KEY) {
 } else {
   logger.warn(
     "CLERK_SECRET_KEY not set — Clerk authentication middleware disabled; " +
-    "authenticated routes will return 401 until the key is provided.",
+      "authenticated routes will return 401 until the key is provided.",
   );
 }
 
-// Health check — placed before rate limiter so it is never throttled
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use(globalRateLimiter);
@@ -115,66 +149,10 @@ app.use(globalRateLimiter);
 app.get("/api", (_req, res) => res.json({ status: "ok" }));
 app.use("/api", router);
 
-// Unknown /api routes — return JSON 404 (not HTML)
 app.use("/api", (_req: Request, res: Response) => {
   res.status(404).json({ error: "Not found" });
 });
 
-// In production, serve the built React frontend from the same process.
-// The frontend builds to artifacts/menashe-calendar/dist/public.
-// __dirname is shimmed by esbuild banner to the dir of dist/index.mjs,
-// so we step two levels up: dist/ → api-server/ → artifacts/ → workspace root,
-// then into menashe-calendar/dist/public.
-if (process.env.NODE_ENV === "production") {
-  const frontendDir = path.resolve(
-    __dirname,
-    "../../menashe-calendar/dist/public",
-  );
-  if (fs.existsSync(frontendDir)) {
-    logger.info({ frontendDir }, "Serving static frontend");
-    app.use(
-      express.static(frontendDir, {
-        etag: true,
-        // Per-file Cache-Control strategy:
-        //
-        //   /assets/*.js  and  /assets/*.css
-        //     → "public, max-age=31536000, immutable"
-        //     Vite injects a content-hash into every asset filename (e.g.
-        //     vendor-react-CPl9HvQc.js).  The hash changes whenever the file
-        //     changes, so it is safe to tell the browser "cache this forever
-        //     and never revalidate".  The `immutable` directive further
-        //     suppresses the browser's conditional GET on reload — zero extra
-        //     network round-trips for returning users.
-        //
-        //   Everything else (index.html, manifest.json, sw.js, icons …)
-        //     → "public, no-cache"
-        //     These files are not content-hashed, so they must always be
-        //     revalidated.  `no-cache` still allows the browser to serve from
-        //     its local cache when the ETag matches, making the response
-        //     instant while guaranteeing freshness.
-        setHeaders(res, filePath) {
-          if (filePath.includes(`${path.sep}assets${path.sep}`)) {
-            res.setHeader(
-              "Cache-Control",
-              "public, max-age=31536000, immutable",
-            );
-          } else {
-            res.setHeader("Cache-Control", "public, no-cache");
-          }
-        },
-      }),
-    );
-    // SPA fallback — all non-API routes return index.html
-    app.get("/{*splat}", (_req, res) => {
-      res.sendFile(path.join(frontendDir, "index.html"));
-    });
-  } else {
-    logger.warn({ frontendDir }, "Frontend dist not found — static serving skipped");
-  }
-}
-
-// Global error handler — suppresses stack traces in production to avoid
-// leaking implementation details; always returns a safe JSON body.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   logger.error({ err }, "Unhandled error");
