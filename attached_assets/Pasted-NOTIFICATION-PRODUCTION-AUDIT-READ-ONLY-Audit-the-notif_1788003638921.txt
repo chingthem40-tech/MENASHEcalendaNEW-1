@@ -1,0 +1,355 @@
+NOTIFICATION PRODUCTION AUDIT — READ ONLY
+
+Audit the notification system of the current `main` branch for production readiness.
+
+IMPORTANT:
+- READ ONLY.
+- Do NOT modify any source files.
+- Do NOT modify package.json or pnpm-lock.yaml.
+- Do NOT change branches.
+- Do NOT commit, merge, rebase, or reset.
+- Do NOT change secrets.
+- Do NOT change the database.
+- Do NOT change Clerk configuration.
+- Do NOT change VAPID configuration.
+- Do NOT change Netlify configuration.
+- Do NOT deploy or publish anything.
+- Do NOT expose any secret values.
+- Only inspect, test safely, and report findings.
+
+The application has:
+- React/Vite web frontend
+- Express API
+- Replit PostgreSQL
+- Clerk authentication
+- Web Push/VAPID
+- Expo/React Native mobile app
+- Existing notification UI and scheduled notification system
+
+Audit BOTH notification systems:
+
+==================================================
+A. WEB PUSH NOTIFICATIONS
+==================================================
+
+Inspect:
+
+- artifacts/api-server/src/routes/push.ts
+- artifacts/api-server/src/lib/branchNotifications.ts
+- artifacts/menashe-calendar/src/hooks/usePushSubscription.ts
+- notification-related components/pages
+- public service worker files
+- Vite/build configuration
+- API notification payload generation
+
+Verify:
+
+1. Browser requests notification permission correctly.
+
+2. Push subscription uses the browser Push API correctly.
+
+3. The VAPID public key comes from the API/configuration rather than being hardcoded.
+
+4. Subscribe requests require Clerk authentication.
+
+5. The server derives the authenticated user from the Clerk session rather than trusting a client-supplied userId.
+
+6. A push subscription is associated with the correct user.
+
+7. Unsubscribe is restricted to the subscription owner.
+
+8. Expired subscriptions returning HTTP 404/410 are removed safely.
+
+9. VAPID_PRIVATE_KEY is required for actual delivery.
+
+10. VAPID_PUBLIC_KEY and VAPID_SUBJECT are validated.
+
+11. Notification payloads are safe and do not contain secrets.
+
+12. The service worker is registered in production.
+
+13. The service worker receives `push` events.
+
+14. The service worker calls `showNotification()`.
+
+15. Notifications can appear when:
+    - the web app is open
+    - the web app is in the background
+    - the browser tab is not active
+    - the phone screen is locked
+
+16. Verify whether web push can work when the browser/app is completely closed.
+
+IMPORTANT:
+Clearly distinguish:
+- app closed
+- browser/tab backgrounded
+- browser process completely terminated
+
+Do not claim that a browser can receive push after complete process termination unless the platform/browser actually supports it.
+
+17. Inspect notification click handling.
+
+18. Clicking a notification must open a safe HTTPS destination belonging to this application.
+
+19. Verify whether notification clicks open:
+    - the existing app
+    - the relevant notification/announcement page
+    - the correct calendar/event page when applicable
+
+20. Verify that notification clicks do not navigate to an unsafe arbitrary URL.
+
+21. Verify duplicate notifications are not generated unnecessarily.
+
+22. Check whether the same user/device can accidentally create unlimited duplicate subscriptions.
+
+23. Check cleanup of stale subscriptions.
+
+24. Check whether push delivery failures are handled without crashing the API.
+
+==================================================
+B. MOBILE / EXPO PUSH NOTIFICATIONS
+==================================================
+
+Inspect:
+
+- artifacts/menashe-mobile/
+- notification registration code
+- Expo notification configuration
+- app.json/app.config.*
+- Android notification configuration
+- iOS notification configuration
+- notification channels/categories
+- background notification handling
+- API Expo push-token routes
+
+Verify:
+
+1. Android notification permission is requested correctly.
+
+2. Android notification channels are configured correctly.
+
+3. Notifications have an appropriate importance level for visible notifications.
+
+4. Notifications are configured to appear on the Android lock screen.
+
+5. Notification sound/badge behavior is configured appropriately.
+
+6. Expo push token registration requires authentication.
+
+7. Server derives ownership from Clerk authentication.
+
+8. Expo tokens are stored against the correct user.
+
+9. Duplicate Expo tokens are handled safely.
+
+10. Invalid/expired Expo tokens are cleaned up.
+
+11. Server-side Expo delivery is implemented correctly if present.
+
+12. Local scheduled notifications work when the application is not open.
+
+13. Remote push notifications work when the application is not open.
+
+14. Remote push notifications can appear while the Android device is locked.
+
+15. Check whether Android battery optimization/background restrictions could affect delivery.
+
+16. Check whether the application has the required Android notification permissions/configuration for modern Android versions.
+
+17. Check whether notification behavior differs between development Expo Go and a production standalone Android build.
+
+IMPORTANT:
+Do not claim production Android push works merely because the development app works.
+
+==================================================
+C. AUTHENTICATION
+==================================================
+
+Verify the complete notification authentication chain:
+
+User
+ ↓
+Clerk
+ ↓
+Bearer token
+ ↓
+API
+ ↓
+authenticated user
+ ↓
+subscription/token ownership
+ ↓
+notification delivery
+
+Check:
+
+- subscribe
+- unsubscribe
+- test notification
+- notification preferences
+- scheduled notifications
+- announcement notifications
+
+Verify protected endpoints return 401 without authentication.
+
+==================================================
+D. SCHEDULED NOTIFICATIONS
+==================================================
+
+Inspect scheduler implementation.
+
+Verify:
+
+1. Scheduled notifications are stored correctly.
+
+2. Scheduled times use the intended timezone.
+
+3. User timezone is respected where applicable.
+
+4. Multiple API instances cannot accidentally send the same scheduled notification twice.
+
+5. Scheduled broadcasts are atomically claimed/processed.
+
+6. Failed delivery does not incorrectly mark a notification as successfully delivered.
+
+7. Expired subscriptions are removed.
+
+8. Scheduler survives API restart.
+
+9. Scheduler does not depend on Replit development-only behavior.
+
+10. Verify whether scheduled notifications continue operating in Replit Autoscale production.
+
+==================================================
+E. LOCK-SCREEN REQUIREMENT
+==================================================
+
+This is especially important.
+
+Determine exactly whether the current application supports:
+
+Android phone locked
++
+application not open
++
+notification scheduled remotely
++
+notification appears on lock screen
+
+Report separately for:
+
+1. Web/PWA
+2. Android Expo production build
+
+Do NOT mix these two systems.
+
+For Android Expo, identify every required production setting.
+
+For Web Push, identify browser/device limitations.
+
+==================================================
+F. PRODUCTION CONFIGURATION
+==================================================
+
+Check readiness of:
+
+- CLERK_SECRET_KEY
+- CLERK_PUBLISHABLE_KEY
+- VAPID_PRIVATE_KEY
+- VAPID_PUBLIC_KEY
+- VAPID_SUBJECT
+- notification-related database tables
+- notification permissions
+- service worker
+- Android notification channel/configuration
+
+Never print secret values.
+
+Only report:
+
+READY
+MISSING
+PARTIAL
+UNKNOWN
+
+==================================================
+G. TESTS
+==================================================
+
+Run only safe, non-destructive checks.
+
+Allowed:
+
+- typecheck
+- build
+- lint
+- endpoint smoke tests
+- service-worker inspection
+- static configuration inspection
+- production-mode startup test
+- authenticated route structure verification without exposing tokens
+
+Do not send real test notifications to users/devices unless explicitly required.
+
+==================================================
+FINAL REPORT
+==================================================
+
+Produce a table:
+
+| Notification Area | Status | Evidence | Production Risk |
+|---|---|---|---|
+
+Then provide:
+
+WEB PUSH:
+- Permission:
+- Clerk authentication:
+- VAPID:
+- Subscription:
+- Service worker:
+- Background delivery:
+- App/browser closed behavior:
+- Lock-screen behavior:
+- Click handling:
+- Cleanup:
+- Duplicate prevention:
+
+ANDROID / EXPO:
+- Permission:
+- Notification channel:
+- Lock-screen:
+- Background:
+- App closed:
+- Remote push:
+- Local scheduled notifications:
+- Expo token:
+- Server delivery:
+- Production build requirements:
+
+SCHEDULER:
+- Timezone:
+- Duplicate prevention:
+- Atomic claiming:
+- Restart behavior:
+- Autoscale compatibility:
+
+AUTHENTICATION:
+- Clerk:
+- Bearer propagation:
+- User ownership:
+- Protected endpoints:
+
+FINAL CLASSIFICATION:
+
+🟢 READY
+🟡 NEEDS CONFIGURATION
+🔴 CODE BLOCKER
+⚪ UNKNOWN / NEEDS DEVICE TEST
+
+Most importantly, identify exactly what is required for this user goal:
+
+"Notification should appear on the Android lock screen even when the app is not open."
+
+Do not make any changes.
