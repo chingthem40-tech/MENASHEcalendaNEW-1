@@ -24,11 +24,6 @@ export function useHomeNotifications({
   useEffect(() => {
     if (!isPremium || !candleEnabled) return;
 
-    // Request notification permission silently for premium users
-    if (isNotifSupported() && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
-
     function getNextCandleLighting(): Date | null {
       const now = new Date();
       let daysUntilFriday = (5 - now.getDay() + 7) % 7;

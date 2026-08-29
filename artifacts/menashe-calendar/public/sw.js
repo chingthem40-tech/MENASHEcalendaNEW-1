@@ -123,6 +123,7 @@ self.addEventListener("push", (event) => {
     body: "You have a new notification.",
     tag: "menashe-default",
     icon: "/icon-192.png",
+    url: "/",
   };
   try {
     if (event.data) data = { ...data, ...event.data.json() };
@@ -134,21 +135,42 @@ self.addEventListener("push", (event) => {
       icon: data.icon || "/icon-192.png",
       badge: "/icon-192.png",
       vibrate: [100, 50, 100],
-      data: { url: self.location.origin },
+      data: { url: data.url || "/" },
     })
   );
 });
 
+function safeNotificationUrl(value) {
+  const fallback = new URL("/", self.location.origin).href;
+  if (typeof value !== "string" || value.length > 2048) return fallback;
+  try {
+    const url = new URL(value, self.location.origin);
+    const isLocalDevelopment =
+      self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1";
+    if (url.origin !== self.location.origin) return fallback;
+    if (url.protocol !== "https:" && !(isLocalDevelopment && url.protocol === "http:")) {
+      return fallback;
+    }
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("//")) return fallback;
+    return url.href;
+  } catch {
+    return fallback;
+  }
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl =
-    (event.notification.data && event.notification.data.url) || self.location.origin;
+  const targetUrl = safeNotificationUrl(
+    event.notification.data && event.notification.data.url
+  );
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
-          if (client.url.startsWith(targetUrl) && "focus" in client) return client.focus();
+          if (new URL(client.url).origin === self.location.origin && "focus" in client) {
+            return client.navigate(targetUrl).then(() => client.focus());
+          }
         }
         if (clients.openWindow) return clients.openWindow(targetUrl);
       })

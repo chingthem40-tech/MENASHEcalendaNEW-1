@@ -8,21 +8,13 @@
  * Does NOT build a second notification engine.
  */
 
-import webpush from "web-push";
 import { Expo, type ExpoPushMessage } from "expo-server-sdk";
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
 import type { BranchStatus } from "./branchAuth";
+import { enqueueWebNotificationForUser } from "./webNotificationJobs";
 
 const expo = new Expo();
-
-const VAPID_PUBLIC  = process.env["VAPID_PUBLIC_KEY"]  ?? "";
-const VAPID_PRIVATE = process.env["VAPID_PRIVATE_KEY"] ?? "";
-const VAPID_SUBJECT = process.env["VAPID_SUBJECT"]     ?? "mailto:admin@menashecalendar.app";
-
-if (VAPID_PUBLIC && VAPID_PRIVATE) {
-  try { webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE); } catch {}
-}
 
 interface BranchNotifPayload {
   title: string;
@@ -119,34 +111,18 @@ export async function notifyBranchOwner(
   }
 
   // ── Web push (browser) ────────────────────────────────────────
-  if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
-
   try {
-    const { rows: webRows } = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-      "SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = $1",
-      [ownerUserId],
-    );
-
-    const webPayload = JSON.stringify({
+    await enqueueWebNotificationForUser(ownerUserId, {
+      sourceType: "branch_status",
+      sourceId: `${ownerUserId}:${branchName}:${newStatus}:${Date.now()}`,
+      fireAt: Date.now(),
       title: payload.title,
-      body:  payload.body,
-      tag:   payload.tag,
-      icon:  "/favicon.svg",
+      body: payload.body,
+      tag: payload.tag,
+      icon: "/favicon.svg",
+      url: "/",
     });
-
-    for (const row of webRows) {
-      try {
-        await webpush.sendNotification(
-          { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-          webPayload,
-        );
-      } catch (err: any) {
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
-          await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-        }
-      }
-    }
   } catch (err) {
-    logger.warn({ err }, "branchNotif: web push failed");
+    logger.warn({ err }, "branchNotif: failed to queue web push");
   }
 }

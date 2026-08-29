@@ -359,6 +359,85 @@ export async function runMigrations(): Promise<void> {
       CREATE INDEX IF NOT EXISTS push_subs_user_id_idx
         ON push_subscriptions (user_id) WHERE user_id IS NOT NULL
     `);
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS push_subscriptions_endpoint_uidx
+        ON push_subscriptions (endpoint)
+    `);
+
+    // Durable, per-subscription Web Push jobs. Claims use row locks and leases
+    // so Replit Autoscale instances can safely process the same queue.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS web_notification_jobs (
+        id               BIGSERIAL PRIMARY KEY,
+        subscription_id  TEXT NOT NULL REFERENCES push_subscriptions(id) ON DELETE CASCADE,
+        idempotency_key  TEXT NOT NULL UNIQUE,
+        source_type      TEXT NOT NULL,
+        source_id        TEXT,
+        run_at           TIMESTAMPTZ NOT NULL,
+        title            TEXT NOT NULL,
+        body             TEXT NOT NULL,
+        tag              TEXT NOT NULL,
+        icon             TEXT,
+        url              TEXT NOT NULL DEFAULT '/',
+        timezone         TEXT,
+        status           TEXT NOT NULL DEFAULT 'pending'
+                         CHECK (status IN ('pending','processing','retry','sent','failed')),
+        attempts         INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+        max_attempts     INTEGER NOT NULL DEFAULT 5 CHECK (max_attempts BETWEEN 1 AND 10),
+        next_attempt_at  TIMESTAMPTZ,
+        lease_token      TEXT,
+        lease_expires_at TIMESTAMPTZ,
+        sent_at          TIMESTAMPTZ,
+        last_error       TEXT,
+        created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS web_notification_jobs_due_idx
+        ON web_notification_jobs (COALESCE(next_attempt_at, run_at), id)
+        WHERE status IN ('pending','retry')
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS web_notification_jobs_expired_lease_idx
+        ON web_notification_jobs (lease_expires_at, id)
+        WHERE status = 'processing'
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS web_notification_jobs_source_idx
+        ON web_notification_jobs (source_type, source_id, status)
+        WHERE source_id IS NOT NULL
+    `);
+
+    // Expand valid legacy JSON schedule items once. The old JSON remains in
+    // place during rollout; the unique key makes this migration restart-safe.
+    await client.query(`
+      INSERT INTO web_notification_jobs
+        (subscription_id, idempotency_key, source_type, run_at, title, body, tag, icon, url)
+      SELECT ps.id,
+             md5(
+               'legacy:' || ps.id || ':' ||
+               ((schedule_item.value::jsonb)->>'tag') || ':' ||
+               ((schedule_item.value::jsonb)->>'fireAt')
+             ),
+             'client_schedule',
+             to_timestamp(((schedule_item.value::jsonb)->>'fireAt')::double precision / 1000.0),
+             (schedule_item.value::jsonb)->>'title',
+             (schedule_item.value::jsonb)->>'body',
+             (schedule_item.value::jsonb)->>'tag',
+             COALESCE((schedule_item.value::jsonb)->>'icon', '/favicon.svg'),
+             COALESCE((schedule_item.value::jsonb)->>'url', '/')
+        FROM push_subscriptions ps
+        CROSS JOIN LATERAL jsonb_array_elements(
+          CASE WHEN jsonb_typeof(ps.schedule) = 'array' THEN ps.schedule ELSE '[]'::jsonb END
+        ) AS schedule_item(value)
+       WHERE schedule_item.value::jsonb ? 'fireAt'
+         AND schedule_item.value::jsonb ? 'title'
+         AND schedule_item.value::jsonb ? 'body'
+         AND schedule_item.value::jsonb ? 'tag'
+         AND ((schedule_item.value::jsonb)->>'fireAt') ~ '^[0-9]+([.][0-9]+)?$'
+      ON CONFLICT (idempotency_key) DO NOTHING
+    `);
 
     // Community announcements (server-backed, broadcastable)
     await client.query(`
@@ -435,6 +514,9 @@ export async function runMigrations(): Promise<void> {
         sent_at      TIMESTAMPTZ,
         created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
+    `);
+    await client.query(`
+      ALTER TABLE scheduled_broadcasts ADD COLUMN IF NOT EXISTS queued_at TIMESTAMPTZ
     `);
 
     // ── Memorial Sanctuary V1 ─────────────────────────────────────────────────

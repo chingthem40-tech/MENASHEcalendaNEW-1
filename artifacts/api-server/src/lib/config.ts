@@ -10,6 +10,7 @@
  */
 
 import { logger } from "./logger";
+import { getWebPushReadiness } from "./webPush";
 
 // ── Resolve raw env values ────────────────────────────────────────────────────
 
@@ -20,6 +21,8 @@ const googleKey        = process.env.GOOGLE_API_KEY      || null;
 const grokKey          = process.env.GROK_API_KEY        || null;
 const vapidPublicKey   = process.env.VAPID_PUBLIC_KEY    || null;
 const vapidPrivateKey  = process.env.VAPID_PRIVATE_KEY   || null;
+const vapidSubject     = process.env.VAPID_SUBJECT       || null;
+const webPushReadiness = getWebPushReadiness();
 const razorpayKeyId    = process.env.RAZORPAY_KEY_ID     || null;
 const razorpaySecret   = process.env.RAZORPAY_KEY_SECRET || null;
 
@@ -66,7 +69,7 @@ export const config = {
   // Push notifications
   vapidPublicKey,
   vapidPrivateKey,
-  vapidSubject: process.env.VAPID_SUBJECT ?? "mailto:admin@menashecalendar.app",
+  vapidSubject,
 
   // Payments
   razorpayKeyId,
@@ -81,7 +84,7 @@ export const config = {
     openai:   !!openaiKey,
     gemini:   !!googleKey,
     grok:     !!grokKey,
-    push:     !!vapidPublicKey && !!vapidPrivateKey,
+    push:     webPushReadiness.ready,
     payments: !!razorpayKeyId && !!razorpaySecret,
   },
 } as const;
@@ -136,8 +139,8 @@ export function printConfigSummary(): void {
   }
   if (!features.push) {
     logger.warn(
-      "Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY and/or " +
-      "VAPID_PRIVATE_KEY are not set. Web push will be silently skipped.",
+      "Push Notifications are NOT CONFIGURED — VAPID_PUBLIC_KEY, " +
+      "VAPID_PRIVATE_KEY, and VAPID_SUBJECT must all be valid.",
     );
   }
   if (!features.payments) {

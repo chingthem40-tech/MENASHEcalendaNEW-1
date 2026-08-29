@@ -13,6 +13,7 @@ type ScheduleItem = {
   title: string;
   body: string;
   tag: string;
+  timezone: string;
 };
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
@@ -45,13 +46,22 @@ function ordinal(n: number): string {
   return `${n}${suffix}`;
 }
 
+function dateKey(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
 function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime): ScheduleItem[] {
   const items: ScheduleItem[] = [];
   const now = Date.now();
 
   function add(fireAt: Date, title: string, body: string, tag: string) {
     const ms = fireAt.getTime();
-    if (ms > now) items.push({ fireAt: ms, title, body, tag });
+    if (ms > now) items.push({ fireAt: ms, title, body, tag, timezone: loc.tz });
   }
 
   if (prefs.dailyDate) {
@@ -81,12 +91,12 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
       if (prefs.shabbat && fridayZm.candleLighting) {
         const remindAt = new Date(fridayZm.candleLighting.getTime() - 18 * 60 * 1000);
         const str = fmt2(fridayZm.candleLighting, loc.tz);
-        add(remindAt, "🕯️ Shabbat Candle Lighting", `Light candles in 18 minutes at ${str}. Shabbat Shalom!`, `candle-push-${w}`);
+        add(remindAt, "🕯️ Shabbat Candle Lighting", `Light candles in 18 minutes at ${str}. Shabbat Shalom!`, `candle-push-${dateKey(friday, loc.tz)}`);
       }
 
       if (prefs.havdalah && satZm.havdalah) {
         const str = fmt2(satZm.havdalah, loc.tz);
-        add(satZm.havdalah, "✨ Havdalah Time", `Shabbat has ended at ${str}. Shavua Tov — have a wonderful week!`, `havdalah-push-${w}`);
+        add(satZm.havdalah, "✨ Havdalah Time", `Shabbat has ended at ${str}. Shavua Tov — have a wonderful week!`, `havdalah-push-${dateKey(saturday, loc.tz)}`);
       }
 
       if (prefs.shabbatDigest) {
@@ -96,7 +106,7 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
         const parashaName = parashiyot[0]?.name ?? "Shabbat";
         const candleStr = fridayZm.candleLighting ? fmt2(fridayZm.candleLighting, loc.tz) : "--:--";
         const havdalahStr = satZm.havdalah ? fmt2(satZm.havdalah, loc.tz) : "--:--";
-        add(digestAt, `📜 Parashat ${parashaName}`, `🕯 Candles: ${candleStr} · ✨ Havdalah: ${havdalahStr} · Shabbat Shalom!`, `digest-push-${w}`);
+        add(digestAt, `📜 Parashat ${parashaName}`, `🕯 Candles: ${candleStr} · ✨ Havdalah: ${havdalahStr} · Shabbat Shalom!`, `digest-push-${dateKey(friday, loc.tz)}`);
       }
 
       if (prefs.parasha) {
@@ -106,7 +116,7 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
           const fireAt = new Date(friday);
           fireAt.setHours(8, 0, 0, 0);
           const heb = hebrewName ? ` (${hebrewName})` : "";
-          add(fireAt, `📖 Parashat ${name}${heb}`, `This Shabbat's Torah portion is Parashat ${name}. Shabbat Shalom to the Bnei Menashe community!`, `parasha-push-${w}`);
+          add(fireAt, `📖 Parashat ${name}${heb}`, `This Shabbat's Torah portion is Parashat ${name}. Shabbat Shalom to the Bnei Menashe community!`, `parasha-push-${dateKey(friday, loc.tz)}`);
         }
       }
     }
@@ -155,20 +165,20 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
       if (prefs.shema && pz.latestShema) {
         const remindAt = new Date(pz.latestShema.getTime() - lead * 60 * 1000);
         const str = fmt2(pz.latestShema, loc.tz);
-        add(remindAt, `📖 Latest Shema in ${lead} min`, `Deadline to recite Shema is at ${str} (${dateStr}). Don't miss it!`, `shema-push-${i}`);
+        add(remindAt, `📖 Latest Shema in ${lead} min`, `Deadline to recite Shema is at ${str} (${dateStr}). Don't miss it!`, `shema-push-${dateKey(d, loc.tz)}`);
       }
       if (prefs.prayers) {
         if (pz.sunrise) {
           const remindAt = new Date(pz.sunrise.getTime() - lead * 60 * 1000);
-          add(remindAt, `🌅 Shacharit in ${lead} min`, `Morning prayer at ${fmt2(pz.sunrise, loc.tz)} in ${loc.name}. ${dateStr}.`, `shacharit-push-${i}`);
+          add(remindAt, `🌅 Shacharit in ${lead} min`, `Morning prayer at ${fmt2(pz.sunrise, loc.tz)} in ${loc.name}. ${dateStr}.`, `shacharit-push-${dateKey(d, loc.tz)}`);
         }
         if (pz.minchaKetana) {
           const remindAt = new Date(pz.minchaKetana.getTime() - lead * 60 * 1000);
-          add(remindAt, `🌤 Mincha in ${lead} min`, `Ideal Mincha at ${fmt2(pz.minchaKetana, loc.tz)} in ${loc.name}. ${dateStr}.`, `mincha-push-${i}`);
+          add(remindAt, `🌤 Mincha in ${lead} min`, `Ideal Mincha at ${fmt2(pz.minchaKetana, loc.tz)} in ${loc.name}. ${dateStr}.`, `mincha-push-${dateKey(d, loc.tz)}`);
         }
         if (pz.tzais) {
           const remindAt = new Date(pz.tzais.getTime() - lead * 60 * 1000);
-          add(remindAt, `🌙 Maariv in ${lead} min`, `Nightfall and Maariv at ${fmt2(pz.tzais, loc.tz)} in ${loc.name}. ${dateStr}.`, `maariv-push-${i}`);
+          add(remindAt, `🌙 Maariv in ${lead} min`, `Nightfall and Maariv at ${fmt2(pz.tzais, loc.tz)} in ${loc.name}. ${dateStr}.`, `maariv-push-${dateKey(d, loc.tz)}`);
         }
       }
     }
@@ -242,8 +252,28 @@ export function usePushSubscription(location: Location, prefs: NotificationPrefs
 
   const isSupported =
     typeof window !== "undefined" &&
+    "Notification" in window &&
     "serviceWorker" in navigator &&
     "PushManager" in window;
+
+  useEffect(() => {
+    if (!isSupported) return;
+    let cancelled = false;
+    navigator.serviceWorker.ready
+      .then((sw) => sw.pushManager.getSubscription())
+      .then((existing) => {
+        if (cancelled) return;
+        subRef.current = existing;
+        const active = existing !== null && Notification.permission === "granted";
+        setIsSubscribed(active);
+        try {
+          if (active) localStorage.setItem(SW_KEY, "true");
+          else localStorage.removeItem(SW_KEY);
+        } catch {}
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isSupported]);
 
   useEffect(() => {
     if (!isSupported || !isSubscribed) return;
@@ -265,6 +295,22 @@ export function usePushSubscription(location: Location, prefs: NotificationPrefs
     setIsLoading(true);
     setError(null);
     try {
+      if (Notification.permission === "denied") {
+        setError("Notifications are blocked for this site. Enable them in your browser settings and try again.");
+        return false;
+      }
+      if (Notification.permission === "default") {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          setError("Notification permission was not granted.");
+          return false;
+        }
+      }
+      if (Notification.permission !== "granted") {
+        setError("Notification permission is required to enable push notifications.");
+        return false;
+      }
+
       const vapidKey = await getVapidPublicKey();
       if (!vapidKey) { setError("Push service is not configured."); return false; }
 

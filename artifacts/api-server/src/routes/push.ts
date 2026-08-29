@@ -1,77 +1,133 @@
 import { Router } from "express";
-import webpush from "web-push";
+import { createHash } from "node:crypto";
+import type { PushSubscription } from "web-push";
 import { Expo, type ExpoPushMessage } from "expo-server-sdk";
-import { requireAuth, safeGetAuth } from "../lib/authorization";
+import { requireAuth } from "../lib/authorization";
 import { requireAdmin } from "../lib/requireAdmin";
 import { pushSubscribeRateLimiter } from "../lib/rateLimiter";
 import { pool } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { HebrewCalendar, HDate, flags } from "@hebcal/core";
+import {
+  enqueueWebNotificationForAll,
+  enqueueWebNotificationForUser,
+  startWebNotificationQueue,
+  syncClientSchedule,
+  type WebNotificationScheduleItem,
+} from "../lib/webNotificationJobs";
+import {
+  getWebPushPublicKey,
+  isExpiredWebPushError,
+  isWebPushReady,
+  sendWebPush,
+} from "../lib/webPush";
 
 const expo = new Expo();
 
 const router = Router();
 
-const VAPID_SUBJECT = process.env["VAPID_SUBJECT"] ?? "mailto:admin@menashecalendar.app";
+export type ScheduleItem = WebNotificationScheduleItem;
 
-const VAPID_PUBLIC_FALLBACK = "BOqeOYdujQRpuveFsz_snrtPpkLZdyj1W4A21JHYPLRJ2hpAWeZwJi7AKCzzLdHvOmHVkmYDN3w0cIE2TFAoX5Q";
-
-function resolveVapidPrivate(): string {
-  const raw = (process.env["VAPID_PRIVATE_KEY"] ?? "").replace(/[="'\s]/g, "");
-  if (!raw) {
-    logger.warn("VAPID_PRIVATE_KEY not set — push notifications disabled");
-    return "";
-  }
+function isValidTimeZone(value: string): boolean {
   try {
-    const decoded = Buffer.from(raw, "base64url");
-    if (decoded.length === 32) return raw;
-  } catch { /* fall through */ }
-  logger.warn("VAPID_PRIVATE_KEY is not a valid 32-byte base64url key — push notifications disabled");
-  return "";
-}
-
-const VAPID_PUBLIC = process.env["VAPID_PUBLIC_KEY"] || VAPID_PUBLIC_FALLBACK;
-const VAPID_PRIVATE = resolveVapidPrivate();
-
-if (VAPID_PUBLIC && VAPID_PRIVATE) {
-  try {
-    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE);
-  } catch (err) {
-    logger.error({ err }, "VAPID key validation failed — push notifications disabled");
+    new Intl.DateTimeFormat("en-US", { timeZone: value }).format();
+    return true;
+  } catch {
+    return false;
   }
 }
 
-export type ScheduleItem = {
-  fireAt: number;
-  title: string;
-  body: string;
-  tag: string;
-  icon?: string;
-};
+function isValidScheduleItem(item: unknown): item is ScheduleItem {
+  if (!item || typeof item !== "object") return false;
+  const value = item as Partial<ScheduleItem>;
+  const now = Date.now();
+  return (
+    Number.isFinite(value.fireAt) &&
+    Number(value.fireAt) >= now - 5 * 60_000 &&
+    Number(value.fireAt) <= now + 95 * 24 * 60 * 60_000 &&
+    typeof value.title === "string" &&
+    value.title.trim().length > 0 &&
+    value.title.length <= 200 &&
+    typeof value.body === "string" &&
+    value.body.trim().length > 0 &&
+    value.body.length <= 2_000 &&
+    typeof value.tag === "string" &&
+    value.tag.trim().length > 0 &&
+    value.tag.length <= 200 &&
+    (value.timezone === undefined ||
+      (typeof value.timezone === "string" && isValidTimeZone(value.timezone)))
+  );
+}
+
+const WEB_PUSH_HOSTS = new Set([
+  "fcm.googleapis.com",
+  "android.googleapis.com",
+  "updates.push.services.mozilla.com",
+  "push.services.mozilla.com",
+  "web.push.apple.com",
+]);
+
+function isValidBase64UrlKey(value: unknown, decodedLength: number): value is string {
+  if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/.test(value)) return false;
+  try {
+    return Buffer.from(value, "base64url").length === decodedLength;
+  } catch {
+    return false;
+  }
+}
+
+function isValidPushSubscription(subscription: PushSubscription | undefined): subscription is PushSubscription {
+  if (!subscription?.endpoint || subscription.endpoint.length > 4_096) return false;
+  let endpoint: URL;
+  try {
+    endpoint = new URL(subscription.endpoint);
+  } catch {
+    return false;
+  }
+  const host = endpoint.hostname.toLowerCase();
+  const supportedHost =
+    WEB_PUSH_HOSTS.has(host) ||
+    (host.endsWith(".notify.windows.com") && host.length > ".notify.windows.com".length);
+  const keys = subscription.keys as { p256dh?: unknown; auth?: unknown } | undefined;
+  return (
+    endpoint.protocol === "https:" &&
+    !endpoint.username &&
+    !endpoint.password &&
+    supportedHost &&
+    endpoint.pathname.length > 1 &&
+    isValidBase64UrlKey(keys?.p256dh, 65) &&
+    isValidBase64UrlKey(keys?.auth, 16)
+  );
+}
 
 function subId(endpoint: string): string {
-  return Buffer.from(endpoint).toString("base64").slice(0, 40);
+  return createHash("sha256").update(endpoint).digest("hex");
 }
 
 async function dbUpsert(
-  id: string,
-  subscription: webpush.PushSubscription,
+  subscription: PushSubscription,
   schedule: ScheduleItem[],
-  userId?: string | null,
-): Promise<void> {
+  userId: string,
+): Promise<string> {
+  const id = subId(subscription.endpoint);
   const keys = subscription.keys as { p256dh: string; auth: string };
-  await pool.query(
+  const result = await pool.query<{ id: string }>(
     `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, schedule, user_id, updated_at)
      VALUES ($1, $2, $3, $4, $5::jsonb, $6, NOW())
-     ON CONFLICT (id) DO UPDATE
-       SET endpoint   = EXCLUDED.endpoint,
-           p256dh     = EXCLUDED.p256dh,
+     ON CONFLICT (endpoint) DO UPDATE
+       SET p256dh     = EXCLUDED.p256dh,
            auth       = EXCLUDED.auth,
            schedule   = EXCLUDED.schedule,
-           user_id    = COALESCE(EXCLUDED.user_id, push_subscriptions.user_id),
-           updated_at = NOW()`,
-    [id, subscription.endpoint, keys.p256dh, keys.auth, JSON.stringify(schedule), userId ?? null]
+           user_id    = EXCLUDED.user_id,
+           updated_at = NOW()
+       WHERE push_subscriptions.user_id IS NULL
+          OR push_subscriptions.user_id = EXCLUDED.user_id
+     RETURNING id`,
+    [id, subscription.endpoint, keys.p256dh, keys.auth, JSON.stringify(schedule), userId],
   );
+  const saved = result.rows[0];
+  if (!saved) throw new Error("Subscription endpoint is already registered");
+  return saved.id;
 }
 
 /** Returns true if all sends succeeded (or only expired 410/404 subscriptions were cleaned up). */
@@ -79,7 +135,7 @@ export async function sendPushToUser(
   userId: string,
   payload: { title: string; body: string; tag: string; icon?: string },
 ): Promise<boolean> {
-  if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
+  if (!isWebPushReady()) {
     logger.warn({ userId }, "sendPushToUser: VAPID is not configured");
     return false;
   }
@@ -94,12 +150,12 @@ export async function sendPushToUser(
   let hasTransientFailure = false;
   for (const row of rows) {
     try {
-      await webpush.sendNotification(
+      await sendWebPush(
         { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-        JSON.stringify({ ...payload, icon: payload.icon ?? "/favicon.svg" }),
+        { ...payload, icon: payload.icon ?? "/favicon.svg" },
       );
     } catch (err: any) {
-      if (err?.statusCode === 410 || err?.statusCode === 404) {
+      if (isExpiredWebPushError(err)) {
         await pool.query("DELETE FROM push_subscriptions WHERE endpoint = $1", [row.endpoint]).catch(() => {});
       } else {
         hasTransientFailure = true;
@@ -110,44 +166,21 @@ export async function sendPushToUser(
   return !hasTransientFailure;
 }
 
-async function dbRemove(id: string): Promise<void> {
-  await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [id]);
-}
-
-async function dbPruneFired(id: string, remainingSchedule: ScheduleItem[]): Promise<void> {
-  await pool.query(
-    "UPDATE push_subscriptions SET schedule = $2::jsonb, updated_at = NOW() WHERE id = $1",
-    [id, JSON.stringify(remainingSchedule)]
-  );
-}
-
 async function fireBroadcastNow(bc: { id: number; emoji: string; title: string; body: string }) {
   const fullTitle = `${bc.emoji} ${bc.title}`;
   const tag = `broadcast-${bc.id}`;
   const icon = "/favicon.svg";
 
-  // Web push
-  if (VAPID_PUBLIC && VAPID_PRIVATE) {
-    let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
-    try {
-      const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-        "SELECT id, endpoint, p256dh, auth FROM push_subscriptions"
-      );
-      webRows = r.rows;
-    } catch {}
-    for (const row of webRows) {
-      try {
-        await webpush.sendNotification(
-          { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-          JSON.stringify({ title: fullTitle, body: bc.body, tag, icon })
-        );
-      } catch (err: any) {
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
-          await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-        }
-      }
-    }
-  }
+  await enqueueWebNotificationForAll({
+    sourceType: "scheduled_broadcast",
+    sourceId: String(bc.id),
+    fireAt: Date.now(),
+    title: fullTitle,
+    body: bc.body,
+    tag,
+    icon,
+    url: "/",
+  });
 
   // Expo push
   let expoRows: Array<{ token: string }> = [];
@@ -167,9 +200,20 @@ async function fireBroadcastNow(bc: { id: number; emoji: string; title: string; 
     }
   }
 
-  // Mark as sent
-  await pool.query("UPDATE scheduled_broadcasts SET sent_at = NOW() WHERE id = $1", [bc.id]).catch(() => {});
-  logger.info({ id: bc.id, title: bc.title }, "scheduled-broadcast: fired");
+  const pendingWeb = await pool.query<{ count: string }>(
+    `SELECT COUNT(*)::text AS count
+       FROM web_notification_jobs
+      WHERE source_type = 'scheduled_broadcast' AND source_id = $1`,
+    [String(bc.id)],
+  );
+  const hasWebJobs = Number(pendingWeb.rows[0]?.count ?? 0) > 0;
+  await pool.query(
+    `UPDATE scheduled_broadcasts
+        SET sent_at = CASE WHEN $2::boolean THEN sent_at ELSE COALESCE(sent_at, NOW()) END
+      WHERE id = $1`,
+    [bc.id, hasWebJobs],
+  );
+  logger.info({ id: bc.id, title: bc.title }, "scheduled-broadcast: queued");
 }
 
 /**
@@ -188,7 +232,7 @@ export async function broadcastDedicationPush(opts: {
   const icon  = "/favicon.svg";
 
   // ── Web push ──────────────────────────────────────────────────────────────
-  if (VAPID_PUBLIC && VAPID_PRIVATE) {
+  if (isWebPushReady()) {
     let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
     try {
       const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
@@ -198,12 +242,12 @@ export async function broadcastDedicationPush(opts: {
     } catch { /* no subscribers — skip */ }
     for (const row of webRows) {
       try {
-        await webpush.sendNotification(
+        await sendWebPush(
           { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-          JSON.stringify({ title, body, tag, icon })
+          { title, body, tag, icon, url: "/" },
         );
       } catch (err: any) {
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
+        if (isExpiredWebPushError(err)) {
           await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
         }
       }
@@ -235,97 +279,87 @@ export async function broadcastDedicationPush(opts: {
 }
 
 export function startPushScheduler() {
+  startWebNotificationQueue();
+  let running = false;
   setInterval(async () => {
-    if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
-    const now = Date.now();
-    let rows: Array<{ id: string; endpoint: string; p256dh: string; auth: string; schedule: ScheduleItem[] }>;
-    try {
-      const result = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string; schedule: ScheduleItem[] }>(
-        "SELECT id, endpoint, p256dh, auth, schedule FROM push_subscriptions"
-      );
-      rows = result.rows;
-    } catch (err) {
-      logger.error({ err }, "push-scheduler: failed to load subscriptions");
-      return;
-    }
-
-    for (const row of rows) {
-      const schedule: ScheduleItem[] = Array.isArray(row.schedule) ? row.schedule : [];
-      const due = schedule.filter((s) => s.fireAt <= now);
-      if (due.length === 0) continue;
-
-      const remaining = schedule.filter((s) => s.fireAt > now);
-      await dbPruneFired(row.id, remaining);
-
-      const subscription: webpush.PushSubscription = {
-        endpoint: row.endpoint,
-        keys: { p256dh: row.p256dh, auth: row.auth },
-      };
-
-      for (const item of due) {
-        try {
-          await webpush.sendNotification(
-            subscription,
-            JSON.stringify({
-              title: item.title,
-              body: item.body,
-              tag: item.tag,
-              icon: item.icon ?? "/favicon.svg",
-            })
-          );
-        } catch (err: any) {
-          if (err?.statusCode === 410 || err?.statusCode === 404) {
-            await dbRemove(row.id);
-            logger.info({ id: row.id }, "push-scheduler: removed expired subscription");
-            break;
-          }
-          logger.warn({ err, id: row.id }, "push-scheduler: send failed");
-        }
-      }
-    }
-
-    // Fire any due scheduled broadcasts
+    if (running) return;
+    running = true;
     try {
       const r = await pool.query<{ id: number; emoji: string; title: string; body: string }>(
-        "SELECT id, emoji, title, body FROM scheduled_broadcasts WHERE fire_at <= NOW() AND sent_at IS NULL"
+        `WITH candidates AS (
+           SELECT scheduled.id
+             FROM scheduled_broadcasts scheduled
+            WHERE scheduled.fire_at <= NOW()
+              AND scheduled.sent_at IS NULL
+              AND (
+                scheduled.queued_at IS NULL
+                OR (
+                  scheduled.queued_at < NOW() - INTERVAL '10 minutes'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM web_notification_jobs job
+                    WHERE job.source_type = 'scheduled_broadcast'
+                      AND job.source_id = scheduled.id::text
+                  )
+                )
+              )
+            ORDER BY scheduled.fire_at, scheduled.id
+            FOR UPDATE SKIP LOCKED
+            LIMIT 20
+         )
+         UPDATE scheduled_broadcasts scheduled
+            SET queued_at = NOW()
+           FROM candidates
+          WHERE scheduled.id = candidates.id
+        RETURNING scheduled.id, scheduled.emoji, scheduled.title, scheduled.body`
       );
       for (const bc of r.rows) {
         await fireBroadcastNow(bc);
       }
     } catch (err) {
       logger.error({ err }, "push-scheduler: failed to check scheduled broadcasts");
+    } finally {
+      running = false;
     }
   }, 30_000);
 }
 
 router.get("/push/vapid-public-key", (_req, res) => {
-  if (!VAPID_PUBLIC) {
+  const publicKey = getWebPushPublicKey();
+  if (!publicKey) {
     res.status(503).json({ error: "Push notifications not configured" });
     return;
   }
-  res.json({ publicKey: VAPID_PUBLIC });
+  res.json({ publicKey });
 });
 
 router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req, res) => {
   const { subscription, schedule } = req.body as {
-    subscription: webpush.PushSubscription;
+    subscription: PushSubscription;
     schedule: ScheduleItem[];
   };
-  if (!subscription?.endpoint || !subscription.keys?.p256dh || !subscription.keys?.auth) {
-    res.status(400).json({ error: "Missing subscription" });
+  if (!isValidPushSubscription(subscription)) {
+    res.status(400).json({ error: "Invalid or unsupported Web Push subscription" });
     return;
   }
   const userId = (req as any).userId as string;
-  const id = subId(subscription.endpoint);
   try {
     const uniqueSchedule = Array.from(
       new Map((Array.isArray(schedule) ? schedule : [])
-        .filter((item) => Number.isFinite(item?.fireAt) && item?.title && item?.body && item?.tag)
-        .map((item) => [item.tag, item])).values(),
+        .filter(isValidScheduleItem)
+        .map((item) => [`${item.tag}:${item.fireAt}`, item])).values(),
     );
-    await dbUpsert(id, subscription, uniqueSchedule, userId);
+    if (uniqueSchedule.length > 500) {
+      res.status(400).json({ error: "Schedule contains too many items" });
+      return;
+    }
+    const id = await dbUpsert(subscription, uniqueSchedule, userId);
+    await syncClientSchedule(id, uniqueSchedule);
     res.json({ ok: true, id });
   } catch (err) {
+    if (err instanceof Error && err.message === "Subscription endpoint is already registered") {
+      res.status(409).json({ error: err.message });
+      return;
+    }
     logger.error({ err }, "push/subscribe: db error");
     res.status(500).json({ error: "Failed to save subscription" });
   }
@@ -334,10 +368,9 @@ router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req
 router.delete("/push/unsubscribe", requireAuth, async (req, res) => {
   const { endpoint } = req.body as { endpoint: string };
   if (!endpoint) { res.status(400).json({ error: "Missing endpoint" }); return; }
-  const id = subId(endpoint);
   try {
     const userId = (req as any).userId as string;
-    await pool.query("DELETE FROM push_subscriptions WHERE id = $1 AND user_id = $2", [id, userId]);
+    await pool.query("DELETE FROM push_subscriptions WHERE endpoint = $1 AND user_id = $2", [endpoint, userId]);
     res.json({ ok: true });
   } catch (err) {
     logger.error({ err }, "push/unsubscribe: db error");
@@ -373,29 +406,21 @@ router.post("/push/broadcast", requireAdmin, async (req, res) => {
   let webSent = 0, webFailed = 0, expoSent = 0, expoFailed = 0;
 
   // — Web push —
-  if (VAPID_PUBLIC && VAPID_PRIVATE) {
-    let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
+  if (isWebPushReady()) {
     try {
-      const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-        "SELECT id, endpoint, p256dh, auth FROM push_subscriptions"
-      );
-      webRows = r.rows;
+      webSent = await enqueueWebNotificationForAll({
+        sourceType: "admin_broadcast",
+        sourceId: tag,
+        fireAt: Date.now(),
+        title: fullTitle,
+        body,
+        tag,
+        icon,
+        url: "/",
+      });
     } catch (err) {
-      logger.error({ err }, "broadcast: failed to load web subscriptions");
-    }
-    for (const row of webRows) {
-      try {
-        await webpush.sendNotification(
-          { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-          JSON.stringify({ title: fullTitle, body, tag, icon })
-        );
-        webSent++;
-      } catch (err: any) {
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
-          await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-        }
-        webFailed++;
-      }
+      logger.error({ err }, "broadcast: failed to enqueue web notifications");
+      webFailed = 1;
     }
   }
 
@@ -471,7 +496,14 @@ router.delete("/push/broadcast/scheduled/:id", requireAdmin, async (req, res) =>
   const id = parseInt(String(req.params["id"] ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   try {
-    await pool.query("DELETE FROM scheduled_broadcasts WHERE id = $1 AND sent_at IS NULL", [id]);
+    const deleted = await pool.query(
+      "DELETE FROM scheduled_broadcasts WHERE id = $1 AND sent_at IS NULL AND queued_at IS NULL RETURNING id",
+      [id],
+    );
+    if (deleted.rowCount === 0) {
+      res.status(409).json({ error: "Broadcast is already queued, sent, or does not exist" });
+      return;
+    }
     res.json({ ok: true });
   } catch (err) {
     logger.error({ err }, "broadcast/scheduled DELETE: db error");
@@ -594,7 +626,7 @@ let _holidayPushLastFiredDate = "";
 
 export function startHolidayWebPushScheduler() {
   setInterval(async () => {
-    if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
+    if (!isWebPushReady()) return;
 
     const now = new Date();
     if (now.getHours() !== 9 || now.getMinutes() >= 5) return;
@@ -619,47 +651,21 @@ export function startHolidayWebPushScheduler() {
 
     if (events.length === 0) return;
 
-    let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
-    try {
-      const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-        "SELECT id, endpoint, p256dh, auth FROM push_subscriptions"
-      );
-      webRows = r.rows;
-    } catch (err) {
-      logger.error({ err }, "holiday-web-push: failed to load subscriptions");
-      return;
-    }
-
-    if (webRows.length === 0) return;
-
     for (const ev of events) {
       const name = ev.render("en");
       const dateStr = tomorrow.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      const payload = JSON.stringify({
+      const sourceId = `${name}:${tomorrow.toISOString().slice(0, 10)}`;
+      const queued = await enqueueWebNotificationForAll({
+        sourceType: "holiday_day_before",
+        sourceId,
+        fireAt: Date.now(),
         title: `✡ ${name} Begins Tomorrow`,
         body: `${name} starts tomorrow, ${dateStr}. Chag Sameach from Bnei Menashe!`,
         tag: `holiday-web-${name.replace(/\s+/g, "-").toLowerCase()}-${dateKey}`,
         icon: "/favicon.svg",
+        url: "/",
       });
-
-      let hasTransientFailure = false;
-      for (const row of webRows) {
-        try {
-          await webpush.sendNotification(
-            { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-            payload,
-          );
-        } catch (err: any) {
-          if (err?.statusCode === 410 || err?.statusCode === 404) {
-            await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-          } else {
-            hasTransientFailure = true;
-            logger.warn({ err, endpoint: row.endpoint }, "holiday-web-push: transient send failure");
-          }
-        }
-      }
-      logger.info({ name, subscribers: webRows.length }, "holiday-web-push: sent");
-      if (hasTransientFailure) return; // allow retry next minute
+      logger.info({ name, queued }, "holiday-web-push: queued");
     }
     _holidayPushLastFiredDate = dateKey;
   }, 60_000); // check every minute
@@ -673,7 +679,7 @@ const _holidayHourReminderFired = new Set<string>();
 
 export function startHolidayHourReminderScheduler() {
   setInterval(async () => {
-    if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
+    if (!isWebPushReady()) return;
 
     const now = new Date();
     const nowMs = now.getTime();
@@ -709,42 +715,18 @@ export function startHolidayHourReminderScheduler() {
         if (_holidayHourReminderFired.has(dedupKey)) continue;
 
         const dateStr = candidate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-        const payload = JSON.stringify({
+        const queued = await enqueueWebNotificationForAll({
+          sourceType: "holiday_hour",
+          sourceId: `${name}:${candidate.toISOString().slice(0, 10)}`,
+          fireAt: Date.now(),
           title: `⏱ ${name} Begins in ~1 Hour`,
           body: `${name} starts at midnight tonight (${dateStr}). Make your final preparations!`,
           tag: `holiday-hour-${name.replace(/\s+/g, "-").toLowerCase()}-${candidate.toDateString()}`,
           icon: "/favicon.svg",
+          url: "/",
         });
-
-        let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
-        try {
-          const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-            "SELECT id, endpoint, p256dh, auth FROM push_subscriptions"
-          );
-          webRows = r.rows;
-        } catch (err) {
-          logger.error({ err }, "holiday-hour-reminder: failed to load subscriptions");
-          continue;
-        }
-
-        let hasTransientFailure = false;
-        for (const row of webRows) {
-          try {
-            await webpush.sendNotification(
-              { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-              payload,
-            );
-          } catch (err: any) {
-            if (err?.statusCode === 410 || err?.statusCode === 404) {
-              await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-            } else {
-              hasTransientFailure = true;
-              logger.warn({ err, endpoint: row.endpoint }, "holiday-hour-reminder: transient send failure");
-            }
-          }
-        }
-        if (!hasTransientFailure) _holidayHourReminderFired.add(dedupKey);
-        logger.info({ name, subscribers: webRows.length, retryable: hasTransientFailure }, "holiday-hour-reminder: sent");
+        _holidayHourReminderFired.add(dedupKey);
+        logger.info({ name, queued }, "holiday-hour-reminder: queued");
       }
     }
   }, 60_000); // check every minute
@@ -756,7 +738,7 @@ let _yahrzeitPushLastFiredDate = "";
 
 export function startYahrzeitPushScheduler() {
   setInterval(async () => {
-    if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
+    if (!isWebPushReady()) return;
 
     const now = new Date();
     if (now.getHours() !== 8 || now.getMinutes() >= 5) return;
@@ -782,24 +764,25 @@ export function startYahrzeitPushScheduler() {
 
     if (entries.length === 0) return;
 
-    let hasTransientFailure = false;
     for (const entry of entries) {
       try {
-        const ok = await sendPushToUser(entry.user_id, {
+        await enqueueWebNotificationForUser(entry.user_id, {
+          sourceType: "personal_yahrzeit",
+          sourceId: `${entry.user_id}:${entry.name}:${dateKey}`,
+          fireAt: Date.now(),
           title: `🕯 Yahrzeit Today: ${entry.name}`,
           body: `Today is the Yahrzeit of ${entry.name}. May their memory be a blessing. Light a candle and recite Kaddish.`,
           tag: `yahrzeit-${entry.user_id}-${dateKey}`,
           icon: "/favicon.svg",
+          url: "/",
         });
-        if (!ok) hasTransientFailure = true;
       } catch (err) {
-        hasTransientFailure = true;
-        logger.error({ err, name: entry.name }, "yahrzeit-push: failed to send notification");
+        logger.error({ err, name: entry.name }, "yahrzeit-push: failed to queue notification");
       }
     }
 
-    if (!hasTransientFailure) _yahrzeitPushLastFiredDate = dateKey;
-    logger.info({ count: entries.length, hDay, hMonth }, "yahrzeit-push: sent reminders");
+    _yahrzeitPushLastFiredDate = dateKey;
+    logger.info({ count: entries.length, hDay, hMonth }, "yahrzeit-push: queued reminders");
   }, 60_000);
 }
 
@@ -815,7 +798,7 @@ let _weeklyDigestLastFiredDate = "";
 
 export function startWeeklyYahrzeitDigestScheduler() {
   setInterval(async () => {
-    if (!VAPID_PUBLIC || !VAPID_PRIVATE) return;
+    if (!isWebPushReady()) return;
 
     const now = new Date();
 
@@ -897,33 +880,22 @@ export function startWeeklyYahrzeitDigestScheduler() {
       " — May their memory be a blessing.";
 
     // ── Web push ─────────────────────────────────────────────────────────────
-    let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
-    try {
-      const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-        "SELECT id, endpoint, p256dh, auth FROM push_subscriptions",
-      );
-      webRows = r.rows;
-    } catch (err) {
-      logger.error({ err }, "weekly-yahrzeit-digest: failed to load web push subscriptions");
-    }
-
     let webSent = 0;
     let hasTransientFailure = false;
-    for (const row of webRows) {
-      try {
-        await webpush.sendNotification(
-          { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-          JSON.stringify({ title, body, tag: `yahrzeit-digest-${dateKey}`, icon: "/favicon.svg" }),
-        );
-        webSent++;
-      } catch (err: any) {
-        if (err?.statusCode === 410 || err?.statusCode === 404) {
-          await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-        } else {
-          hasTransientFailure = true;
-          logger.warn({ err, endpoint: row.endpoint }, "weekly-yahrzeit-digest: transient send failure");
-        }
-      }
+    try {
+      webSent = await enqueueWebNotificationForAll({
+        sourceType: "weekly_yahrzeit_digest",
+        sourceId: dateKey,
+        fireAt: Date.now(),
+        title,
+        body,
+        tag: `yahrzeit-digest-${dateKey}`,
+        icon: "/favicon.svg",
+        url: "/",
+      });
+    } catch (err) {
+      hasTransientFailure = true;
+      logger.error({ err }, "weekly-yahrzeit-digest: failed to queue web notifications");
     }
 
     // ── Expo push ─────────────────────────────────────────────────────────────

@@ -111,18 +111,37 @@ self.addEventListener("push", (event) => {
   );
 });
 
+function safeNotificationUrl(value: unknown): string {
+  const fallback = new URL("/", self.location.origin).href;
+  if (typeof value !== "string" || value.length > 2_048) return fallback;
+  try {
+    const url = new URL(value, self.location.origin);
+    const isLocalDevelopment =
+      self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1";
+    if (url.origin !== self.location.origin) return fallback;
+    if (url.protocol !== "https:" && !(isLocalDevelopment && url.protocol === "http:")) {
+      return fallback;
+    }
+    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("//")) return fallback;
+    return url.href;
+  } catch {
+    return fallback;
+  }
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl =
-    (event.notification.data as { url?: string } | undefined)?.url ??
-    self.location.origin;
+  const targetUrl = safeNotificationUrl(
+    (event.notification.data as { url?: unknown } | undefined)?.url,
+  );
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
-          if (client.url.startsWith(targetUrl) && "focus" in client) {
-            return (client as WindowClient).focus();
+          if (new URL(client.url).origin === self.location.origin && "focus" in client) {
+            const windowClient = client as WindowClient;
+            return windowClient.navigate(targetUrl).then(() => windowClient.focus());
           }
         }
         return self.clients.openWindow(targetUrl);
