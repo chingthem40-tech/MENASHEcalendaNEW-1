@@ -1,0 +1,372 @@
+PRODUCTION HARDENING — WEB ONLY
+MENASHE WEB APPLICATION
+
+Goal:
+Make the Menashe WEB application production-ready for Netlify + Replit API.
+
+IMPORTANT SCOPE:
+- WEB ONLY.
+- Expo/mobile is FUTURE WORK and must NOT block this task.
+- Do not fix mobile lint, Expo builds, Android notifications, FCM, or iOS notifications.
+- Do not create a second notification architecture.
+- Preserve the existing React/Vite + Express + PostgreSQL + Clerk + Web Push architecture.
+- Do not migrate the database to Supabase.
+- Replit PostgreSQL remains the current production database.
+- Do not change branches, merge branches, or rewrite Git history.
+- Do not expose or print secrets.
+- Do not hardcode production credentials.
+- Inspect the existing implementation before modifying anything.
+
+PRIMARY OBJECTIVE:
+
+Make existing WEB notifications reliable, secure, idempotent, timezone-aware, and safe for production deployment.
+
+==================================================
+PHASE 1 — AUDIT EXISTING WEB NOTIFICATIONS
+==================================================
+
+Inspect and reuse the existing:
+
+- usePushSubscription.ts
+- useNotifications.ts
+- push.ts
+- service worker
+- notification-related database tables/schema
+- Clerk authentication middleware
+- scheduled notification/broadcast processing
+
+Do NOT create another notification system.
+
+Before editing, identify the existing data flow:
+
+Browser
+→ Clerk
+→ /api/push/*
+→ PostgreSQL
+→ scheduler
+→ Web Push/VAPID
+→ service worker
+→ browser notification
+
+Preserve this architecture.
+
+==================================================
+PHASE 2 — SCHEDULER RELIABILITY
+==================================================
+
+Fix scheduled notification processing so it is safe under Replit Autoscale.
+
+Requirements:
+
+1. Make scheduled processing atomic.
+
+2. Prevent two API instances/processes from processing the same scheduled item simultaneously.
+
+3. Use PostgreSQL-backed locking/claiming appropriate for the existing schema.
+
+4. Add durable idempotency.
+
+5. A scheduled notification must have a durable processing state.
+
+Use states appropriate to the existing architecture, for example:
+
+pending
+processing
+sent
+failed
+
+Do not blindly add duplicate tables or systems if the existing schema can support the requirement.
+
+6. NEVER permanently remove a scheduled item before successful delivery.
+
+7. If delivery fails:
+   - preserve the scheduled item/state
+   - record the failure
+   - increment retry information
+   - retry safely according to a bounded retry strategy
+
+8. Prevent infinite retries.
+
+9. Make processing safe if the API restarts halfway through delivery.
+
+10. Ensure a notification cannot be delivered twice because of overlapping scheduler ticks.
+
+11. Ensure multiple Autoscale instances cannot claim the same notification.
+
+12. Make scheduled announcements use the SAME actual scheduler/delivery path.
+
+Do not leave scheduled announcements in a table that is never consumed.
+
+==================================================
+PHASE 3 — TIMEZONE CORRECTNESS
+==================================================
+
+Server-generated scheduled notifications must respect the subscriber's intended timezone.
+
+Do NOT use only:
+
+new Date().getHours()
+
+or server-local time.
+
+Inspect how subscriber location/timezone is already stored.
+
+Use the existing timezone information wherever available.
+
+Requirements:
+
+- 08:00 means 08:00 in the subscriber's timezone.
+- 09:00 means 09:00 in the subscriber's timezone.
+- Weekly reminders must use the subscriber's local day/time.
+- Holiday/Yahrzeit notifications must be evaluated using the intended user's timezone.
+- Avoid duplicate delivery when daylight-saving transitions occur.
+- Do not break users in India or other non-server timezones.
+
+Use a reliable timezone-aware implementation compatible with the existing project dependencies.
+
+==================================================
+PHASE 4 — WEB PUSH SECURITY
+==================================================
+
+Fix notification-click security.
+
+The service worker must only navigate to safe Menashe destinations.
+
+Requirements:
+
+- HTTPS in production.
+- Same-origin only.
+- Reject external notification URLs.
+- Reject javascript/data/blob URLs.
+- Safely handle malformed URLs.
+- Preserve relevant internal paths such as:
+  /notifications
+  /yahrzeit
+  /memorial
+  /calendar
+  etc., according to the existing application routes.
+
+If the notification does not contain a valid destination, use a safe default application route.
+
+Do not allow a push payload to turn into an arbitrary external redirect.
+
+==================================================
+PHASE 5 — PUSH SUBSCRIPTION OWNERSHIP
+==================================================
+
+Prevent an existing browser push endpoint from being reassigned to another Clerk user.
+
+Requirements:
+
+- The authenticated Clerk user owns the subscription.
+- An existing endpoint must not silently change ownership.
+- Preserve legitimate re-registration by the same user.
+- Reject or safely handle an endpoint already belonging to another user.
+- Use a collision-resistant subscription identity.
+- Enforce appropriate database uniqueness for the full endpoint.
+
+Do not trust client-supplied userId.
+
+Continue deriving ownership from authenticated Clerk context.
+
+==================================================
+PHASE 6 — BROWSER PERMISSION
+==================================================
+
+Improve the existing subscription action.
+
+When the user explicitly chooses:
+
+"Enable notifications"
+
+the web application should:
+
+1. Check browser notification support.
+2. Check Notification.permission.
+3. If permission is "default", explicitly call the browser permission request.
+4. If permission is "denied", clearly explain that browser settings must be changed.
+5. Only subscribe after permission is granted.
+6. Clearly report success/failure.
+7. Do not display "notifications enabled" when subscription registration failed.
+
+Preserve the existing UI and translations where possible.
+
+==================================================
+PHASE 7 — VAPID CONFIGURATION
+==================================================
+
+Remove the silent VAPID public-key fallback.
+
+There must be one consistent VAPID readiness check.
+
+Production push is READY only when:
+
+- VAPID_PUBLIC_KEY exists
+- VAPID_PRIVATE_KEY exists
+- VAPID_SUBJECT exists
+- the public/private configuration is valid
+
+If configuration is incomplete:
+
+- do not claim background push is ready
+- return an appropriate unavailable response
+- log only safe readiness information
+- never expose the private key
+
+Do not print secret values.
+
+==================================================
+PHASE 8 — CLERK
+==================================================
+
+Verify the production Clerk configuration.
+
+Requirements:
+
+- Web uses the production Clerk publishable key.
+- API uses the matching production Clerk secret key.
+- Do not hardcode either key.
+- Do not print key values.
+- Protected push endpoints remain authenticated.
+- Subscription ownership continues to derive from Clerk.
+
+Do not modify authentication architecture unnecessarily.
+
+==================================================
+PHASE 9 — NETLIFY
+==================================================
+
+Preserve the existing /api architecture.
+
+Frontend continues using:
+
+/api/...
+
+Netlify production build must use:
+
+NETLIFY_API_URL
+
+Requirements:
+
+- Do not hardcode the API URL into application source.
+- NETLIFY_API_URL must be a real HTTPS production API origin.
+- Reject localhost.
+- Reject Replit development URLs.
+- Reject placeholders.
+- Do not include /api in NETLIFY_API_URL.
+
+Generated Netlify rewrite should remain:
+
+/api/*  <NETLIFY_API_URL>/api/:splat  200
+
+SPA fallback should remain:
+
+/*  /index.html  200
+
+==================================================
+PHASE 10 — SERVICE WORKER
+==================================================
+
+Verify the production Workbox/service-worker output.
+
+Requirements:
+
+- service worker is included in the final Netlify build.
+- push event handling works.
+- notificationclick handling works.
+- safe destination handling works.
+- API/dev requests are not incorrectly intercepted.
+- service-worker registration uses the production HTTPS origin.
+
+Do not replace the existing service-worker architecture.
+
+==================================================
+PHASE 11 — TESTING
+==================================================
+
+After implementation, run:
+
+1. Shared library typecheck
+2. Web typecheck
+3. API typecheck
+4. Web production build
+5. API production build
+6. Frozen lockfile install
+7. git diff --check
+8. API startup
+9. /health
+10. /api
+11. /api/books
+12. protected endpoint without Clerk token → must remain 401
+13. Netlify deep-route test
+14. Inspect generated _redirects
+15. Inspect final service-worker output
+16. Verify no secrets are present in frontend bundle
+
+For scheduler tests, specifically test:
+
+- two overlapping scheduler executions
+- API restart during processing
+- failed push delivery
+- retry
+- successful retry
+- already-sent notification
+- multiple Autoscale instances
+- different subscriber timezones
+- daylight-saving transition where applicable
+
+Do not fake successful push delivery.
+
+If a real external push delivery cannot be tested in the current environment, clearly report it as "not runtime-verified" rather than claiming success.
+
+==================================================
+PHASE 12 — FINAL REPORT
+==================================================
+
+Report exactly:
+
+WEB PRODUCTION STATUS
+
+Clerk:
+Web Push:
+VAPID:
+Browser Permission:
+Subscription Ownership:
+Service Worker:
+Notification Click Security:
+Scheduler:
+Idempotency:
+Retry/Fault Handling:
+Timezone:
+Scheduled Announcements:
+Netlify Build:
+API:
+Database:
+HTTPS:
+Secrets:
+
+For each use:
+
+🟢 READY
+🟡 PARTIAL / NOT RUNTIME-VERIFIED
+🔴 BLOCKED
+
+Then list:
+
+1. Files changed
+2. Database/schema changes
+3. Tests passed
+4. Tests failed
+5. Runtime checks
+6. Remaining manual steps
+7. Exact remaining blockers
+
+IMPORTANT:
+
+Do not publish Netlify.
+Do not publish the Replit API.
+Do not change the production database.
+Do not change mobile/Expo code.
+Do not expose secrets.
+
+Only make the minimum code/schema changes required to satisfy the WEB production requirements above.
