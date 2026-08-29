@@ -131,8 +131,9 @@ function buildSchedule(prefs: NotificationPrefs, loc: Location, lead: LeadTime):
       const name = ev.render("en");
       if (seen.has(name)) continue;
       seen.add(name);
-      const isFast = Boolean(ev.flags & (flags.MINOR_FAST | flags.MAJOR_FAST));
-      const isSpecial = Boolean(ev.flags & (flags.ROSH_CHODESH | flags.SPECIAL_SHABBAT));
+      const eventFlags = ev.getFlags();
+      const isFast = Boolean(eventFlags & (flags.MINOR_FAST | flags.MAJOR_FAST));
+      const isSpecial = Boolean(eventFlags & (flags.ROSH_CHODESH | flags.SPECIAL_SHABBAT));
       if ((isFast && !prefs.fastDay) || (isSpecial && !prefs.specialEvent) || (!isFast && !isSpecial && !prefs.holiday)) continue;
       const dayBefore = new Date(date);
       dayBefore.setDate(dayBefore.getDate() - 1);

@@ -833,7 +833,7 @@ export default function SacredWisdomScreen() {
                 maxHeight: 120,
                 paddingVertical: 4,
                 // Remove native focus ring on web and Android
-                ...(Platform.OS === "web" ? { outlineStyle: "none" } : {}),
+                ...(Platform.OS === "web" ? { outlineWidth: 0 } : {}),
               }}
             />
             {streaming ? (
