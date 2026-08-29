@@ -13,11 +13,18 @@ import {
 import { startAnnouncementScheduler } from "./routes/announcements";
 
 async function start() {
-  try {
-    await runMigrations();
-  } catch (err) {
-    logger.error({ err }, "Migration failed — aborting startup");
-    process.exit(1);
+  if (config.nodeEnv === "development") {
+    try {
+      await runMigrations();
+    } catch (err) {
+      logger.error({ err }, "Development migration failed — aborting startup");
+      process.exit(1);
+    }
+  } else {
+    logger.info(
+      { environment: config.nodeEnv },
+      "Production runtime assumes the database schema was initialized during Publish",
+    );
   }
 
   // Print a configuration summary so operators can confirm readiness at a

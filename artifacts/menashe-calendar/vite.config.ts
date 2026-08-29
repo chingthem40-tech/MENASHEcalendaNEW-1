@@ -17,6 +17,20 @@ if (Number.isNaN(port) || port <= 0) {
 const basePath = process.env.BASE_PATH ?? "";
 
 const apiTarget = process.env.API_URL ?? "http://localhost:8080";
+const clerkPublishableKey =
+  process.env.VITE_CLERK_PUBLISHABLE_KEY ??
+  process.env.CLERK_PUBLISHABLE_KEY ??
+  "";
+
+function validateProductionClerkKey(rawValue: string): string {
+  const value = rawValue.trim();
+  if (!value || !value.startsWith("pk_live_")) {
+    throw new Error(
+      "VITE_CLERK_PUBLISHABLE_KEY must be a live Clerk publishable key for production builds.",
+    );
+  }
+  return value;
+}
 
 function validateNetlifyApiUrl(rawValue: string | undefined): string {
   const value = rawValue?.trim();
@@ -105,6 +119,10 @@ function netlifyRedirectsPlugin(): Plugin {
 
     configResolved(config) {
       outputDir = config.build.outDir;
+
+      if (config.command === "build") {
+        validateProductionClerkKey(clerkPublishableKey);
+      }
 
       if (config.command === "build" && config.mode === "production") {
         const apiUrl = validateNetlifyApiUrl(process.env.NETLIFY_API_URL);
@@ -227,7 +245,7 @@ export default defineConfig({
   base: basePath,
   define: {
     "import.meta.env.VITE_CLERK_PUBLISHABLE_KEY": JSON.stringify(
-      process.env.VITE_CLERK_PUBLISHABLE_KEY ?? process.env.CLERK_PUBLISHABLE_KEY ?? "",
+      clerkPublishableKey,
     ),
   },
   plugins: [

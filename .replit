@@ -4,7 +4,7 @@ modules = ["nodejs-20", "python-3.12", "web", "postgresql-16"]
 router = "application"
 deploymentTarget = "autoscale"
 run = ["node", "--enable-source-maps", "artifacts/api-server/dist/index.mjs"]
-build = ["bash", "-c", "pnpm --filter @workspace/menashe-calendar run build && pnpm --filter @workspace/api-server run build"]
+build = ["pnpm", "--filter", "@workspace/api-server", "run", "build"]
 
 [deployment.postBuild]
 args = ["pnpm", "store", "prune"]
@@ -137,13 +137,10 @@ packages = ["lv"]
 VAPID_PUBLIC_KEY = "BOqeOYdujQRpuveFsz_snrtPpkLZdyj1W4A21JHYPLRJ2hpAWeZwJi7AKCzzLdHvOmHVkmYDN3w0cIE2TFAoX5Q"
 VAPID_SUBJECT = "mailto:admin@menashecalendar.app"
 VITE_CLERK_PROXY_URL = ""
-ADMIN_PIN = "1948"
-VITE_ADMIN_PIN = "1948"
 ADMIN_USER_ID = "user_3FPrdIHD0jHZYORFdutfQ4aspal"
-VITE_ADMIN_USER_ID = "user_3FPrdIHD0jHZYORFdutfQ4aspal"
 VITE_VAPID_PUBLIC_KEY = "BOqeOYdujQRpuveFsz_snrtPpkLZdyj1W4A21JHYPLRJ2hpAWeZwJi7AKCzzLdHvOmHVkmYDN3w0cIE2TFAoX5Q"
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_YWR2YW5jZWQtbGxhbWEtNjIuY2xlcmsuYWNjb3VudHMuZGV2JA"
-CLERK_PUBLISHABLE_KEY = "pk_test_YWR2YW5jZWQtbGxhbWEtNjIuY2xlcmsuYWNjb3VudHMuZGV2JA"
+CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsubWVuYXNoLWVjYWxlbmRhLW5ldy0xLS1jaGluZ3RoZW00MC5yZXBsaXQuYXBwJA"
 VITE_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsubWVuYXNoLWVjYWxlbmRhLW5ldy0xLS1jaGluZ3RoZW00MC5yZXBsaXQuYXBwJA"
 PRIVATE_OBJECT_DIR = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434/private"
 PUBLIC_OBJECT_SEARCH_PATHS = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434/public"

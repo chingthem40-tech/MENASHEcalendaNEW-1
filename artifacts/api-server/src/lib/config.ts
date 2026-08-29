@@ -4,7 +4,8 @@
  * Central configuration validation for the Menashe API server.
  *
  * Rules:
- *  - DATABASE_URL is the only variable that aborts startup.
+ *  - DATABASE_URL always aborts startup when absent.
+ *  - Production also requires matching live Clerk credentials.
  *  - All other missing variables degrade gracefully with a logged warning.
  *  - Secret values are NEVER logged — only presence/absence.
  */
@@ -23,6 +24,35 @@ const vapidPrivateKey  = process.env.VAPID_PRIVATE_KEY   || null;
 const vapidSubject     = process.env.VAPID_SUBJECT       || null;
 const razorpayKeyId    = process.env.RAZORPAY_KEY_ID     || null;
 const razorpaySecret   = process.env.RAZORPAY_KEY_SECRET || null;
+const nodeEnv           = process.env.NODE_ENV ?? "production";
+
+function keyEnvironment(key: string | null): "live" | "test" | "unknown" | null {
+  if (!key) return null;
+  if (key.startsWith("pk_live_") || key.startsWith("sk_live_")) return "live";
+  if (key.startsWith("pk_test_") || key.startsWith("sk_test_")) return "test";
+  return "unknown";
+}
+
+const clerkSecretEnvironment = keyEnvironment(clerkSecretKey);
+const clerkPublishEnvironment = keyEnvironment(clerkPublishKey);
+const clerkConfigurationReady =
+  clerkSecretEnvironment !== null &&
+  clerkSecretEnvironment !== "unknown" &&
+  clerkSecretEnvironment === clerkPublishEnvironment;
+
+if (nodeEnv === "production") {
+  const productionClerkIsReady =
+    clerkConfigurationReady &&
+    clerkSecretEnvironment === "live" &&
+    clerkPublishEnvironment === "live";
+  if (!productionClerkIsReady) {
+    logger.fatal(
+      "Production Clerk configuration is invalid — CLERK_SECRET_KEY and " +
+      "CLERK_PUBLISHABLE_KEY must both be present and use the live Clerk environment.",
+    );
+    process.exit(1);
+  }
+}
 
 // ── PORT ─────────────────────────────────────────────────────────────────────
 
@@ -49,7 +79,7 @@ if (!databaseUrl) {
 export const config = {
   // Server
   port:    portNum,
-  nodeEnv: process.env.NODE_ENV  ?? "development",
+  nodeEnv,
   logLevel: process.env.LOG_LEVEL ?? "info",
 
   // Database
@@ -78,7 +108,7 @@ export const config = {
 
   // Derived feature flags — safe to log (booleans only, no key material)
   features: {
-    auth:     !!clerkSecretKey && !!clerkPublishKey,
+    auth:     clerkConfigurationReady,
     openai:   !!openaiKey,
     gemini:   !!googleKey,
     grok:     !!grokKey,
@@ -98,7 +128,7 @@ function row(label: string, status: Status): string {
 
 /**
  * Print a human-readable configuration summary to the log.
- * Call this once after migrations succeed, before `app.listen`.
+ * Call this once after environment-specific startup preparation, before `app.listen`.
  * No secret values are included — only feature readiness.
  */
 export function printConfigSummary(): void {

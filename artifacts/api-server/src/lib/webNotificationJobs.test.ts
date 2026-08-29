@@ -18,6 +18,7 @@ import {
 } from "./notificationTime";
 import {
   isValidWebPushSubscription,
+  pushSubscriptionTestApi,
   scheduledBroadcastTestApi,
 } from "../routes/push";
 
@@ -423,6 +424,42 @@ test("push subscriptions reject SSRF endpoints and malformed keys", () => {
     }),
     false,
   );
+});
+
+test("push subscription endpoints cannot be reassigned to another user", async () => {
+  const id = randomUUID();
+  const endpoint = `https://push.test/ownership/${id}`;
+  subscriptionIds.push(id);
+  await pool.query(
+    `INSERT INTO push_subscriptions
+       (id, endpoint, p256dh, auth, schedule, user_id)
+     VALUES ($1, $2, 'owner-p256dh', 'owner-auth', '[]'::jsonb, $3)`,
+    [id, endpoint, `owner-${id}`],
+  );
+
+  await assert.rejects(
+    pushSubscriptionTestApi.dbUpsert(
+      {
+        endpoint,
+        keys: { p256dh: "attacker-p256dh", auth: "attacker-auth" },
+      },
+      [],
+      `attacker-${id}`,
+    ),
+    /already registered/,
+  );
+
+  const result = await pool.query<{
+    user_id: string;
+    p256dh: string;
+    auth: string;
+  }>(
+    "SELECT user_id, p256dh, auth FROM push_subscriptions WHERE endpoint = $1",
+    [endpoint],
+  );
+  assert.equal(result.rows[0]?.user_id, `owner-${id}`);
+  assert.equal(result.rows[0]?.p256dh, "owner-p256dh");
+  assert.equal(result.rows[0]?.auth, "owner-auth");
 });
 
 test("due scheduled broadcasts still invoke Expo delivery exactly once", async () => {

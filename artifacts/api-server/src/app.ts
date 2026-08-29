@@ -46,7 +46,7 @@ app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 // CORS: prefer ALLOWED_ORIGINS; fall back to REPLIT_DOMAINS in production
 // so the app works on first deploy without manual secret configuration.
 // In development (NODE_ENV !== 'production'), allow all origins for convenience.
-function buildAllowedOrigins(): string[] | boolean {
+export function buildAllowedOrigins(): string[] | boolean {
   if (process.env.ALLOWED_ORIGINS) {
     return process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim());
   }

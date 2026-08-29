@@ -1147,4 +1147,8 @@ export function startExpoScheduler() {
   setInterval(tick, 5 * 60 * 1000);
 }
 
+export const pushSubscriptionTestApi = {
+  dbUpsert,
+};
+
 export default router;
