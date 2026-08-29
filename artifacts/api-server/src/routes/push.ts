@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { PushSubscription } from "web-push";
 import { Expo, type ExpoPushMessage } from "expo-server-sdk";
 import { requireAuth } from "../lib/authorization";
@@ -11,6 +11,7 @@ import { HebrewCalendar, HDate, flags } from "@hebcal/core";
 import {
   enqueueWebNotificationForAll,
   enqueueWebNotificationForUser,
+  retireWebPushSubscription,
   startWebNotificationQueue,
   syncClientSchedule,
   type WebNotificationScheduleItem,
@@ -21,21 +22,18 @@ import {
   isWebPushReady,
   sendWebPush,
 } from "../lib/webPush";
+import {
+  COMMUNITY_TIME_ZONE,
+  getZonedDateParts,
+  isValidIanaTimeZone,
+  zonedCalendarDate,
+} from "../lib/notificationTime";
 
 const expo = new Expo();
 
 const router = Router();
 
 export type ScheduleItem = WebNotificationScheduleItem;
-
-function isValidTimeZone(value: string): boolean {
-  try {
-    new Intl.DateTimeFormat("en-US", { timeZone: value }).format();
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 function isValidScheduleItem(item: unknown): item is ScheduleItem {
   if (!item || typeof item !== "object") return false;
@@ -55,48 +53,7 @@ function isValidScheduleItem(item: unknown): item is ScheduleItem {
     value.tag.trim().length > 0 &&
     value.tag.length <= 200 &&
     (value.timezone === undefined ||
-      (typeof value.timezone === "string" && isValidTimeZone(value.timezone)))
-  );
-}
-
-const WEB_PUSH_HOSTS = new Set([
-  "fcm.googleapis.com",
-  "android.googleapis.com",
-  "updates.push.services.mozilla.com",
-  "push.services.mozilla.com",
-  "web.push.apple.com",
-]);
-
-function isValidBase64UrlKey(value: unknown, decodedLength: number): value is string {
-  if (typeof value !== "string" || !/^[A-Za-z0-9_-]+$/.test(value)) return false;
-  try {
-    return Buffer.from(value, "base64url").length === decodedLength;
-  } catch {
-    return false;
-  }
-}
-
-function isValidPushSubscription(subscription: PushSubscription | undefined): subscription is PushSubscription {
-  if (!subscription?.endpoint || subscription.endpoint.length > 4_096) return false;
-  let endpoint: URL;
-  try {
-    endpoint = new URL(subscription.endpoint);
-  } catch {
-    return false;
-  }
-  const host = endpoint.hostname.toLowerCase();
-  const supportedHost =
-    WEB_PUSH_HOSTS.has(host) ||
-    (host.endsWith(".notify.windows.com") && host.length > ".notify.windows.com".length);
-  const keys = subscription.keys as { p256dh?: unknown; auth?: unknown } | undefined;
-  return (
-    endpoint.protocol === "https:" &&
-    !endpoint.username &&
-    !endpoint.password &&
-    supportedHost &&
-    endpoint.pathname.length > 1 &&
-    isValidBase64UrlKey(keys?.p256dh, 65) &&
-    isValidBase64UrlKey(keys?.auth, 16)
+      (typeof value.timezone === "string" && isValidIanaTimeZone(value.timezone)))
   );
 }
 
@@ -104,14 +61,71 @@ function subId(endpoint: string): string {
   return createHash("sha256").update(endpoint).digest("hex");
 }
 
+const ALLOWED_WEB_PUSH_HOSTS = new Set([
+  "fcm.googleapis.com",
+  "updates.push.services.mozilla.com",
+  "push.services.mozilla.com",
+  "web.push.apple.com",
+]);
+
+function isAllowedWebPushHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return ALLOWED_WEB_PUSH_HOSTS.has(host) || host.endsWith(".notify.windows.com");
+}
+
+function decodeBase64Url(value: string): Buffer | null {
+  if (!/^[A-Za-z0-9_-]+$/.test(value)) return null;
+  try {
+    return Buffer.from(value, "base64url");
+  } catch {
+    return null;
+  }
+}
+
+export function isValidWebPushSubscription(
+  subscription: unknown,
+): subscription is PushSubscription {
+  if (!subscription || typeof subscription !== "object") return false;
+  const value = subscription as Partial<PushSubscription>;
+  if (
+    typeof value.endpoint !== "string" ||
+    value.endpoint.length === 0 ||
+    value.endpoint.length > 4_096 ||
+    !value.keys ||
+    typeof value.keys.p256dh !== "string" ||
+    typeof value.keys.auth !== "string"
+  ) return false;
+
+  let endpoint: URL;
+  try {
+    endpoint = new URL(value.endpoint);
+  } catch {
+    return false;
+  }
+  if (
+    endpoint.protocol !== "https:" ||
+    endpoint.username ||
+    endpoint.password ||
+    endpoint.port ||
+    endpoint.hash ||
+    !isAllowedWebPushHost(endpoint.hostname)
+  ) return false;
+
+  const p256dh = decodeBase64Url(value.keys.p256dh);
+  const auth = decodeBase64Url(value.keys.auth);
+  return !!p256dh && p256dh.length === 65 && p256dh[0] === 4 &&
+    !!auth && auth.length === 16;
+}
+
 async function dbUpsert(
   subscription: PushSubscription,
   schedule: ScheduleItem[],
   userId: string,
+  db: Pick<import("pg").PoolClient, "query"> = pool,
 ): Promise<string> {
   const id = subId(subscription.endpoint);
   const keys = subscription.keys as { p256dh: string; auth: string };
-  const result = await pool.query<{ id: string }>(
+  const result = await db.query<{ id: string }>(
     `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, schedule, user_id, updated_at)
      VALUES ($1, $2, $3, $4, $5::jsonb, $6, NOW())
      ON CONFLICT (endpoint) DO UPDATE
@@ -156,7 +170,7 @@ export async function sendPushToUser(
       );
     } catch (err: any) {
       if (isExpiredWebPushError(err)) {
-        await pool.query("DELETE FROM push_subscriptions WHERE endpoint = $1", [row.endpoint]).catch(() => {});
+        await retireWebPushSubscription(row.endpoint).catch(() => {});
       } else {
         hasTransientFailure = true;
         logger.warn({ err, userId }, "sendPushToUser: transient send failure");
@@ -171,7 +185,7 @@ async function fireBroadcastNow(bc: { id: number; emoji: string; title: string; 
   const tag = `broadcast-${bc.id}`;
   const icon = "/favicon.svg";
 
-  await enqueueWebNotificationForAll({
+  const queued = await enqueueWebNotificationForAll({
     sourceType: "scheduled_broadcast",
     sourceId: String(bc.id),
     fireAt: Date.now(),
@@ -181,39 +195,98 @@ async function fireBroadcastNow(bc: { id: number; emoji: string; title: string; 
     icon,
     url: "/",
   });
-
-  // Expo push
-  let expoRows: Array<{ token: string }> = [];
+  let expoAccepted = false;
   try {
-    const r = await pool.query<{ token: string }>("SELECT token FROM expo_push_tokens");
-    expoRows = r.rows;
-  } catch {}
-  const msgs: import("expo-server-sdk").ExpoPushMessage[] = expoRows
-    .filter((r) => Expo.isExpoPushToken(r.token))
-    .map((r) => ({ to: r.token, title: fullTitle, body: bc.body, sound: "default" as const, data: { tag } }));
-  if (msgs.length > 0) {
-    try {
-      const chunks = expo.chunkPushNotifications(msgs);
-      for (const chunk of chunks) await expo.sendPushNotificationsAsync(chunk);
-    } catch (err) {
-      logger.error({ err }, "scheduled-broadcast: expo send failed");
+    expoAccepted = await deliverScheduledBroadcastExpo(bc);
+  } catch (err) {
+    logger.error({ err, broadcastId: bc.id }, "scheduled-broadcast: Expo delivery failed");
+  }
+
+  if (queued === 0 && expoAccepted) {
+    const jobs = await pool.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count
+         FROM web_notification_jobs
+        WHERE source_type = 'scheduled_broadcast' AND source_id = $1`,
+      [String(bc.id)],
+    );
+    if (Number(jobs.rows[0]?.count ?? 0) === 0) {
+      await pool.query(
+        "UPDATE scheduled_broadcasts SET sent_at = COALESCE(sent_at, NOW()) WHERE id = $1",
+        [bc.id],
+      );
     }
   }
 
-  const pendingWeb = await pool.query<{ count: string }>(
-    `SELECT COUNT(*)::text AS count
-       FROM web_notification_jobs
-      WHERE source_type = 'scheduled_broadcast' AND source_id = $1`,
-    [String(bc.id)],
-  );
-  const hasWebJobs = Number(pendingWeb.rows[0]?.count ?? 0) > 0;
-  await pool.query(
+  logger.info({ id: bc.id, title: bc.title, queued }, "scheduled-broadcast: queued");
+}
+
+type ScheduledBroadcastExpoDeps = {
+  loadTokens: () => Promise<string[]>;
+  send: (messages: ExpoPushMessage[]) => Promise<void>;
+};
+
+async function deliverScheduledBroadcastExpo(
+  bc: { id: number; emoji: string; title: string; body: string },
+  deps: ScheduledBroadcastExpoDeps = {
+    loadTokens: async () => {
+      const result = await pool.query<{ token: string }>("SELECT token FROM expo_push_tokens");
+      return result.rows.map((row) => row.token);
+    },
+    send: async (messages) => {
+      for (const chunk of expo.chunkPushNotifications(messages)) {
+        await expo.sendPushNotificationsAsync(chunk);
+      }
+    },
+  },
+): Promise<boolean> {
+  const claimToken = randomUUID();
+  const claimed = await pool.query(
     `UPDATE scheduled_broadcasts
-        SET sent_at = CASE WHEN $2::boolean THEN sent_at ELSE COALESCE(sent_at, NOW()) END
-      WHERE id = $1`,
-    [bc.id, hasWebJobs],
+        SET expo_claim_token = $2,
+            expo_claim_expires_at = NOW() + INTERVAL '5 minutes'
+      WHERE id = $1
+        AND expo_sent_at IS NULL
+        AND (expo_claim_expires_at IS NULL OR expo_claim_expires_at < NOW())
+    RETURNING id`,
+    [bc.id, claimToken],
   );
-  logger.info({ id: bc.id, title: bc.title }, "scheduled-broadcast: queued");
+  if ((claimed.rowCount ?? 0) === 0) {
+    const state = await pool.query<{ sent: boolean }>(
+      "SELECT expo_sent_at IS NOT NULL AS sent FROM scheduled_broadcasts WHERE id = $1",
+      [bc.id],
+    );
+    return state.rows[0]?.sent ?? false;
+  }
+
+  try {
+    const tokens = await deps.loadTokens();
+    const messages: ExpoPushMessage[] = tokens
+      .filter((token) => Expo.isExpoPushToken(token))
+      .map((token) => ({
+        to: token,
+        title: `${bc.emoji} ${bc.title}`,
+        body: bc.body,
+        sound: "default" as const,
+        data: { tag: `broadcast-${bc.id}` },
+      }));
+    await deps.send(messages);
+    await pool.query(
+      `UPDATE scheduled_broadcasts
+          SET expo_sent_at = NOW(), expo_claim_token = NULL,
+              expo_claim_expires_at = NULL
+        WHERE id = $1 AND expo_claim_token = $2`,
+      [bc.id, claimToken],
+    );
+    return true;
+  } catch (error) {
+    await pool.query(
+      `UPDATE scheduled_broadcasts
+          SET expo_claim_token = NULL, expo_claim_expires_at = NULL
+        WHERE id = $1 AND expo_claim_token = $2`,
+      [bc.id, claimToken],
+    ).catch(() => {});
+    throw error;
+  }
 }
 
 /**
@@ -222,37 +295,27 @@ async function fireBroadcastNow(bc: { id: number; emoji: string; title: string; 
  * Fire-and-forget: callers should not await; failures are logged, never thrown.
  */
 export async function broadcastDedicationPush(opts: {
+  dedicationId: string;
   learnerName: string;
   studySubject: string;
   deceasedName: string;
 }): Promise<void> {
   const title = "🕯 Torah Dedication";
   const body  = `${opts.learnerName} is studying ${opts.studySubject} in memory of ${opts.deceasedName}`;
-  const tag   = `dedication-${Date.now()}`;
+  const tag   = `dedication-${opts.dedicationId}`;
   const icon  = "/favicon.svg";
 
   // ── Web push ──────────────────────────────────────────────────────────────
-  if (isWebPushReady()) {
-    let webRows: Array<{ id: string; endpoint: string; p256dh: string; auth: string }> = [];
-    try {
-      const r = await pool.query<{ id: string; endpoint: string; p256dh: string; auth: string }>(
-        "SELECT id, endpoint, p256dh, auth FROM push_subscriptions"
-      );
-      webRows = r.rows;
-    } catch { /* no subscribers — skip */ }
-    for (const row of webRows) {
-      try {
-        await sendWebPush(
-          { endpoint: row.endpoint, keys: { p256dh: row.p256dh, auth: row.auth } },
-          { title, body, tag, icon, url: "/" },
-        );
-      } catch (err: any) {
-        if (isExpiredWebPushError(err)) {
-          await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [row.id]).catch(() => {});
-        }
-      }
-    }
-  }
+  await enqueueWebNotificationForAll({
+    sourceType: "torah_dedication",
+    sourceId: opts.dedicationId,
+    fireAt: Date.now(),
+    title,
+    body,
+    tag,
+    icon,
+    url: "/community",
+  });
 
   // ── Expo push ─────────────────────────────────────────────────────────────
   let expoRows: Array<{ token: string }> = [];
@@ -278,6 +341,29 @@ export async function broadcastDedicationPush(opts: {
   );
 }
 
+export async function enqueueDedicationWebPush(
+  opts: {
+    dedicationId: string;
+    learnerName: string;
+    studySubject: string;
+    deceasedName: string;
+  },
+  db: Pick<import("pg").PoolClient, "query">,
+): Promise<void> {
+  const title = "🕯 Torah Dedication";
+  const body = `${opts.learnerName} is studying ${opts.studySubject} in memory of ${opts.deceasedName}`;
+  await enqueueWebNotificationForAll({
+    sourceType: "torah_dedication",
+    sourceId: opts.dedicationId,
+    fireAt: Date.now(),
+    title,
+    body,
+    tag: `dedication-${opts.dedicationId}`,
+    icon: "/favicon.svg",
+    url: "/community",
+  }, db);
+}
+
 export function startPushScheduler() {
   startWebNotificationQueue();
   let running = false;
@@ -286,31 +372,7 @@ export function startPushScheduler() {
     running = true;
     try {
       const r = await pool.query<{ id: number; emoji: string; title: string; body: string }>(
-        `WITH candidates AS (
-           SELECT scheduled.id
-             FROM scheduled_broadcasts scheduled
-            WHERE scheduled.fire_at <= NOW()
-              AND scheduled.sent_at IS NULL
-              AND (
-                scheduled.queued_at IS NULL
-                OR (
-                  scheduled.queued_at < NOW() - INTERVAL '10 minutes'
-                  AND NOT EXISTS (
-                    SELECT 1 FROM web_notification_jobs job
-                    WHERE job.source_type = 'scheduled_broadcast'
-                      AND job.source_id = scheduled.id::text
-                  )
-                )
-              )
-            ORDER BY scheduled.fire_at, scheduled.id
-            FOR UPDATE SKIP LOCKED
-            LIMIT 20
-         )
-         UPDATE scheduled_broadcasts scheduled
-            SET queued_at = NOW()
-           FROM candidates
-          WHERE scheduled.id = candidates.id
-        RETURNING scheduled.id, scheduled.emoji, scheduled.title, scheduled.body`
+        "SELECT id, emoji, title, body FROM scheduled_broadcasts WHERE fire_at <= NOW() AND sent_at IS NULL"
       );
       for (const bc of r.rows) {
         await fireBroadcastNow(bc);
@@ -337,23 +399,41 @@ router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req
     subscription: PushSubscription;
     schedule: ScheduleItem[];
   };
-  if (!isValidPushSubscription(subscription)) {
-    res.status(400).json({ error: "Invalid or unsupported Web Push subscription" });
+  if (!isValidWebPushSubscription(subscription)) {
+    res.status(400).json({ error: "Invalid Web Push subscription" });
     return;
   }
   const userId = (req as any).userId as string;
   try {
-    const uniqueSchedule = Array.from(
-      new Map((Array.isArray(schedule) ? schedule : [])
-        .filter(isValidScheduleItem)
-        .map((item) => [`${item.tag}:${item.fireAt}`, item])).values(),
-    );
-    if (uniqueSchedule.length > 500) {
+    if (!Array.isArray(schedule)) {
+      res.status(400).json({ error: "schedule must be an array" });
+      return;
+    }
+    if (schedule.length > 500) {
       res.status(400).json({ error: "Schedule contains too many items" });
       return;
     }
-    const id = await dbUpsert(subscription, uniqueSchedule, userId);
-    await syncClientSchedule(id, uniqueSchedule);
+    if (schedule.some((item) => !isValidScheduleItem(item))) {
+      res.status(400).json({ error: "Schedule contains an invalid item" });
+      return;
+    }
+    const uniqueSchedule = Array.from(
+      new Map(schedule
+        .map((item) => [`${item.tag}:${item.fireAt}`, item])).values(),
+    );
+    const client = await pool.connect();
+    let id: string;
+    try {
+      await client.query("BEGIN");
+      id = await dbUpsert(subscription, uniqueSchedule, userId, client);
+      await syncClientSchedule(id, uniqueSchedule, client);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
     res.json({ ok: true, id });
   } catch (err) {
     if (err instanceof Error && err.message === "Subscription endpoint is already registered") {
@@ -370,7 +450,7 @@ router.delete("/push/unsubscribe", requireAuth, async (req, res) => {
   if (!endpoint) { res.status(400).json({ error: "Missing endpoint" }); return; }
   try {
     const userId = (req as any).userId as string;
-    await pool.query("DELETE FROM push_subscriptions WHERE endpoint = $1 AND user_id = $2", [endpoint, userId]);
+    await retireWebPushSubscription(endpoint, userId);
     res.json({ ok: true });
   } catch (err) {
     logger.error({ err }, "push/unsubscribe: db error");
@@ -496,12 +576,33 @@ router.delete("/push/broadcast/scheduled/:id", requireAdmin, async (req, res) =>
   const id = parseInt(String(req.params["id"] ?? ""), 10);
   if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   try {
-    const deleted = await pool.query(
-      "DELETE FROM scheduled_broadcasts WHERE id = $1 AND sent_at IS NULL AND queued_at IS NULL RETURNING id",
-      [id],
-    );
-    if (deleted.rowCount === 0) {
-      res.status(409).json({ error: "Broadcast is already queued, sent, or does not exist" });
+    const client = await pool.connect();
+    let deleted = false;
+    try {
+      await client.query("BEGIN");
+      const source = await client.query(
+        "DELETE FROM scheduled_broadcasts WHERE id = $1 AND sent_at IS NULL RETURNING id",
+        [id],
+      );
+      deleted = (source.rowCount ?? 0) > 0;
+      if (deleted) {
+        await client.query(
+        `DELETE FROM web_notification_jobs
+          WHERE source_type = 'scheduled_broadcast'
+            AND source_id = $1
+            AND status IN ('pending', 'retry')`,
+          [String(id)],
+        );
+      }
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+    if (!deleted) {
+      res.status(409).json({ error: "Scheduled broadcast was not found or is already sent" });
       return;
     }
     res.json({ ok: true });
@@ -620,26 +721,19 @@ router.post("/push/expo-send-test", requireAuth, async (req, res) => {
 });
 
 // ── Holiday Web Push Scheduler ───────────────────────────────────────────────
-// Fires at 9am every day and sends a web push to ALL subscribers the day before a holiday.
-
-let _holidayPushLastFiredDate = "";
+// Fires at 9am India time and queues a web push to all subscribers the day before a holiday.
 
 export function startHolidayWebPushScheduler() {
-  setInterval(async () => {
-    if (!isWebPushReady()) return;
-
+  const tick = async () => {
     const now = new Date();
-    if (now.getHours() !== 9 || now.getMinutes() >= 5) return;
+    const local = getZonedDateParts(now, COMMUNITY_TIME_ZONE);
+    if (local.hour < 9) return;
 
-    const dateKey = now.toDateString();
-    if (_holidayPushLastFiredDate === dateKey) return;
-
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
+    const tomorrow = zonedCalendarDate(now, COMMUNITY_TIME_ZONE);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
     const tomorrowEnd = new Date(tomorrow);
-    tomorrowEnd.setHours(23, 59, 59, 999);
+    tomorrowEnd.setUTCHours(23, 59, 59, 999);
 
     const events = HebrewCalendar.calendar({
       start: tomorrow,
@@ -654,52 +748,43 @@ export function startHolidayWebPushScheduler() {
     for (const ev of events) {
       const name = ev.render("en");
       const dateStr = tomorrow.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      const sourceId = `${name}:${tomorrow.toISOString().slice(0, 10)}`;
+      const occurrenceDate = tomorrow.toISOString().slice(0, 10);
+      const sourceId = `${name}:${occurrenceDate}:${COMMUNITY_TIME_ZONE}`;
       const queued = await enqueueWebNotificationForAll({
         sourceType: "holiday_day_before",
         sourceId,
         fireAt: Date.now(),
         title: `✡ ${name} Begins Tomorrow`,
         body: `${name} starts tomorrow, ${dateStr}. Chag Sameach from Bnei Menashe!`,
-        tag: `holiday-web-${name.replace(/\s+/g, "-").toLowerCase()}-${dateKey}`,
+        tag: `holiday-web-${name.replace(/\s+/g, "-").toLowerCase()}-${occurrenceDate}`,
         icon: "/favicon.svg",
         url: "/",
       });
       logger.info({ name, queued }, "holiday-web-push: queued");
     }
-    _holidayPushLastFiredDate = dateKey;
-  }, 60_000); // check every minute
+  };
+  void tick();
+  setInterval(() => void tick(), 60_000);
 }
 
 // ── Holiday 1-Hour Reminder Scheduler ────────────────────────────────────────
 // Fires every minute; when a holiday midnight is 55–65 minutes away, sends a
 // "starts in ~1 hour" push to all web-push subscribers. Deduped per holiday.
 
-const _holidayHourReminderFired = new Set<string>();
-
 export function startHolidayHourReminderScheduler() {
-  setInterval(async () => {
-    if (!isWebPushReady()) return;
-
+  const tick = async () => {
     const now = new Date();
-    const nowMs = now.getTime();
+    const local = getZonedDateParts(now, COMMUNITY_TIME_ZONE);
+    if (local.hour !== 23) return;
 
-    // Look for any holiday whose midnight falls 55–65 min from now
-    const windowStart = nowMs + 55 * 60_000;
-    const windowEnd   = nowMs + 65 * 60_000;
-
-    // Check today and tomorrow
-    for (let dayOffset = 0; dayOffset <= 1; dayOffset++) {
-      const candidate = new Date(now);
-      candidate.setDate(candidate.getDate() + dayOffset);
-      candidate.setHours(0, 0, 0, 0);
-      const candidateMs = candidate.getTime();
-      if (candidateMs < windowStart || candidateMs > windowEnd) continue;
+    for (let dayOffset = 1; dayOffset <= 1; dayOffset++) {
+      const candidate = zonedCalendarDate(now, COMMUNITY_TIME_ZONE);
+      candidate.setUTCDate(candidate.getUTCDate() + dayOffset);
 
       // We're in the window — find the holiday
       const dayStart = new Date(candidate);
       const dayEnd   = new Date(candidate);
-      dayEnd.setHours(23, 59, 59, 999);
+      dayEnd.setUTCHours(23, 59, 59, 999);
 
       const events = HebrewCalendar.calendar({
         start: dayStart,
@@ -711,50 +796,52 @@ export function startHolidayHourReminderScheduler() {
 
       for (const ev of events) {
         const name    = ev.render("en");
-        const dedupKey = `${name}-${candidate.toDateString()}`;
-        if (_holidayHourReminderFired.has(dedupKey)) continue;
-
         const dateStr = candidate.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        const occurrenceDate = candidate.toISOString().slice(0, 10);
         const queued = await enqueueWebNotificationForAll({
           sourceType: "holiday_hour",
-          sourceId: `${name}:${candidate.toISOString().slice(0, 10)}`,
+          sourceId: `${name}:${occurrenceDate}:${COMMUNITY_TIME_ZONE}`,
           fireAt: Date.now(),
           title: `⏱ ${name} Begins in ~1 Hour`,
           body: `${name} starts at midnight tonight (${dateStr}). Make your final preparations!`,
-          tag: `holiday-hour-${name.replace(/\s+/g, "-").toLowerCase()}-${candidate.toDateString()}`,
+          tag: `holiday-hour-${name.replace(/\s+/g, "-").toLowerCase()}-${occurrenceDate}`,
           icon: "/favicon.svg",
           url: "/",
         });
-        _holidayHourReminderFired.add(dedupKey);
         logger.info({ name, queued }, "holiday-hour-reminder: queued");
       }
     }
-  }, 60_000); // check every minute
+  };
+  void tick();
+  setInterval(() => void tick(), 60_000);
 }
 
 // ── Yahrzeit Push Scheduler ──────────────────────────────────────────────────
 
-let _yahrzeitPushLastFiredDate = "";
-
 export function startYahrzeitPushScheduler() {
-  setInterval(async () => {
-    if (!isWebPushReady()) return;
-
+  const tick = async () => {
     const now = new Date();
-    if (now.getHours() !== 8 || now.getMinutes() >= 5) return;
-
-    const dateKey = now.toDateString();
-    if (_yahrzeitPushLastFiredDate === dateKey) return;
-
-    const hToday = new HDate(now);
-    const hDay = hToday.getDate();
-    const hMonth = hToday.getMonth();
-
-    let entries: Array<{ user_id: string; name: string }> = [];
+    let entries: Array<{
+      id: string;
+      user_id: string;
+      name: string;
+      hebrew_day: number;
+      hebrew_month: number;
+      timezone: string | null;
+    }> = [];
     try {
-      const r = await pool.query<{ user_id: string; name: string }>(
-        "SELECT user_id, name FROM yahrzeit_entries WHERE hebrew_day = $1 AND hebrew_month = $2",
-        [hDay, hMonth],
+      const r = await pool.query<{
+        id: string;
+        user_id: string;
+        name: string;
+        hebrew_day: number;
+        hebrew_month: number;
+        timezone: string | null;
+      }>(
+        `SELECT entry.id, entry.user_id, entry.name, entry.hebrew_day,
+                entry.hebrew_month, profile.location->>'tz' AS timezone
+           FROM yahrzeit_entries entry
+           LEFT JOIN user_profiles profile ON profile.user_id = entry.user_id`,
       );
       entries = r.rows;
     } catch (err) {
@@ -762,28 +849,40 @@ export function startYahrzeitPushScheduler() {
       return;
     }
 
-    if (entries.length === 0) return;
-
+    let queuedCount = 0;
     for (const entry of entries) {
+      const timezone = entry.timezone;
+      if (!timezone || !isValidIanaTimeZone(timezone)) continue;
+      const local = getZonedDateParts(now, timezone);
+      if (local.hour < 8) continue;
+      const hToday = new HDate(zonedCalendarDate(now, timezone));
+      if (
+        hToday.getDate() !== entry.hebrew_day ||
+        hToday.getMonth() !== entry.hebrew_month
+      ) continue;
       try {
-        await enqueueWebNotificationForUser(entry.user_id, {
+        queuedCount += await enqueueWebNotificationForUser(entry.user_id, {
           sourceType: "personal_yahrzeit",
-          sourceId: `${entry.user_id}:${entry.name}:${dateKey}`,
+          sourceId: `${entry.id}:${local.dateKey}:${timezone}`,
           fireAt: Date.now(),
           title: `🕯 Yahrzeit Today: ${entry.name}`,
           body: `Today is the Yahrzeit of ${entry.name}. May their memory be a blessing. Light a candle and recite Kaddish.`,
-          tag: `yahrzeit-${entry.user_id}-${dateKey}`,
+          tag: `yahrzeit-${entry.id}-${local.dateKey}`,
           icon: "/favicon.svg",
           url: "/",
+          timezone,
         });
       } catch (err) {
         logger.error({ err, name: entry.name }, "yahrzeit-push: failed to queue notification");
       }
     }
 
-    _yahrzeitPushLastFiredDate = dateKey;
-    logger.info({ count: entries.length, hDay, hMonth }, "yahrzeit-push: queued reminders");
-  }, 60_000);
+    if (queuedCount > 0) {
+      logger.info({ queued: queuedCount }, "yahrzeit-push: queued reminders");
+    }
+  };
+  void tick();
+  setInterval(() => void tick(), 60_000);
 }
 
 // ── Weekly Yahrzeit Digest Scheduler ─────────────────────────────────────────
@@ -794,28 +893,19 @@ export function startYahrzeitPushScheduler() {
 // this scheduler focuses on the shared community_yahrzeit table so the whole
 // community stays informed together.
 
-let _weeklyDigestLastFiredDate = "";
-
 export function startWeeklyYahrzeitDigestScheduler() {
-  setInterval(async () => {
-    if (!isWebPushReady()) return;
-
+  const tick = async () => {
     const now = new Date();
-
-    // Only fire on Sundays at 08:00
-    if (now.getDay() !== 0) return;
-    if (now.getHours() !== 8 || now.getMinutes() >= 5) return;
-
-    const dateKey = now.toDateString();
-    if (_weeklyDigestLastFiredDate === dateKey) return;
+    const local = getZonedDateParts(now, COMMUNITY_TIME_ZONE);
+    if (local.weekday !== "Sun" || local.hour < 8) return;
+    const dateKey = `${local.dateKey}:${COMMUNITY_TIME_ZONE}`;
 
     // Build the 7 Hebrew (day, month) pairs for Sun–Sat
     type DaySpec = { hDay: number; hMonth: number; gregDate: Date };
     const weekDays: DaySpec[] = [];
     for (let i = 0; i < 7; i++) {
-      const d = new Date(now);
-      d.setDate(now.getDate() + i);
-      d.setHours(12, 0, 0, 0);
+      const d = zonedCalendarDate(now, COMMUNITY_TIME_ZONE);
+      d.setUTCDate(d.getUTCDate() + i);
       const hd = new HDate(d);
       weekDays.push({ hDay: hd.getDate(), hMonth: hd.getMonth(), gregDate: d });
     }
@@ -925,13 +1015,18 @@ export function startWeeklyYahrzeitDigestScheduler() {
       }
     }
 
-    if (!hasTransientFailure) _weeklyDigestLastFiredDate = dateKey;
     logger.info(
       { yahrzeits: rows.length, webSubscribers: webSent, expoSubscribers: msgs.length, retryable: hasTransientFailure },
       "weekly-yahrzeit-digest: broadcast sent",
     );
-  }, 60_000); // check every minute
+  };
+  void tick();
+  setInterval(() => void tick(), 60_000);
 }
+
+export const scheduledBroadcastTestApi = {
+  deliverScheduledBroadcastExpo,
+};
 
 // ── Expo Push Scheduler ──────────────────────────────────────────────────────
 

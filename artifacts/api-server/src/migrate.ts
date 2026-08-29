@@ -369,7 +369,7 @@ export async function runMigrations(): Promise<void> {
     await client.query(`
       CREATE TABLE IF NOT EXISTS web_notification_jobs (
         id               BIGSERIAL PRIMARY KEY,
-        subscription_id  TEXT NOT NULL REFERENCES push_subscriptions(id) ON DELETE CASCADE,
+        subscription_id  TEXT NOT NULL,
         idempotency_key  TEXT NOT NULL UNIQUE,
         source_type      TEXT NOT NULL,
         source_id        TEXT,
@@ -393,6 +393,11 @@ export async function runMigrations(): Promise<void> {
         updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )
     `);
+    // Keep sent/failed delivery history when a stale endpoint is removed.
+    await client.query(`
+      ALTER TABLE web_notification_jobs
+        DROP CONSTRAINT IF EXISTS web_notification_jobs_subscription_id_fkey
+    `);
     await client.query(`
       CREATE INDEX IF NOT EXISTS web_notification_jobs_due_idx
         ON web_notification_jobs (COALESCE(next_attempt_at, run_at), id)
@@ -415,27 +420,25 @@ export async function runMigrations(): Promise<void> {
       INSERT INTO web_notification_jobs
         (subscription_id, idempotency_key, source_type, run_at, title, body, tag, icon, url)
       SELECT ps.id,
-             md5(
-               'legacy:' || ps.id || ':' ||
-               ((schedule_item.value::jsonb)->>'tag') || ':' ||
-               ((schedule_item.value::jsonb)->>'fireAt')
-             ),
+              'legacy:' || ps.id || ':' || (schedule_item.value->>'tag') || ':' || (schedule_item.value->>'fireAt'),
              'client_schedule',
-             to_timestamp(((schedule_item.value::jsonb)->>'fireAt')::double precision / 1000.0),
-             (schedule_item.value::jsonb)->>'title',
-             (schedule_item.value::jsonb)->>'body',
-             (schedule_item.value::jsonb)->>'tag',
-             COALESCE((schedule_item.value::jsonb)->>'icon', '/favicon.svg'),
-             COALESCE((schedule_item.value::jsonb)->>'url', '/')
+              to_timestamp((schedule_item.value->>'fireAt')::double precision / 1000.0),
+              schedule_item.value->>'title',
+              schedule_item.value->>'body',
+              schedule_item.value->>'tag',
+              COALESCE(schedule_item.value->>'icon', '/favicon.svg'),
+              COALESCE(schedule_item.value->>'url', '/')
         FROM push_subscriptions ps
         CROSS JOIN LATERAL jsonb_array_elements(
           CASE WHEN jsonb_typeof(ps.schedule) = 'array' THEN ps.schedule ELSE '[]'::jsonb END
         ) AS schedule_item(value)
-       WHERE schedule_item.value::jsonb ? 'fireAt'
-         AND schedule_item.value::jsonb ? 'title'
-         AND schedule_item.value::jsonb ? 'body'
-         AND schedule_item.value::jsonb ? 'tag'
-         AND ((schedule_item.value::jsonb)->>'fireAt') ~ '^[0-9]+([.][0-9]+)?$'
+       WHERE schedule_item.value ? 'fireAt'
+         AND schedule_item.value ? 'title'
+         AND schedule_item.value ? 'body'
+         AND schedule_item.value ? 'tag'
+         AND (schedule_item.value->>'fireAt') ~ '^[0-9]+([.][0-9]+)?$'
+         AND to_timestamp((schedule_item.value->>'fireAt')::double precision / 1000.0)
+               BETWEEN NOW() - INTERVAL '5 minutes' AND NOW() + INTERVAL '95 days'
       ON CONFLICT (idempotency_key) DO NOTHING
     `);
 
@@ -516,7 +519,10 @@ export async function runMigrations(): Promise<void> {
       )
     `);
     await client.query(`
-      ALTER TABLE scheduled_broadcasts ADD COLUMN IF NOT EXISTS queued_at TIMESTAMPTZ
+      ALTER TABLE scheduled_broadcasts
+        ADD COLUMN IF NOT EXISTS expo_sent_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS expo_claim_token TEXT,
+        ADD COLUMN IF NOT EXISTS expo_claim_expires_at TIMESTAMPTZ
     `);
 
     // ── Memorial Sanctuary V1 ─────────────────────────────────────────────────

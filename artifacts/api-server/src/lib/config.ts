@@ -10,7 +10,6 @@
  */
 
 import { logger } from "./logger";
-import { getWebPushReadiness } from "./webPush";
 
 // ── Resolve raw env values ────────────────────────────────────────────────────
 
@@ -22,7 +21,6 @@ const grokKey          = process.env.GROK_API_KEY        || null;
 const vapidPublicKey   = process.env.VAPID_PUBLIC_KEY    || null;
 const vapidPrivateKey  = process.env.VAPID_PRIVATE_KEY   || null;
 const vapidSubject     = process.env.VAPID_SUBJECT       || null;
-const webPushReadiness = getWebPushReadiness();
 const razorpayKeyId    = process.env.RAZORPAY_KEY_ID     || null;
 const razorpaySecret   = process.env.RAZORPAY_KEY_SECRET || null;
 
@@ -84,7 +82,7 @@ export const config = {
     openai:   !!openaiKey,
     gemini:   !!googleKey,
     grok:     !!grokKey,
-    push:     webPushReadiness.ready,
+    push:     !!vapidPublicKey && !!vapidPrivateKey && !!vapidSubject,
     payments: !!razorpayKeyId && !!razorpaySecret,
   },
 } as const;

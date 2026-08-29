@@ -26,11 +26,14 @@ export type WebNotificationJobInput = WebNotificationScheduleItem & {
 export type ClaimedWebNotificationJob = WebNotificationJobInput & {
   id: number;
   attemptCount: number;
+  maxAttempts: number;
   leaseToken: string;
   endpoint: string;
   p256dh: string;
   auth: string;
 };
+
+type Queryable = Pick<PoolClient, "query">;
 
 const CLAIM_LIMIT = 50;
 const LEASE_MS = 5 * 60 * 1000;
@@ -88,10 +91,12 @@ async function insertJob(
 export async function syncClientSchedule(
   subscriptionId: string,
   schedule: WebNotificationScheduleItem[],
+  transactionClient?: PoolClient,
 ): Promise<void> {
-  const client = await pool.connect();
+  const client = transactionClient ?? await pool.connect();
+  const ownsTransaction = !transactionClient;
   try {
-    await client.query("BEGIN");
+    if (ownsTransaction) await client.query("BEGIN");
 
     const keys = schedule.map((item) =>
       makeWebNotificationKey(subscriptionId, item.tag, item.fireAt),
@@ -124,12 +129,12 @@ export async function syncClientSchedule(
       });
     }
 
-    await client.query("COMMIT");
+    if (ownsTransaction) await client.query("COMMIT");
   } catch (error) {
-    await client.query("ROLLBACK").catch(() => {});
+    if (ownsTransaction) await client.query("ROLLBACK").catch(() => {});
     throw error;
   } finally {
-    client.release();
+    if (ownsTransaction) client.release();
   }
 }
 
@@ -138,14 +143,15 @@ export async function enqueueWebNotificationForAll(
     sourceType: string;
     sourceId?: string | null;
   },
+  db: Queryable = pool,
 ): Promise<number> {
-  const result = await pool.query(
+  const result = await db.query(
     `INSERT INTO web_notification_jobs
        (subscription_id, idempotency_key, source_type, source_id, run_at,
         title, body, tag, icon, url, timezone, status, attempts, max_attempts,
         next_attempt_at, created_at, updated_at)
      SELECT ps.id,
-            md5($1 || ':' || COALESCE($2, '') || ':' || ps.id),
+             $1 || ':' || COALESCE($2, '') || ':' || ps.id,
             $1,
             $2,
             to_timestamp($3 / 1000.0),
@@ -153,7 +159,7 @@ export async function enqueueWebNotificationForAll(
             'pending', 0, $10, NULL, NOW(), NOW()
        FROM push_subscriptions ps
      ON CONFLICT (idempotency_key) DO UPDATE
-       SET run_at = EXCLUDED.run_at,
+       SET run_at = LEAST(web_notification_jobs.run_at, EXCLUDED.run_at),
            title = EXCLUDED.title,
            body = EXCLUDED.body,
            tag = EXCLUDED.tag,
@@ -181,14 +187,15 @@ export async function enqueueWebNotificationForAll(
 export async function enqueueWebNotificationForUser(
   userId: string,
   input: Omit<WebNotificationJobInput, "subscriptionId" | "idempotencyKey">,
+  db: Queryable = pool,
 ): Promise<number> {
-  const result = await pool.query(
+  const result = await db.query(
     `INSERT INTO web_notification_jobs
        (subscription_id, idempotency_key, source_type, source_id, run_at,
         title, body, tag, icon, url, timezone, status, attempts, max_attempts,
         next_attempt_at, created_at, updated_at)
      SELECT ps.id,
-            md5($1 || ':' || COALESCE($2, '') || ':' || ps.id),
+             $1 || ':' || COALESCE($2, '') || ':' || ps.id,
             $1,
             $2,
             to_timestamp($3 / 1000.0),
@@ -197,7 +204,7 @@ export async function enqueueWebNotificationForUser(
        FROM push_subscriptions ps
       WHERE ps.user_id = $11
      ON CONFLICT (idempotency_key) DO UPDATE
-       SET run_at = EXCLUDED.run_at,
+       SET run_at = LEAST(web_notification_jobs.run_at, EXCLUDED.run_at),
            title = EXCLUDED.title,
            body = EXCLUDED.body,
            tag = EXCLUDED.tag,
@@ -223,36 +230,43 @@ export async function enqueueWebNotificationForUser(
   return result.rowCount ?? 0;
 }
 
-async function claimDueJobs(limit = CLAIM_LIMIT): Promise<ClaimedWebNotificationJob[]> {
+async function claimDueJobs(
+  limit = CLAIM_LIMIT,
+  sourceType: string | null = null,
+): Promise<ClaimedWebNotificationJob[]> {
   const client = await pool.connect();
   const leaseToken = randomUUID();
-  let exhaustedSources: Array<{ source_type: string; source_id: string | null }> = [];
   try {
     await client.query("BEGIN");
-    const exhausted = await client.query<{ source_type: string; source_id: string | null }>(
+    const exhausted = await client.query<{
+      sourceType: string;
+      sourceId: string | null;
+    }>(
       `UPDATE web_notification_jobs
-          SET status = 'failed', lease_token = NULL, lease_expires_at = NULL,
+          SET status = 'failed',
+              lease_token = NULL,
+              lease_expires_at = NULL,
               last_error = COALESCE(last_error, 'Delivery lease expired after final attempt'),
               updated_at = NOW()
         WHERE status = 'processing'
           AND lease_expires_at < NOW()
           AND attempts >= max_attempts
-      RETURNING source_type, source_id`,
+      RETURNING source_type AS "sourceType", source_id AS "sourceId"`,
     );
-    exhaustedSources = exhausted.rows;
     const result = await client.query<ClaimedWebNotificationJob>(
       `WITH candidates AS (
          SELECT job.id, ps.endpoint, ps.p256dh, ps.auth
            FROM web_notification_jobs job
            JOIN push_subscriptions ps ON ps.id = job.subscription_id
-          WHERE (
+           WHERE ($4::text IS NULL OR job.source_type = $4)
+             AND job.attempts < job.max_attempts
+             AND ((
             job.status IN ('pending', 'retry')
             AND COALESCE(job.next_attempt_at, job.run_at) <= NOW()
           ) OR (
             job.status = 'processing'
             AND job.lease_expires_at < NOW()
-            AND job.attempts < job.max_attempts
-          )
+           ))
           ORDER BY job.run_at ASC, job.id ASC
           FOR UPDATE SKIP LOCKED
           LIMIT $1
@@ -270,16 +284,14 @@ async function claimDueJobs(limit = CLAIM_LIMIT): Promise<ClaimedWebNotification
          job.idempotency_key AS "idempotencyKey", job.source_type AS "sourceType",
          job.source_id AS "sourceId", EXTRACT(EPOCH FROM job.run_at) * 1000 AS "fireAt",
          job.title, job.body, job.tag, job.icon, job.url, job.timezone,
-         job.attempts AS "attemptCount", job.max_attempts AS "maxAttempts",
-         job.lease_token AS "leaseToken",
+          job.attempts AS "attemptCount", job.max_attempts AS "maxAttempts",
+          job.lease_token AS "leaseToken",
          candidates.endpoint, candidates.p256dh, candidates.auth`,
-      [limit, leaseToken, LEASE_MS],
+      [limit, leaseToken, LEASE_MS, sourceType],
     );
     await client.query("COMMIT");
-    for (const source of exhaustedSources) {
-      await finalizeSource(source.source_type, source.source_id).catch((err) => {
-        logger.error({ err, source }, "Failed to finalize exhausted web notification source");
-      });
+    for (const source of exhausted.rows) {
+      await finalizeSource(source.sourceType, source.sourceId);
     }
     return result.rows.map((row) => ({ ...row, fireAt: Number(row.fireAt) }));
   } catch (error) {
@@ -307,12 +319,61 @@ async function finalizeSource(sourceType: string, sourceId: string | null | unde
       "UPDATE scheduled_broadcasts SET sent_at = COALESCE(sent_at, NOW()) WHERE id = $1",
       [Number(sourceId)],
     );
-  } else if (sourceType === "community_announcement") {
-    await pool.query(
-      "UPDATE community_announcements SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), updated_at = NOW() WHERE id = $1",
-      [sourceId],
-    );
   }
+}
+
+export async function retireWebPushSubscription(
+  endpoint: string,
+  userId?: string,
+): Promise<boolean> {
+  const client = await pool.connect();
+  let sources: Array<{ sourceType: string; sourceId: string | null }> = [];
+  try {
+    await client.query("BEGIN");
+    const subscription = await client.query<{ id: string }>(
+      `SELECT id FROM push_subscriptions
+        WHERE endpoint = $1 AND ($2::text IS NULL OR user_id = $2)
+        FOR UPDATE`,
+      [endpoint, userId ?? null],
+    );
+    const id = subscription.rows[0]?.id;
+    if (!id) {
+      await client.query("COMMIT");
+      return false;
+    }
+    const retired = await client.query<{
+      sourceType: string;
+      sourceId: string | null;
+    }>(
+      `UPDATE web_notification_jobs
+          SET status = 'failed',
+              last_error = 'Push subscription was removed',
+              lease_token = NULL,
+              lease_expires_at = NULL,
+              updated_at = NOW()
+        WHERE subscription_id = $1 AND status IN ('pending', 'retry', 'processing')
+      RETURNING source_type AS "sourceType", source_id AS "sourceId"`,
+      [id],
+    );
+    sources = retired.rows;
+    await client.query("DELETE FROM push_subscriptions WHERE id = $1", [id]);
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
+  const uniqueSources = new Map(
+    sources.map((source) => [
+      `${source.sourceType}:${source.sourceId ?? ""}`,
+      source,
+    ]),
+  );
+  for (const source of uniqueSources.values()) {
+    await finalizeSource(source.sourceType, source.sourceId);
+  }
+  return true;
 }
 
 async function sourceMayDeliver(job: ClaimedWebNotificationJob): Promise<boolean> {
@@ -328,14 +389,16 @@ async function sourceMayDeliver(job: ClaimedWebNotificationJob): Promise<boolean
 }
 
 async function markSent(job: ClaimedWebNotificationJob): Promise<void> {
-  await pool.query(
+  const result = await pool.query(
     `UPDATE web_notification_jobs
         SET status = 'sent', sent_at = NOW(), lease_token = NULL,
             lease_expires_at = NULL, last_error = NULL, updated_at = NOW()
       WHERE id = $1 AND status = 'processing' AND lease_token = $2`,
     [job.id, job.leaseToken],
   );
-  await finalizeSource(job.sourceType, job.sourceId);
+  if ((result.rowCount ?? 0) > 0) {
+    await finalizeSource(job.sourceType, job.sourceId);
+  }
 }
 
 async function markFailedOrRetry(
@@ -344,9 +407,10 @@ async function markFailedOrRetry(
   permanent: boolean,
 ): Promise<void> {
   const message = error instanceof Error ? error.message.slice(0, 500) : "Push delivery failed";
-  const terminal = permanent || job.attemptCount >= (job.maxAttempts ?? DEFAULT_MAX_ATTEMPTS);
+  const terminal = permanent || job.attemptCount >= job.maxAttempts;
+  let result;
   if (terminal) {
-    await pool.query(
+    result = await pool.query(
       `UPDATE web_notification_jobs
           SET status = 'failed', lease_token = NULL, lease_expires_at = NULL,
               last_error = $3, updated_at = NOW()
@@ -355,7 +419,7 @@ async function markFailedOrRetry(
     );
   } else {
     const delaySeconds = Math.min(60 * 60, 15 * 2 ** Math.max(0, job.attemptCount - 1));
-    await pool.query(
+    result = await pool.query(
       `UPDATE web_notification_jobs
           SET status = 'retry', lease_token = NULL, lease_expires_at = NULL,
               next_attempt_at = NOW() + ($3 * INTERVAL '1 second'),
@@ -364,10 +428,16 @@ async function markFailedOrRetry(
       [job.id, job.leaseToken, delaySeconds, message],
     );
   }
-  await finalizeSource(job.sourceType, job.sourceId);
+  if ((result.rowCount ?? 0) > 0) {
+    await finalizeSource(job.sourceType, job.sourceId);
+  }
 }
 
 async function processJob(job: ClaimedWebNotificationJob): Promise<void> {
+  if (!(await sourceMayDeliver(job))) {
+    await markFailedOrRetry(job, new Error("Notification source was removed"), true);
+    return;
+  }
   const subscription: WebPushSubscription = {
     endpoint: job.endpoint,
     keys: { p256dh: job.p256dh, auth: job.auth },
@@ -380,17 +450,6 @@ async function processJob(job: ClaimedWebNotificationJob): Promise<void> {
     url: job.url ?? "/",
   };
 
-  if (!(await sourceMayDeliver(job))) {
-    await pool.query(
-      `UPDATE web_notification_jobs
-          SET status = 'failed', lease_token = NULL, lease_expires_at = NULL,
-              last_error = 'Source was deleted or cancelled', updated_at = NOW()
-        WHERE id = $1 AND status = 'processing' AND lease_token = $2`,
-      [job.id, job.leaseToken],
-    );
-    return;
-  }
-
   try {
     await sendWebPush(subscription, payload);
     await markSent(job);
@@ -398,7 +457,7 @@ async function processJob(job: ClaimedWebNotificationJob): Promise<void> {
     const permanent = isExpiredWebPushError(error);
     await markFailedOrRetry(job, error, permanent);
     if (permanent) {
-      await pool.query("DELETE FROM push_subscriptions WHERE id = $1", [job.subscriptionId]).catch(() => {});
+      await retireWebPushSubscription(job.endpoint).catch(() => {});
     } else {
       logger.warn({ jobId: job.id, attempt: job.attemptCount }, "Web Push delivery will retry");
     }
@@ -406,17 +465,6 @@ async function processJob(job: ClaimedWebNotificationJob): Promise<void> {
 }
 
 export async function runWebNotificationQueueOnce(): Promise<number> {
-  await pool.query(
-    `UPDATE community_announcements announcement
-        SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), updated_at = NOW()
-      WHERE announcement.status = 'scheduled'
-        AND announcement.scheduled_at <= NOW()
-        AND NOT EXISTS (
-          SELECT 1 FROM web_notification_jobs job
-          WHERE job.source_type = 'community_announcement'
-            AND job.source_id = announcement.id
-        )`,
-  );
   if (!isWebPushReady()) return 0;
   const jobs = await claimDueJobs();
   for (const job of jobs) await processJob(job);
@@ -439,3 +487,9 @@ export function startWebNotificationQueue(): void {
   void tick();
   setInterval(() => void tick(), 30_000);
 }
+
+export const webNotificationJobTestApi = {
+  claimDueJobs,
+  markFailedOrRetry,
+  markSent,
+};

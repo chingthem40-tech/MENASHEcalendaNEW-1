@@ -5,7 +5,7 @@ import { NetworkFirst, StaleWhileRevalidate } from "workbox-strategies";
 
 declare const self: ServiceWorkerGlobalScope;
 
-/* ============================================================
+/* ------------------------------------------------------------
    Menashe Calendar — Service Worker (Workbox edition)
 
    Precache manifest (self.__WB_MANIFEST) is injected at build
@@ -19,7 +19,7 @@ declare const self: ServiceWorkerGlobalScope;
      /assets/*.js      → StaleWhileRevalidate (runtime; covers
                          vendor-three + any chunk missed above)
      Push/click        → unchanged from v4 manual SW
-   ============================================================ */
+   ------------------------------------------------------------ */
 
 /* ── Precache all hashed build artifacts ── */
 // self.__WB_MANIFEST is injected by vite-plugin-pwa; fall back to []
@@ -111,37 +111,35 @@ self.addEventListener("push", (event) => {
   );
 });
 
-function safeNotificationUrl(value: unknown): string {
-  const fallback = new URL("/", self.location.origin).href;
-  if (typeof value !== "string" || value.length > 2_048) return fallback;
-  try {
-    const url = new URL(value, self.location.origin);
-    const isLocalDevelopment =
-      self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1";
-    if (url.origin !== self.location.origin) return fallback;
-    if (url.protocol !== "https:" && !(isLocalDevelopment && url.protocol === "http:")) {
-      return fallback;
-    }
-    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("//")) return fallback;
-    return url.href;
-  } catch {
-    return fallback;
-  }
-}
-
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = safeNotificationUrl(
-    (event.notification.data as { url?: unknown } | undefined)?.url,
-  );
+  const requestedUrl =
+    (event.notification.data as { url?: string } | undefined)?.url ??
+    "/";
+  let targetUrl = new URL("/", self.location.origin).href;
+  try {
+    const parsed = new URL(requestedUrl, self.location.origin);
+    const safeProtocol = parsed.protocol === "https:" ||
+      (parsed.protocol === "http:" && self.location.protocol === "http:");
+    const safePath = parsed.pathname.startsWith("/") &&
+      !parsed.pathname.startsWith("/api/") &&
+      !parsed.pathname.startsWith("//");
+    if (parsed.origin === self.location.origin && safeProtocol && safePath) {
+      targetUrl = parsed.href;
+    }
+  } catch {
+    // Use the safe application root for malformed destinations.
+  }
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
           if (new URL(client.url).origin === self.location.origin && "focus" in client) {
-            const windowClient = client as WindowClient;
-            return windowClient.navigate(targetUrl).then(() => windowClient.focus());
+            if ("navigate" in client && client.url !== targetUrl) {
+              return (client as WindowClient).navigate(targetUrl).then(() => client.focus());
+            }
+            return (client as WindowClient).focus();
           }
         }
         return self.clients.openWindow(targetUrl);

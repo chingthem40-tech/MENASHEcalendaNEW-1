@@ -9,6 +9,7 @@
  */
 
 import { Expo, type ExpoPushMessage } from "expo-server-sdk";
+import type { PoolClient } from "pg";
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
 import type { BranchStatus } from "./branchAuth";
@@ -73,56 +74,49 @@ function buildPayload(branchName: string, newStatus: BranchStatus, note?: string
  * Sends both web push (browser) and Expo push (mobile) if subscriptions exist.
  * Silently no-ops if VAPID is not configured or no subscriptions found.
  */
-export async function notifyBranchOwner(
+export async function enqueueBranchOwnerWebNotification(
+  ownerUserId: string,
+  branchName: string,
+  newStatus: BranchStatus,
+  note?: string,
+  occurrenceId?: string,
+  db: Pick<PoolClient, "query"> = pool,
+): Promise<void> {
+  const payload = buildPayload(branchName, newStatus, note);
+  if (!occurrenceId) throw new Error("Branch notification occurrenceId is required");
+  await enqueueWebNotificationForUser(ownerUserId, {
+    sourceType: "branch_status",
+    sourceId: occurrenceId,
+    fireAt: Date.now(),
+    title: payload.title,
+    body: payload.body,
+    tag: payload.tag,
+    icon: "/favicon.svg",
+    url: "/community",
+  }, db);
+}
+
+export async function sendBranchOwnerExpoNotification(
   ownerUserId: string,
   branchName: string,
   newStatus: BranchStatus,
   note?: string,
 ): Promise<void> {
   const payload = buildPayload(branchName, newStatus, note);
-
-  // ── Expo (mobile) ─────────────────────────────────────────────
-  try {
-    const { rows: tokenRows } = await pool.query<{ token: string }>(
-      "SELECT token FROM expo_push_tokens WHERE user_id = $1",
-      [ownerUserId],
-    );
-
-    const messages: ExpoPushMessage[] = tokenRows
-      .filter((r) => Expo.isExpoPushToken(r.token))
-      .map((r) => ({
-        to: r.token,
-        title: payload.title,
-        body: payload.body,
-        sound: "default" as const,
-        data: { tag: payload.tag },
-      }));
-
-    if (messages.length > 0) {
-      const chunks = expo.chunkPushNotifications(messages);
-      for (const chunk of chunks) {
-        await expo.sendPushNotificationsAsync(chunk).catch((err) => {
-          logger.warn({ err }, "branchNotif: expo push chunk failed");
-        });
-      }
-    }
-  } catch (err) {
-    logger.warn({ err }, "branchNotif: expo push failed");
-  }
-
-  // ── Web push (browser) ────────────────────────────────────────
-  try {
-    await enqueueWebNotificationForUser(ownerUserId, {
-      sourceType: "branch_status",
-      sourceId: `${ownerUserId}:${branchName}:${newStatus}:${Date.now()}`,
-      fireAt: Date.now(),
+  const { rows: tokenRows } = await pool.query<{ token: string }>(
+    "SELECT token FROM expo_push_tokens WHERE user_id = $1",
+    [ownerUserId],
+  );
+  const messages: ExpoPushMessage[] = tokenRows
+    .filter((r) => Expo.isExpoPushToken(r.token))
+    .map((r) => ({
+      to: r.token,
       title: payload.title,
       body: payload.body,
-      tag: payload.tag,
-      icon: "/favicon.svg",
-      url: "/",
-    });
-  } catch (err) {
-    logger.warn({ err }, "branchNotif: failed to queue web push");
+      sound: "default" as const,
+      data: { tag: payload.tag },
+    }));
+  for (const chunk of expo.chunkPushNotifications(messages)) {
+    await expo.sendPushNotificationsAsync(chunk);
   }
 }

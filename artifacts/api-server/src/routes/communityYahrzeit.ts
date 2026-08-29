@@ -6,7 +6,7 @@ import { requireAuth } from "../lib/requireAuth";
 import { requireAdmin } from "../lib/requireAdmin";
 import { safeGetAuth } from "../lib/authorization";
 import { apiError } from "../lib/apiError";
-import { broadcastDedicationPush } from "./push";
+import { broadcastDedicationPush, enqueueDedicationWebPush } from "./push";
 
 /**
  * resolveUserId — returns the authenticated Clerk userId when available,
@@ -179,6 +179,7 @@ router.post("/yahrzeit/:id/dedicate", async (req, res) => {
 
   const client = await pool.connect();
   try {
+    await client.query("BEGIN");
     /* Fetch the deceased name so we can include it in the push notification. */
     const nameRow = await client.query<{ deceased_name: string }>(
       "SELECT deceased_name FROM community_yahrzeit WHERE id = $1",
@@ -195,15 +196,22 @@ router.post("/yahrzeit/:id/dedicate", async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [dedicationId, id, userId, learnerName, studySubject ?? "Torah", activeUntil]
     );
-
-    /* Fire the community push notification in the background — never block the response. */
-    broadcastDedicationPush({
+    const notification = {
+      dedicationId,
       learnerName,
       studySubject: studySubject ?? "Torah",
       deceasedName,
-    }).catch(() => { /* broadcast failure must not surface to caller */ });
+    };
+    await enqueueDedicationWebPush(notification, client);
+    await client.query("COMMIT");
+
+    /* Expo remains best-effort; the web job was committed with the dedication. */
+    broadcastDedicationPush(notification).catch(() => {});
 
     return res.json({ ok: true });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
   } finally {
     client.release();
   }

@@ -10,6 +10,7 @@ import {
   startHolidayHourReminderScheduler,
   startWeeklyYahrzeitDigestScheduler,
 } from "./routes/push";
+import { startAnnouncementScheduler } from "./routes/announcements";
 
 async function start() {
   try {
@@ -29,6 +30,7 @@ async function start() {
   startHolidayHourReminderScheduler();
   startYahrzeitPushScheduler();
   startWeeklyYahrzeitDigestScheduler();
+  startAnnouncementScheduler();
 
   // Explicitly bind to 0.0.0.0 so the server accepts connections on all
   // network interfaces — required on Railway, Render, and Fly.io.

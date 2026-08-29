@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { pool } from "@workspace/db";
 import { branchSchema, memberSubmissionSchema } from "@workspace/shared-core/census";
@@ -11,7 +12,10 @@ import {
   ACTION_TO_STATUS, ACTION_FROM_STATUSES, ACTION_MIN_ROLE,
   type BranchAction, type BranchAdminRole,
 } from "../lib/branchAuth";
-import { notifyBranchOwner } from "../lib/branchNotifications";
+import {
+  enqueueBranchOwnerWebNotification,
+  sendBranchOwnerExpoNotification,
+} from "../lib/branchNotifications";
 
 const router = Router();
 
@@ -390,18 +394,34 @@ router.post("/census/branch/submit", requireAuth, async (req, res) => {
       return res.status(409).json({ error: `Cannot submit a branch with status '${current}'` });
     }
 
-    await pool.query(
-      "UPDATE census_branches SET branch_status = 'pending_review', updated_at = NOW() WHERE id = $1",
-      [branch.id]
-    );
-    await pool.query(
-      `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status)
-       VALUES ($1, $2, $3, 'local_admin', 'submitted', $4, 'pending_review')`,
-      [`bre_${Date.now()}`, branch.id, userId, current]
-    );
-
-    // Notify the owner (themselves, for completeness) and log
-    await notifyBranchOwner(userId, branch.name, "pending_review").catch(() => {});
+    const reviewEventId = `bre_${randomUUID()}`;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const updated = await client.query(
+        `UPDATE census_branches
+            SET branch_status = 'pending_review', updated_at = NOW()
+          WHERE id = $1 AND branch_status = $2
+        RETURNING id`,
+        [branch.id, current],
+      );
+      if ((updated.rowCount ?? 0) !== 1) throw new Error("Branch status changed concurrently");
+      await client.query(
+        `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status)
+         VALUES ($1, $2, $3, 'local_admin', 'submitted', $4, 'pending_review')`,
+        [reviewEventId, branch.id, userId, current],
+      );
+      await enqueueBranchOwnerWebNotification(
+        userId, branch.name, "pending_review", undefined, reviewEventId, client,
+      );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+    sendBranchOwnerExpoNotification(userId, branch.name, "pending_review").catch(() => {});
     logger.info({ branchId: branch.id, userId }, "branch submitted for review");
 
     const { rows: updated } = await pool.query("SELECT * FROM census_branches WHERE id = $1", [branch.id]);
@@ -444,18 +464,34 @@ router.post("/census/admin/branches/:id/transition", requireRegionalAdmin, async
     }
 
     const toStatus = ACTION_TO_STATUS[action];
-    await pool.query(
-      "UPDATE census_branches SET branch_status = $2, updated_at = NOW() WHERE id = $1",
-      [String(id), toStatus]
-    );
-    await pool.query(
-      `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status, note)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [`bre_${Date.now()}`, String(id), adminUserId, adminRole, action, current, toStatus, note || null]
-    );
-
-    // Notify the branch owner
-    await notifyBranchOwner(branch.owner_user_id, branch.name, toStatus, note).catch(() => {});
+    const reviewEventId = `bre_${randomUUID()}`;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const updated = await client.query(
+        `UPDATE census_branches SET branch_status = $2, updated_at = NOW()
+          WHERE id = $1 AND branch_status = $3 RETURNING id`,
+        [String(id), toStatus, current],
+      );
+      if ((updated.rowCount ?? 0) !== 1) throw new Error("Branch status changed concurrently");
+      await client.query(
+        `INSERT INTO branch_review_events (id, branch_id, actor_user_id, actor_role, action, from_status, to_status, note)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [reviewEventId, String(id), adminUserId, adminRole, action, current, toStatus, note || null],
+      );
+      await enqueueBranchOwnerWebNotification(
+        branch.owner_user_id, branch.name, toStatus, note, reviewEventId, client,
+      );
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
+    }
+    sendBranchOwnerExpoNotification(
+      branch.owner_user_id, branch.name, toStatus, note,
+    ).catch(() => {});
     logger.info({ branchId: String(id), action, adminUserId, toStatus }, "branch lifecycle transition");
 
     const { rows: updated } = await pool.query("SELECT * FROM census_branches WHERE id = $1", [String(id)]);

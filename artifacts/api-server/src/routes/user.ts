@@ -4,7 +4,7 @@ import { pool } from "@workspace/db";
 import { requireAuth } from "../lib/requireAuth";
 import { requireAdmin } from "../lib/requireAdmin";
 import { apiError } from "../lib/apiError";
-import { sendPushToUser } from "./push";
+import { enqueueWebNotificationForUser } from "../lib/webNotificationJobs";
 
 const router = Router();
 
@@ -368,20 +368,22 @@ router.post("/premium/request", requireAuth, async (req, res) => {
   const { note } = parsed.data;
   const client = await pool.connect();
   try {
+    await client.query("BEGIN");
     const { rows: pp } = await client.query(
       "SELECT display_name, avatar_emoji, congregation, city, country FROM user_public_profiles WHERE user_id = $1",
       [userId],
     );
     const profile = pp[0] ?? {};
-    await client.query(
+    const request = await client.query<{ id: string }>(
       `INSERT INTO premium_requests
          (id, user_id, status, note, display_name, avatar_emoji, congregation, city, country, requested_at)
        VALUES (gen_random_uuid()::text, $1, 'pending', $2, $3, $4, $5, $6, $7, NOW())
        ON CONFLICT (user_id) DO UPDATE SET
-         status = 'pending', note = EXCLUDED.note,
+         id = EXCLUDED.id, status = 'pending', note = EXCLUDED.note,
          display_name = EXCLUDED.display_name, avatar_emoji = EXCLUDED.avatar_emoji,
          congregation = EXCLUDED.congregation, city = EXCLUDED.city,
-         country = EXCLUDED.country, requested_at = NOW()`,
+         country = EXCLUDED.country, requested_at = NOW()
+       RETURNING id`,
       [userId, note ?? "", profile.display_name ?? null, profile.avatar_emoji ?? "👤",
        profile.congregation ?? null, profile.city ?? null, profile.country ?? null],
     );
@@ -389,14 +391,23 @@ router.post("/premium/request", requireAuth, async (req, res) => {
     const adminUserId = process.env["ADMIN_USER_ID"];
     if (adminUserId) {
       const isPaid = typeof note === "string" && note.toLowerCase().includes("paid");
-      sendPushToUser(adminUserId, {
+      await enqueueWebNotificationForUser(adminUserId, {
+        sourceType: "premium_request",
+        sourceId: request.rows[0].id,
+        fireAt: Date.now(),
         title: isPaid ? "💳 New Payment Request" : "🔔 New Premium Request",
         body: `${profile.display_name ?? "Someone"} has requested Premium access.${isPaid ? " (UPI payment claimed)" : ""}`,
         tag: `admin-premium-request-${userId}`,
-      }).catch(() => {});
+        icon: "/favicon.svg",
+        url: "/admin",
+      }, client);
     }
 
+    await client.query("COMMIT");
     return res.json({ ok: true });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
   } finally {
     client.release();
   }
@@ -446,22 +457,39 @@ router.put("/admin/premium-requests/:userId/approve", requireAdmin, async (req, 
   const userId = String(req.params.userId);
   const client = await pool.connect();
   try {
+    await client.query("BEGIN");
     await client.query(
       `INSERT INTO user_profiles (user_id, is_premium, theme, candle_enabled, language, updated_at)
        VALUES ($1, true, 'dark', true, 'en', NOW())
        ON CONFLICT (user_id) DO UPDATE SET is_premium = true, updated_at = NOW()`,
       [userId],
     );
-    await client.query(
-      `UPDATE premium_requests SET status = 'approved', reviewed_at = NOW() WHERE user_id = $1`,
+    const request = await client.query<{ id: string }>(
+      `UPDATE premium_requests
+          SET status = 'approved', reviewed_at = NOW()
+        WHERE user_id = $1 AND status = 'pending'
+      RETURNING id`,
       [userId],
     );
-    sendPushToUser(userId, {
+    if (!request.rows[0]) {
+      await client.query("ROLLBACK");
+      return res.status(409).json({ error: "Premium request is not pending" });
+    }
+    await enqueueWebNotificationForUser(userId, {
+      sourceType: "premium_approval",
+      sourceId: `${request.rows[0].id}:approved`,
+      fireAt: Date.now(),
       title: "👑 Premium Approved!",
       body: "Your Premium access has been approved. Open the app to unlock all features!",
       tag: "premium-approved",
-    }).catch(() => {});
+      icon: "/favicon.svg",
+      url: "/premium",
+    }, client);
+    await client.query("COMMIT");
     return res.json({ ok: true });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
   } finally {
     client.release();
   }

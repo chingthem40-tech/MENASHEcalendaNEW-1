@@ -487,6 +487,11 @@ export function useNotifications(location: Location) {
 
   const requestPermission = useCallback(async (): Promise<NotificationPermission> => {
     if (!isNotifSupported()) return "denied";
+    const current = Notification.permission;
+    if (current !== "default") {
+      setPermission(current);
+      return current;
+    }
     const result = await Notification.requestPermission();
     setPermission(result);
     return result;

@@ -53,7 +53,7 @@ function rowToAnn(row: any): CommunityAnnouncement {
   };
 }
 
-async function broadcastToAll(ann: CommunityAnnouncement) {
+async function sendExpoAnnouncement(ann: CommunityAnnouncement) {
   const title = `${ann.emoji} ${ann.title}`;
   const body = ann.body || ann.title;
 
@@ -94,7 +94,6 @@ async function broadcastToAll(ann: CommunityAnnouncement) {
     }
   }
 
-  await queueWebAnnouncement(ann);
 }
 
 async function queueWebAnnouncement(ann: CommunityAnnouncement): Promise<void> {
@@ -103,28 +102,66 @@ async function queueWebAnnouncement(ann: CommunityAnnouncement): Promise<void> {
   const queued = await enqueueWebNotificationForAll({
     sourceType: "community_announcement",
     sourceId: ann.id,
-    fireAt:
-      ann.status === "scheduled" && ann.scheduledAt
-        ? new Date(ann.scheduledAt).getTime()
-        : Date.now(),
+    fireAt: ann.scheduledAt ? new Date(ann.scheduledAt).getTime() : Date.now(),
     title,
     body,
     tag: `announcement-${ann.id}`,
     icon: "/favicon.svg",
     url: "/",
   });
-  if (
-    queued === 0 &&
-    ann.status === "scheduled" &&
-    ann.scheduledAt &&
-    new Date(ann.scheduledAt).getTime() <= Date.now()
-  ) {
-    await pool.query(
-      "UPDATE community_announcements SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), updated_at = NOW() WHERE id = $1",
-      [ann.id],
-    );
-  }
   logger.info({ announcementId: ann.id, queued }, "announcements: queued web push");
+}
+
+async function dispatchDueAnnouncement(id: string): Promise<CommunityAnnouncement | null> {
+  const existing = await pool.query(
+    `SELECT * FROM community_announcements
+      WHERE id = $1 AND status = 'scheduled' AND scheduled_at <= NOW()`,
+    [id],
+  );
+  const row = existing.rows[0];
+  if (!row) return null;
+
+  const pending = rowToAnn(row);
+  await queueWebAnnouncement(pending);
+
+  const claimed = await pool.query(
+    `UPDATE community_announcements
+        SET status = 'sent', sent_at = COALESCE(sent_at, NOW()), updated_at = NOW()
+      WHERE id = $1 AND status = 'scheduled' AND scheduled_at <= NOW()
+    RETURNING *`,
+    [id],
+  );
+  const claimedRow = claimed.rows[0];
+  if (!claimedRow) return null;
+
+  const sent = rowToAnn(claimedRow);
+  await sendExpoAnnouncement(sent);
+  return sent;
+}
+
+export function startAnnouncementScheduler(): void {
+  let running = false;
+  const tick = async () => {
+    if (running) return;
+    running = true;
+    try {
+      const due = await pool.query<{ id: string }>(
+        `SELECT id FROM community_announcements
+          WHERE status = 'scheduled' AND scheduled_at <= NOW()
+          ORDER BY scheduled_at ASC
+          LIMIT 50`,
+      );
+      for (const row of due.rows) {
+        await dispatchDueAnnouncement(row.id);
+      }
+    } catch (err) {
+      logger.error({ err }, "announcement scheduler failed");
+    } finally {
+      running = false;
+    }
+  };
+  void tick();
+  setInterval(() => void tick(), 30_000);
 }
 
 // GET /announcements — public feed (sent); admin sees all
@@ -154,15 +191,18 @@ router.post("/announcements/broadcast", requireAdmin, async (req, res) => {
 
   const id = `ann-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   const isScheduled = !!scheduledAt;
-  const status = isScheduled ? "scheduled" : "sent";
-  const sentAt = isScheduled ? null : new Date().toISOString();
+  const status = "scheduled";
+  const effectiveScheduledAt = scheduledAt
+    ? new Date(scheduledAt)
+    : new Date();
+  const sentAt = null;
 
   try {
     await pool.query(
       `INSERT INTO community_announcements (id, emoji, title, body, status, pinned, scheduled_at, sent_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [id, emoji ?? "📢", title.trim(), body ?? "", status, pinned ?? false,
-       scheduledAt ? new Date(scheduledAt) : null, sentAt ? new Date(sentAt) : null],
+       effectiveScheduledAt, null],
     );
   } catch (err) {
     logger.error({ err }, "POST /announcements/broadcast: db error");
@@ -172,14 +212,17 @@ router.post("/announcements/broadcast", requireAdmin, async (req, res) => {
   const ann: CommunityAnnouncement = {
     id, emoji: emoji ?? "📢", title: title.trim(), body: body ?? "", status,
     pinned: pinned ?? false,
-    scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+    scheduledAt: effectiveScheduledAt.toISOString(),
     sentAt,
     createdAt: new Date().toISOString(),
   };
 
   try {
-    if (status === "sent") {
-      await broadcastToAll(ann);
+    if (!isScheduled) {
+      const sent = await dispatchDueAnnouncement(id);
+      if (!sent) throw new Error("Announcement could not be dispatched");
+      res.json({ ok: true, announcement: sent });
+      return;
     } else {
       await queueWebAnnouncement(ann);
     }
@@ -210,16 +253,20 @@ router.patch("/announcements/:id", requireAdmin, async (req, res) => {
     const newBody = body ?? row.body;
     const newPinned = pinned ?? row.pinned;
     const shouldSendNow = sendNow === true && row.status !== "sent";
-    const newStatus = shouldSendNow ? "sent" : row.status;
-    const newSentAt = shouldSendNow ? new Date() : row.sent_at;
-    const newScheduledAt = shouldSendNow ? null : row.scheduled_at;
+    const newStatus = shouldSendNow ? "scheduled" : row.status;
+    const newSentAt = shouldSendNow ? null : row.sent_at;
+    const newScheduledAt = shouldSendNow ? new Date() : row.scheduled_at;
 
     await pool.query(
-      `UPDATE community_announcements SET emoji=$1, title=$2, body=$3, pinned=$4, status=$5, sent_at=$6, scheduled_at=$7, updated_at=NOW() WHERE id=$8`,
-      [newEmoji, newTitle, newBody, newPinned, newStatus, newSentAt, newScheduledAt, id],
+      `UPDATE community_announcements
+          SET emoji=$1, title=$2, body=$3, pinned=$4, status=$5, sent_at=$6,
+              scheduled_at=$7, updated_at=NOW()
+        WHERE id=$8`,
+      [newEmoji, newTitle, newBody, newPinned, newStatus, newSentAt,
+       newScheduledAt, id],
     );
 
-    const ann: CommunityAnnouncement = {
+    let ann: CommunityAnnouncement = {
       id, emoji: newEmoji, title: newTitle, body: newBody, status: newStatus,
       pinned: newPinned,
       scheduledAt: newScheduledAt ? new Date(newScheduledAt).toISOString() : null,
@@ -227,9 +274,9 @@ router.patch("/announcements/:id", requireAdmin, async (req, res) => {
       createdAt: new Date(row.created_at).toISOString(),
     };
     if (shouldSendNow) {
-      await broadcastToAll(ann);
-    } else if (row.status === "scheduled") {
-      await queueWebAnnouncement(ann);
+      const sent = await dispatchDueAnnouncement(id);
+      if (!sent) throw new Error("Announcement could not be dispatched");
+      ann = sent;
     }
     res.json({ ok: true, announcement: ann });
   } catch (err) {
@@ -240,37 +287,30 @@ router.patch("/announcements/:id", requireAdmin, async (req, res) => {
 
 // DELETE /announcements/:id — admin delete
 router.delete("/announcements/:id", requireAdmin, async (req, res) => {
-  const client = await pool.connect();
   try {
     const id = String(req.params.id);
-    await client.query("BEGIN");
-    const jobs = await client.query<{ status: string }>(
-      `SELECT status FROM web_notification_jobs
-        WHERE source_type = 'community_announcement' AND source_id = $1
-        FOR UPDATE`,
-      [id],
-    );
-    if (jobs.rows.some((job) => job.status === "processing")) {
-      await client.query("ROLLBACK");
-      res.status(409).json({ error: "Announcement delivery is already processing" });
-      return;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      await client.query(
+        `DELETE FROM web_notification_jobs
+          WHERE source_type = 'community_announcement'
+            AND source_id = $1
+            AND status IN ('pending', 'retry')`,
+        [id],
+      );
+      await client.query("DELETE FROM community_announcements WHERE id = $1", [id]);
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
+    } finally {
+      client.release();
     }
-    await client.query(
-      `DELETE FROM web_notification_jobs
-        WHERE source_type = 'community_announcement'
-          AND source_id = $1
-          AND status IN ('pending', 'retry', 'failed')`,
-      [id],
-    );
-    await client.query("DELETE FROM community_announcements WHERE id = $1", [id]);
-    await client.query("COMMIT");
     res.json({ ok: true });
   } catch (err) {
-    await client.query("ROLLBACK").catch(() => {});
     logger.error({ err }, "DELETE /announcements/:id: db error");
     return apiError.internal(res, "Failed to delete announcement");
-  } finally {
-    client.release();
   }
 });
 

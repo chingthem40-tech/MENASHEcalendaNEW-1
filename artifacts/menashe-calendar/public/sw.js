@@ -1,10 +1,10 @@
-/* ============================================================
+/* ------------------------------------------------------------
    Menashe Calendar — Service Worker v3
    Two caches:
      menashe-shell-v3  → app shell (HTML, icons, manifest)
      menashe-assets-v3 → JS/CSS/font/image bundles (runtime cached)
    Git-safe: no build manifest, no hashed filenames hardcoded.
-   ============================================================ */
+   ------------------------------------------------------------ */
 
 const SHELL_CACHE  = "menashe-shell-v4";
 const ASSET_CACHE  = "menashe-assets-v4";
@@ -140,36 +140,32 @@ self.addEventListener("push", (event) => {
   );
 });
 
-function safeNotificationUrl(value) {
-  const fallback = new URL("/", self.location.origin).href;
-  if (typeof value !== "string" || value.length > 2048) return fallback;
-  try {
-    const url = new URL(value, self.location.origin);
-    const isLocalDevelopment =
-      self.location.hostname === "localhost" || self.location.hostname === "127.0.0.1";
-    if (url.origin !== self.location.origin) return fallback;
-    if (url.protocol !== "https:" && !(isLocalDevelopment && url.protocol === "http:")) {
-      return fallback;
-    }
-    if (url.pathname.startsWith("/api/") || url.pathname.startsWith("//")) return fallback;
-    return url.href;
-  } catch {
-    return fallback;
-  }
-}
-
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const targetUrl = safeNotificationUrl(
-    event.notification.data && event.notification.data.url
-  );
+  const requestedUrl =
+    (event.notification.data && event.notification.data.url) || "/";
+  let targetUrl = new URL("/", self.location.origin).href;
+  try {
+    const parsed = new URL(requestedUrl, self.location.origin);
+    const safeProtocol = parsed.protocol === "https:" ||
+      (parsed.protocol === "http:" && self.location.protocol === "http:");
+    const safePath = parsed.pathname.startsWith("/") &&
+      !parsed.pathname.startsWith("/api/") &&
+      !parsed.pathname.startsWith("//");
+    if (parsed.origin === self.location.origin && safeProtocol && safePath) {
+      targetUrl = parsed.href;
+    }
+  } catch {}
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList) => {
         for (const client of clientList) {
           if (new URL(client.url).origin === self.location.origin && "focus" in client) {
-            return client.navigate(targetUrl).then(() => client.focus());
+            if (client.navigate && client.url !== targetUrl) {
+              return client.navigate(targetUrl).then(() => client.focus());
+            }
+            return client.focus();
           }
         }
         if (clients.openWindow) return clients.openWindow(targetUrl);
