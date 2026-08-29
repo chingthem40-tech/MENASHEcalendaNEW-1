@@ -1,6 +1,10 @@
 /// <reference lib="webworker" />
-import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
-import { NavigationRoute, registerRoute } from "workbox-routing";
+import {
+  cleanupOutdatedCaches,
+  matchPrecache,
+  precacheAndRoute,
+} from "workbox-precaching";
+import { NavigationRoute, registerRoute, setCatchHandler } from "workbox-routing";
 import { NetworkFirst, StaleWhileRevalidate } from "workbox-strategies";
 
 declare const self: ServiceWorkerGlobalScope;
@@ -51,6 +55,13 @@ registerRoute(
     },
   ),
 );
+
+setCatchHandler(async ({ request }) => {
+  if (request.mode === "navigate") {
+    return (await matchPrecache("index.html")) ?? Response.error();
+  }
+  return Response.error();
+});
 
 /* ── Runtime cache: JS chunks not in precache (e.g. vendor-three) ──
    Stale-while-revalidate: serve cached copy immediately, refresh in

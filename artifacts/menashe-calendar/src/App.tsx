@@ -95,6 +95,7 @@ const FeedbackCenterModal = lazy(() => import("./modals/FeedbackCenterModal"));
 // Plain constants — import from the tiny side-effect-free module, not the full modal
 import { APP_VERSION, VERSION_KEY } from "./modals/whatsNewVersion";
 import { prefetchAdjacentPages } from "./lib/prefetch";
+import { shortcutPageFromPath } from "./lib/appRoutes";
 
 import { LOCATIONS, Location } from "./lib/locations";
 import type { Book } from "./pages/SiddurPage";
@@ -560,7 +561,9 @@ function AppShell() {
     null,
   );
 
-  const [activePage, setActivePage] = useState<Page>("home");
+  const [activePage, setActivePage] = useState<Page>(() =>
+    shortcutPageFromPath(stripBase(window.location.pathname)),
+  );
   const [modal, _setModal] = useState<Modal>(null);
   // Track the element that triggered a modal so we can return focus on close
   const lastFocusRef = useRef<Element | null>(null);
@@ -1524,6 +1527,8 @@ export default function App() {
       <Switch>
         <Route path="/" component={HomeRoute} />
         <Route path="/app" component={AppRoute} />
+        <Route path="/calendar" component={AppRoute} />
+        <Route path="/zmanim" component={AppRoute} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route>

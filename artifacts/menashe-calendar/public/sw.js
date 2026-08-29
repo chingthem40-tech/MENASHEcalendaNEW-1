@@ -1,17 +1,18 @@
 /* ------------------------------------------------------------
-   Menashe Calendar — Service Worker v3
+   Menashe Calendar — Service Worker v5
    Two caches:
      menashe-shell-v3  → app shell (HTML, icons, manifest)
      menashe-assets-v3 → JS/CSS/font/image bundles (runtime cached)
    Git-safe: no build manifest, no hashed filenames hardcoded.
    ------------------------------------------------------------ */
 
-const SHELL_CACHE  = "menashe-shell-v4";
-const ASSET_CACHE  = "menashe-assets-v4";
+const SHELL_CACHE  = "menashe-shell-v5";
+const ASSET_CACHE  = "menashe-assets-v5";
 const KNOWN_CACHES = [SHELL_CACHE, ASSET_CACHE];
+const APP_SHELL_URL = "/";
 
 const SHELL_URLS = [
-  "/",
+  APP_SHELL_URL,
   "/manifest.json",
   "/favicon.svg",
   "/icon-192.png",
@@ -77,7 +78,9 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          caches.match(event.request).then((cached) => cached || caches.match("/"))
+          caches.match(event.request).then(
+            (cached) => cached || caches.match(APP_SHELL_URL)
+          )
         )
     );
     return;

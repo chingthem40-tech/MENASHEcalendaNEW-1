@@ -1,4 +1,5 @@
 import { pool } from "@workspace/db";
+import type { PoolClient } from "pg";
 import { logger } from "./lib/logger";
 
 const SEED_BOOKS = [
@@ -107,6 +108,21 @@ const SEED_BOOKS = [
     sort_order: 8,
   },
 ];
+
+export async function ensureRecurringWebScheduleSchema(
+  db: Pick<PoolClient, "query"> = pool,
+): Promise<void> {
+  await db.query(`
+    ALTER TABLE push_subscriptions
+      ADD COLUMN IF NOT EXISTS schedule_config JSONB,
+      ADD COLUMN IF NOT EXISTS schedule_horizon_until TIMESTAMPTZ
+  `);
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS push_subscriptions_schedule_renewal_idx
+      ON push_subscriptions (schedule_horizon_until)
+      WHERE schedule_config IS NOT NULL
+  `);
+}
 
 export async function runMigrations(): Promise<void> {
   const client = await pool.connect();
@@ -363,6 +379,7 @@ export async function runMigrations(): Promise<void> {
       CREATE UNIQUE INDEX IF NOT EXISTS push_subscriptions_endpoint_uidx
         ON push_subscriptions (endpoint)
     `);
+    await ensureRecurringWebScheduleSchema(client);
 
     // Durable, per-subscription Web Push jobs. Claims use row locks and leases
     // so Replit Autoscale instances can safely process the same queue.

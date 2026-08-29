@@ -2,10 +2,14 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test, { after, before } from "node:test";
 import { pool } from "@workspace/db";
-import { runMigrations } from "../migrate";
+import {
+  ensureRecurringWebScheduleSchema,
+  runMigrations,
+} from "../migrate";
 import {
   enqueueWebNotificationForAll,
   enqueueWebNotificationForUser,
+  renewClientSchedulesOnce,
   retireWebPushSubscription,
   syncClientSchedule,
   webNotificationJobTestApi,
@@ -330,6 +334,101 @@ test("subscription metadata and schedule jobs roll back together", async () => {
     [subscriptionId],
   );
   assert.deepEqual(jobs.rows.map((row) => row.tag), [original[0].tag]);
+});
+
+test("recurring client schedules renew before their horizon expires", async () => {
+  const subscriptionId = await addSubscription("schedule-renewal");
+  const now = new Date("2026-08-29T12:00:00.000Z");
+  const config = {
+    prefs: {
+      dailyDate: true,
+      shabbat: false,
+      havdalah: false,
+      holiday: false,
+      fastDay: false,
+      specialEvent: false,
+      omer: false,
+      prayers: false,
+      parasha: false,
+      shema: false,
+      shabbatDigest: false,
+      yahrzeit: false,
+    },
+    location: {
+      name: "Churachandpur",
+      country: "India",
+      lat: 24.3333,
+      lng: 93.6833,
+      tz: "Asia/Kolkata",
+      candleLightingMinutes: 18,
+    },
+    leadTime: 15 as const,
+  };
+  await pool.query(
+    `UPDATE push_subscriptions
+        SET schedule_config = $2::jsonb,
+            schedule_horizon_until = $3
+      WHERE id = $1`,
+    [subscriptionId, JSON.stringify(config), now],
+  );
+
+  assert.equal(
+    await renewClientSchedulesOnce(now, 1, subscriptionId),
+    1,
+  );
+  const state = await pool.query<{
+    schedule_horizon_until: Date;
+    schedule: Array<{ fireAt: number }>;
+  }>(
+    `SELECT schedule_horizon_until, schedule
+       FROM push_subscriptions
+      WHERE id = $1`,
+    [subscriptionId],
+  );
+  const renewed = state.rows[0];
+  assert.ok(renewed.schedule.length >= 60);
+  assert.ok(
+    renewed.schedule.some(
+      (item) => item.fireAt >= now.getTime() + 60 * 24 * 60 * 60 * 1000,
+    ),
+  );
+  assert.ok(
+    renewed.schedule_horizon_until.getTime() >=
+      now.getTime() + 69 * 24 * 60 * 60 * 1000,
+  );
+
+  const jobs = await pool.query<{ count: number; latest: Date }>(
+    `SELECT COUNT(*)::int AS count, MAX(run_at) AS latest
+       FROM web_notification_jobs
+      WHERE subscription_id = $1 AND source_type = 'client_schedule'`,
+    [subscriptionId],
+  );
+  assert.equal(jobs.rows[0].count, renewed.schedule.length);
+  assert.ok(
+    jobs.rows[0].latest.getTime() >=
+      now.getTime() + 60 * 24 * 60 * 60 * 1000,
+  );
+
+  assert.equal(
+    await renewClientSchedulesOnce(now, 1, subscriptionId),
+    0,
+  );
+});
+
+test("production startup migration keeps recurring schedule columns ready", async () => {
+  await ensureRecurringWebScheduleSchema();
+  const columns = await pool.query<{ column_name: string }>(
+    `SELECT column_name
+       FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'push_subscriptions'
+        AND column_name IN ('schedule_config', 'schedule_horizon_until')
+      ORDER BY column_name`,
+  );
+  assert.deepEqual(
+    columns.rows.map((row) => row.column_name),
+    ["schedule_config", "schedule_horizon_until"],
+  );
 });
 
 test("zoned occurrence dates remain stable across India and DST transitions", () => {

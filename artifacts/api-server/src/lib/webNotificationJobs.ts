@@ -3,6 +3,11 @@ import type { PoolClient } from "pg";
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
 import {
+  buildWebNotificationSchedule,
+  WEB_SCHEDULE_HORIZON_DAYS,
+  type WebNotificationScheduleConfig,
+} from "@workspace/shared-core";
+import {
   isExpiredWebPushError,
   isWebPushReady,
   sendWebPush,
@@ -38,6 +43,9 @@ type Queryable = Pick<PoolClient, "query">;
 const CLAIM_LIMIT = 50;
 const LEASE_MS = 5 * 60 * 1000;
 const DEFAULT_MAX_ATTEMPTS = 5;
+const RENEWAL_LOOKAHEAD_DAYS = 21;
+const RENEWAL_BATCH_SIZE = 50;
+const RENEWAL_INTERVAL_MS = 6 * 60 * 60 * 1000;
 
 export function makeWebNotificationKey(
   subscriptionId: string,
@@ -135,6 +143,66 @@ export async function syncClientSchedule(
     throw error;
   } finally {
     if (ownsTransaction) client.release();
+  }
+}
+
+export async function renewClientSchedulesOnce(
+  now = new Date(),
+  limit = RENEWAL_BATCH_SIZE,
+  subscriptionId?: string,
+): Promise<number> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const threshold = new Date(
+      now.getTime() + RENEWAL_LOOKAHEAD_DAYS * 24 * 60 * 60 * 1000,
+    );
+    const subscriptions = await client.query<{
+      id: string;
+      scheduleConfig: WebNotificationScheduleConfig;
+    }>(
+      `SELECT id, schedule_config AS "scheduleConfig"
+         FROM push_subscriptions
+        WHERE schedule_config IS NOT NULL
+          AND ($3::text IS NULL OR id = $3)
+          AND (
+            schedule_horizon_until IS NULL
+            OR schedule_horizon_until <= $1
+          )
+        ORDER BY schedule_horizon_until ASC NULLS FIRST, id ASC
+        FOR UPDATE SKIP LOCKED
+        LIMIT $2`,
+      [threshold, limit, subscriptionId ?? null],
+    );
+
+    for (const subscription of subscriptions.rows) {
+      const schedule = buildWebNotificationSchedule(
+        subscription.scheduleConfig,
+        now,
+        WEB_SCHEDULE_HORIZON_DAYS,
+      );
+      await client.query(
+        `UPDATE push_subscriptions
+            SET schedule = $2::jsonb,
+                schedule_horizon_until = $3,
+                updated_at = NOW()
+          WHERE id = $1`,
+        [
+          subscription.id,
+          JSON.stringify(schedule),
+          new Date(now.getTime() + WEB_SCHEDULE_HORIZON_DAYS * 24 * 60 * 60 * 1000),
+        ],
+      );
+      await syncClientSchedule(subscription.id, schedule, client);
+    }
+
+    await client.query("COMMIT");
+    return subscriptions.rowCount ?? 0;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
   }
 }
 
@@ -486,6 +554,26 @@ export function startWebNotificationQueue(): void {
   };
   void tick();
   setInterval(() => void tick(), 30_000);
+}
+
+export function startClientScheduleRenewal(): void {
+  let running = false;
+  const renew = async () => {
+    if (running) return;
+    running = true;
+    try {
+      let renewed: number;
+      do {
+        renewed = await renewClientSchedulesOnce();
+      } while (renewed === RENEWAL_BATCH_SIZE);
+    } catch (error) {
+      logger.error({ error }, "web-notification-schedule: renewal failed");
+    } finally {
+      running = false;
+    }
+  };
+  void renew();
+  setInterval(() => void renew(), RENEWAL_INTERVAL_MS);
 }
 
 export const webNotificationJobTestApi = {

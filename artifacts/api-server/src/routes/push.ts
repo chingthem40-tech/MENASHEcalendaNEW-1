@@ -12,10 +12,16 @@ import {
   enqueueWebNotificationForAll,
   enqueueWebNotificationForUser,
   retireWebPushSubscription,
+  startClientScheduleRenewal,
   startWebNotificationQueue,
   syncClientSchedule,
   type WebNotificationScheduleItem,
 } from "../lib/webNotificationJobs";
+import type {
+  WebNotificationScheduleConfig,
+  WebNotificationPreferences,
+} from "@workspace/shared-core";
+import { WEB_SCHEDULE_HORIZON_DAYS } from "@workspace/shared-core";
 import {
   getWebPushPublicKey,
   isExpiredWebPushError,
@@ -54,6 +60,54 @@ function isValidScheduleItem(item: unknown): item is ScheduleItem {
     value.tag.length <= 200 &&
     (value.timezone === undefined ||
       (typeof value.timezone === "string" && isValidIanaTimeZone(value.timezone)))
+  );
+}
+
+const SCHEDULE_PREF_KEYS: Array<keyof WebNotificationPreferences> = [
+  "dailyDate",
+  "shabbat",
+  "havdalah",
+  "holiday",
+  "fastDay",
+  "specialEvent",
+  "omer",
+  "prayers",
+  "parasha",
+  "shema",
+  "shabbatDigest",
+  "yahrzeit",
+];
+
+function isValidScheduleConfig(
+  value: unknown,
+): value is WebNotificationScheduleConfig {
+  if (!value || typeof value !== "object") return false;
+  const config = value as Partial<WebNotificationScheduleConfig>;
+  const location = config.location;
+  const prefs = config.prefs;
+  return (
+    !!location &&
+    typeof location === "object" &&
+    typeof location.name === "string" &&
+    location.name.length > 0 &&
+    location.name.length <= 200 &&
+    typeof location.country === "string" &&
+    location.country.length <= 200 &&
+    Number.isFinite(location.lat) &&
+    Number(location.lat) >= -90 &&
+    Number(location.lat) <= 90 &&
+    Number.isFinite(location.lng) &&
+    Number(location.lng) >= -180 &&
+    Number(location.lng) <= 180 &&
+    Number.isInteger(location.candleLightingMinutes) &&
+    Number(location.candleLightingMinutes) >= 0 &&
+    Number(location.candleLightingMinutes) <= 120 &&
+    typeof location.tz === "string" &&
+    isValidIanaTimeZone(location.tz) &&
+    !!prefs &&
+    typeof prefs === "object" &&
+    SCHEDULE_PREF_KEYS.every((key) => typeof prefs[key] === "boolean") &&
+    [5, 10, 15, 30].includes(Number(config.leadTime))
   );
 }
 
@@ -122,22 +176,41 @@ async function dbUpsert(
   schedule: ScheduleItem[],
   userId: string,
   db: Pick<import("pg").PoolClient, "query"> = pool,
+  scheduleConfig?: WebNotificationScheduleConfig,
 ): Promise<string> {
   const id = subId(subscription.endpoint);
   const keys = subscription.keys as { p256dh: string; auth: string };
   const result = await db.query<{ id: string }>(
-    `INSERT INTO push_subscriptions (id, endpoint, p256dh, auth, schedule, user_id, updated_at)
-     VALUES ($1, $2, $3, $4, $5::jsonb, $6, NOW())
+    `INSERT INTO push_subscriptions
+       (id, endpoint, p256dh, auth, schedule, user_id, schedule_config,
+        schedule_horizon_until, updated_at)
+     VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7::jsonb, $8, NOW())
      ON CONFLICT (endpoint) DO UPDATE
        SET p256dh     = EXCLUDED.p256dh,
            auth       = EXCLUDED.auth,
            schedule   = EXCLUDED.schedule,
            user_id    = EXCLUDED.user_id,
+           schedule_config = COALESCE(EXCLUDED.schedule_config, push_subscriptions.schedule_config),
+           schedule_horizon_until = COALESCE(EXCLUDED.schedule_horizon_until, push_subscriptions.schedule_horizon_until),
            updated_at = NOW()
        WHERE push_subscriptions.user_id IS NULL
           OR push_subscriptions.user_id = EXCLUDED.user_id
      RETURNING id`,
-    [id, subscription.endpoint, keys.p256dh, keys.auth, JSON.stringify(schedule), userId],
+    [
+      id,
+      subscription.endpoint,
+      keys.p256dh,
+      keys.auth,
+      JSON.stringify(schedule),
+      userId,
+      scheduleConfig ? JSON.stringify(scheduleConfig) : null,
+      scheduleConfig
+        ? new Date(
+            Date.now() +
+              WEB_SCHEDULE_HORIZON_DAYS * 24 * 60 * 60 * 1000,
+          )
+        : null,
+    ],
   );
   const saved = result.rows[0];
   if (!saved) throw new Error("Subscription endpoint is already registered");
@@ -366,6 +439,7 @@ export async function enqueueDedicationWebPush(
 
 export function startPushScheduler() {
   startWebNotificationQueue();
+  startClientScheduleRenewal();
   let running = false;
   setInterval(async () => {
     if (running) return;
@@ -395,9 +469,10 @@ router.get("/push/vapid-public-key", (_req, res) => {
 });
 
 router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req, res) => {
-  const { subscription, schedule } = req.body as {
+  const { subscription, schedule, scheduleConfig } = req.body as {
     subscription: PushSubscription;
     schedule: ScheduleItem[];
+    scheduleConfig?: WebNotificationScheduleConfig;
   };
   if (!isValidWebPushSubscription(subscription)) {
     res.status(400).json({ error: "Invalid Web Push subscription" });
@@ -417,6 +492,10 @@ router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req
       res.status(400).json({ error: "Schedule contains an invalid item" });
       return;
     }
+    if (scheduleConfig !== undefined && !isValidScheduleConfig(scheduleConfig)) {
+      res.status(400).json({ error: "Schedule configuration is invalid" });
+      return;
+    }
     const uniqueSchedule = Array.from(
       new Map(schedule
         .map((item) => [`${item.tag}:${item.fireAt}`, item])).values(),
@@ -425,7 +504,13 @@ router.post("/push/subscribe", requireAuth, pushSubscribeRateLimiter, async (req
     let id: string;
     try {
       await client.query("BEGIN");
-      id = await dbUpsert(subscription, uniqueSchedule, userId, client);
+      id = await dbUpsert(
+        subscription,
+        uniqueSchedule,
+        userId,
+        client,
+        scheduleConfig,
+      );
       await syncClientSchedule(id, uniqueSchedule, client);
       await client.query("COMMIT");
     } catch (error) {
