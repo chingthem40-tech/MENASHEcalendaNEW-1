@@ -8,8 +8,8 @@ Project imported from GitHub and set up on Replit:
 - **Dependencies**: `pnpm install` run at root — all 1728 packages resolved and hoisted to root `node_modules` via `shamefully-hoist=true` (.npmrc).
 - **Database**: Replit-managed PostgreSQL provisioned and reachable. Development API startup applies the idempotent bootstrap migrations. Production API startup never runs migrations or seeds; Replit Publish must initialize the production schema.
 - **Workflows**: Four managed workflows are configured for the web app, API, mobile app, and design sandbox.
-- **Authentication**: Production requires matching live `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, and `VITE_CLERK_PUBLISHABLE_KEY` values. Admin authorization is server-side and requires Clerk's `org:admin` role; no browser PIN or static browser admin credential is supported.
-- **Clerk launch blocker**: The existing external Clerk application's frontend domain/certificate must be repaired in Clerk before production launch. Preserve the existing Clerk instance to retain users, sessions, organizations, roles, and user IDs.
+- **Authentication**: The web and API currently use matching Clerk Development credentials from `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, and `VITE_CLERK_PUBLISHABLE_KEY`. Admin authorization is server-side and requires Clerk's `org:admin` role; no browser PIN or static browser admin credential is supported.
+- **Clerk domains**: The web app uses Clerk's standard Development-instance frontend API directly. No custom Clerk domain or same-origin Clerk proxy is configured.
 - **Optional secrets not yet set**: `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `GROK_API_KEY` (AI chat), and `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` (payments) — the app runs without these but those features are disabled.
 
 A sacred Jewish calendar app for the Bnei Menashe community — featuring Hebrew/Jewish calendar, Zmanim (prayer times), Parasha, Daf Yomi, holidays, a Siddur library, 3D Memorial Sanctuary, community tools, and AI-powered sacred wisdom chat.
@@ -53,10 +53,10 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 | Key | Where | Notes |
 |-----|-------|-------|
 | `DATABASE_URL` | Runtime-managed | PostgreSQL attached by Replit — do not set manually |
-| `CLERK_PUBLISHABLE_KEY` | Shared environment | Live key for the same Clerk application as the secret key |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Shared environment | Same live value, injected into the Vite bundle |
+| `CLERK_PUBLISHABLE_KEY` | Shared environment | Publishable key for the same Clerk application as the secret key |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Shared environment | Same publishable value, injected into the Vite bundle |
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Shared environment | Mobile Clerk publishable key |
-| `CLERK_SECRET_KEY` | Replit Secrets | Live secret for the same Clerk application |
+| `CLERK_SECRET_KEY` | Replit Secrets | Secret for the same Clerk application |
 | `VAPID_PUBLIC_KEY` | `.replit` userenv.shared | Web push public key |
 | `VAPID_SUBJECT` | `.replit` userenv.shared | Web push contact email |
 | `VAPID_PRIVATE_KEY` | Replit Secrets | Web push private key; never expose it to the browser |

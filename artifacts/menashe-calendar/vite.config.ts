@@ -25,11 +25,11 @@ const clerkPublishableKey =
   process.env.CLERK_PUBLISHABLE_KEY ??
   "";
 
-function validateProductionClerkKey(rawValue: string): string {
+function validateClerkPublishableKey(rawValue: string): string {
   const value = rawValue.trim();
-  if (!value || !value.startsWith("pk_live_")) {
+  if (!value || (!value.startsWith("pk_live_") && !value.startsWith("pk_test_"))) {
     throw new Error(
-      "VITE_CLERK_PUBLISHABLE_KEY must be a live Clerk publishable key for production builds.",
+      "VITE_CLERK_PUBLISHABLE_KEY must be a valid Clerk publishable key (pk_live_ or pk_test_).",
     );
   }
   return value;
@@ -124,7 +124,7 @@ function netlifyRedirectsPlugin(): Plugin {
       outputDir = config.build.outDir;
 
       if (config.command === "build") {
-        validateProductionClerkKey(clerkPublishableKey);
+        validateClerkPublishableKey(clerkPublishableKey);
       }
 
       if (
