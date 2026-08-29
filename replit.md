@@ -1,18 +1,15 @@
 # Menashe Calendar
 
-## Setup Status (as of 2026-07-22)
+## Setup Status (as of 2026-08-29)
 
 Project imported from GitHub and set up on Replit:
 
 - **Dependencies**: `pnpm install` run at root — all 1728 packages resolved and hoisted to root `node_modules` via `shamefully-hoist=true` (.npmrc).
-- **Database**: Replit-managed PostgreSQL provisioned and reachable. Drizzle migrations run automatically on API server startup (`runMigrations()` in `artifacts/api-server/src/index.ts`).
-- **Workflows**: All four workflows confirmed running:
-  - `artifacts/menashe-calendar: web` — Vite dev server on port 21636 ✓
-  - `artifacts/api-server: API Server` — Express on port 8080, migrations applied ✓
-  - `artifacts/menashe-mobile: expo` — Metro bundler on port 25726 ✓
-  - `artifacts/mockup-sandbox: Component Preview Server` — Vite on port 8081 ✓
-- **Secrets pending**: `CLERK_SECRET_KEY` is **not yet set** — authentication middleware is disabled and all protected routes return 401 until this is added as a Replit Secret. All public env vars (`CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT`, `ADMIN_PIN`, `ADMIN_USER_ID`) are already configured in shared environment.
-- **Optional secrets not yet set**: `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `GROK_API_KEY` (AI chat), `VAPID_PRIVATE_KEY` (push notifications), `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` (payments) — app runs without these but those features are disabled.
+- **Database**: Replit-managed PostgreSQL provisioned and reachable. Development API startup applies the idempotent bootstrap migrations. Production API startup never runs migrations or seeds; Replit Publish must initialize the production schema.
+- **Workflows**: Four managed workflows are configured for the web app, API, mobile app, and design sandbox.
+- **Authentication**: Production requires matching live `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, and `VITE_CLERK_PUBLISHABLE_KEY` values. Admin authorization is server-side and requires Clerk's `org:admin` role; no browser PIN or static browser admin credential is supported.
+- **Clerk launch blocker**: The existing external Clerk application's frontend domain/certificate must be repaired in Clerk before production launch. Preserve the existing Clerk instance to retain users, sessions, organizations, roles, and user IDs.
+- **Optional secrets not yet set**: `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `GROK_API_KEY` (AI chat), and `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` (payments) — the app runs without these but those features are disabled.
 
 A sacred Jewish calendar app for the Bnei Menashe community — featuring Hebrew/Jewish calendar, Zmanim (prayer times), Parasha, Daf Yomi, holidays, a Siddur library, 3D Memorial Sanctuary, community tools, and AI-powered sacred wisdom chat.
 
@@ -39,6 +36,14 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 - `pnpm --filter @workspace/api-server run dev` — rebuild + start API server in isolation
 - `pnpm --filter @workspace/menashe-calendar run build` — production frontend build
 
+### Production API
+
+- Replit Autoscale builds only `@workspace/api-server`.
+- Production starts with `node --enable-source-maps artifacts/api-server/dist/index.mjs`.
+- The server uses the hosting-provided `PORT`, binds to `0.0.0.0`, and exposes `/health`.
+- Production startup assumes Publish has already initialized the schema; it does not run migrations or seeds.
+- The Netlify web build requires the real published API origin in `NETLIFY_API_URL`.
+
 ### Environment / secrets
 
 **Required to run:**
@@ -46,14 +51,14 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 | Key | Where | Notes |
 |-----|-------|-------|
 | `DATABASE_URL` | Runtime-managed | PostgreSQL attached by Replit — do not set manually |
-| `CLERK_PUBLISHABLE_KEY` | `.replit` userenv.shared | Clerk dev instance (public key — safe in repo) |
-| `VITE_CLERK_PUBLISHABLE_KEY` | `.replit` userenv.shared | Same value, injected into Vite bundle |
-| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | `.replit` userenv.shared | Same value, injected into Expo bundle |
-| `CLERK_SECRET_KEY` | Replit Secrets | — |
+| `CLERK_PUBLISHABLE_KEY` | Shared environment | Live key for the same Clerk application as the secret key |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Shared environment | Same live value, injected into the Vite bundle |
+| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Shared environment | Mobile Clerk publishable key |
+| `CLERK_SECRET_KEY` | Replit Secrets | Live secret for the same Clerk application |
 | `VAPID_PUBLIC_KEY` | `.replit` userenv.shared | Web push public key |
 | `VAPID_SUBJECT` | `.replit` userenv.shared | Web push contact email |
-| `ADMIN_PIN` | `.replit` userenv.shared | Admin access PIN (also `VITE_ADMIN_PIN`) |
-| `ADMIN_USER_ID` | `.replit` userenv.shared | Clerk user ID for admin (also `VITE_ADMIN_USER_ID`) |
+| `VAPID_PRIVATE_KEY` | Replit Secrets | Web push private key; never expose it to the browser |
+| `ADMIN_USER_ID` | Server environment | Optional notification recipient only; does not grant admin access |
 
 **Optional (AI features):**
 
@@ -70,8 +75,8 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Premium subscription payments |
 | `VITE_UPI_ID` | UPI payment display |
 
-**Optional (push notifications):**
-- `VAPID_PRIVATE_KEY` — required to actually send web push notifications; not set by default so push is disabled until added as a Replit Secret.
+**Web push:**
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT` must all be valid before Web Push delivery is enabled.
 
 ## Stack
 

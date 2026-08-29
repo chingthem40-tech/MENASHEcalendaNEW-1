@@ -19,6 +19,14 @@ description: Clerk must be provisioned via setupClerkWhitelabelAuth() before the
 **Cross-instance key mismatch symptom:** if EVERY authenticated route returns 401 (not just one feature) even though the user is visibly signed in, suspect the publishable key and secret key belong to different Clerk applications — this happens when a project is re-imported/forked and the new owner doesn't have dashboard access to the original Clerk app the publishable key points to. Diagnose without ever printing the secret value: fetch `https://api.clerk.com/v1/jwks` with `Authorization: Bearer <secret>` and compare its `kid` against `https://<slug-from-decoded-pk>.clerk.accounts.dev/.well-known/jwks.json` — if the `kid`s differ, the keys are from different instances.
 **Fix when the user has no access to the original dashboard:** call `setupClerkWhitelabelAuth()` to provision a brand-new Replit-managed Clerk app; it sets `CLERK_SECRET_KEY`/`CLERK_PUBLISHABLE_KEY`/`VITE_CLERK_PUBLISHABLE_KEY` as Secrets. Then: (1) remove the old plaintext `CLERK_PUBLISHABLE_KEY`/`VITE_CLERK_PUBLISHABLE_KEY` entries from `.replit` userenv.shared (they shadow/conflict with the new secrets — plaintext env wins over same-named secret), (2) re-read the new publishable key from `process.env` (safe — publishable keys are meant to be public) and propagate it to any other consumer that still hardcodes the old one (e.g. `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` for a mobile app) via `setEnvVars`, (3) restart all affected workflows. Note this creates a brand-new user base — old accounts and any user-ID-keyed config (e.g. an `ADMIN_USER_ID`) become stale and must be redone by the new owner.
 
+## Preserve the existing production instance
+
+**Rule:** Do not auto-provision a replacement Clerk application for this project. If the external Clerk frontend domain or certificate fails, require repair in the existing Clerk dashboard.
+
+**Why:** The project owner explicitly chose to preserve existing users, sessions, organizations, roles, and Clerk user IDs. Provisioning a new application would silently abandon that identity data.
+
+**How to apply:** Treat Clerk frontend TLS or domain failures as a launch blocker. Revalidate the repaired frontend metadata endpoint and matching live API/web keys before any production publish.
+
 **Safeguards added (as of 2025-06-17):**
 - `artifacts/menashe-calendar/src/App.tsx` — styled fallback UI instead of hard crash
 - `scripts/post-merge.sh` — exits with clear error message if key is missing
