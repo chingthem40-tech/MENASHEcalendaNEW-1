@@ -17,6 +17,9 @@ if (Number.isNaN(port) || port <= 0) {
 const basePath = process.env.BASE_PATH ?? "";
 
 const apiTarget = process.env.API_URL ?? "http://localhost:8080";
+const isNetlifyBuild =
+  process.env.NETLIFY === "true" ||
+  Boolean(process.env.NETLIFY_API_URL?.trim());
 const clerkPublishableKey =
   process.env.VITE_CLERK_PUBLISHABLE_KEY ??
   process.env.CLERK_PUBLISHABLE_KEY ??
@@ -124,7 +127,11 @@ function netlifyRedirectsPlugin(): Plugin {
         validateProductionClerkKey(clerkPublishableKey);
       }
 
-      if (config.command === "build" && config.mode === "production") {
+      if (
+        config.command === "build" &&
+        config.mode === "production" &&
+        isNetlifyBuild
+      ) {
         const apiUrl = validateNetlifyApiUrl(process.env.NETLIFY_API_URL);
         productionRedirects = [
           "# Netlify redirect rules for the Menashe Calendar SPA",

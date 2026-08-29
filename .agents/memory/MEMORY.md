@@ -37,3 +37,4 @@
 - [Torah tab Library destination](library-torah-tab.md) — Torah is the primary premium Library entry point; legacy /siddur reuses it instead of keeping a second catalog UI.
 - [Expo Library cache refresh](expo-library-cache.md) — restart Expo with Metro cache clearing when mobile Library previews appear stale after UI edits.
 - [Durable web notification producers](durable-web-notification-producers.md) — persisted events and their web jobs must commit together; stable occurrence IDs alone do not prevent crash-window loss.
+- [Netlify-only Vite configuration](vite-netlify-build-scope.md) — gate Netlify URL validation on the Netlify environment, not generic production builds used by Replit artifacts.
