@@ -11,7 +11,9 @@
  * dashboard — all auth configuration is done through the Auth pane.
  *
  * IMPORTANT:
- * - Only active in production (Clerk proxying doesn't work for dev instances)
+ * - Active in production by default.
+ * - Development requires explicit CLERK_PROXY_ENABLED=true because proxying
+ *   Clerk requests is otherwise disabled for local development.
  * - Must be mounted BEFORE express.json() middleware
  *
  * Usage in app.ts:
@@ -53,8 +55,11 @@ export function getClerkProxyHost(req: {
 }
 
 export function clerkProxyMiddleware(): RequestHandler {
-  // Only run proxy in production — Clerk proxying doesn't work for dev instances
-  if (process.env.NODE_ENV !== "production") {
+  // Keep development proxying opt-in. Preview needs the same-origin proxy, but
+  // ordinary local development should retain the historical direct behavior.
+  const developmentProxyEnabled =
+    process.env.CLERK_PROXY_ENABLED === "true";
+  if (process.env.NODE_ENV !== "production" && !developmentProxyEnabled) {
     return (_req, _res, next) => next();
   }
 

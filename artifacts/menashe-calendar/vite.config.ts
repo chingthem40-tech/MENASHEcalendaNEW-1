@@ -407,6 +407,8 @@ export default defineConfig({
       "/api": {
         target: apiTarget,
         changeOrigin: true,
+        // Preserve the public Preview origin for Clerk's proxy redirects.
+        xfwd: true,
       },
     },
   },
