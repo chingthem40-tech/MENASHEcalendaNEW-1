@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/"
+previewPath = "/?preview=1"
 title = "Menashe Calendar"
 version = "1.0.0"
 id = "artifacts/menashe-calendar"

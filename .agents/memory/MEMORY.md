@@ -6,6 +6,7 @@
 - [Bilingual system (EN + TK)](bilingual-system.md) — all UI text must go through LanguageContext; never hardcode English-only strings
 - [Clerk API auth in apiFetch](clerk-api-auth.md) — cookies alone don't work through Replit's proxy; always attach Bearer token via window.Clerk?.session?.getToken()
 - [Clerk Preview proxy](clerk-preview-proxy.md) — Replit Preview needs a same-origin Clerk proxy with forwarded origin headers; dev opt-in must be reliable
+- [Web Preview dependency guard](web-preview-dependency-guard.md) — optional Framer Motion peer dependencies may need explicit web-artifact installation for Vite scans
 - [Clerk provisioning requirement](clerk-provisioning.md) — must call setupClerkWhitelabelAuth() before the web app can start; check status first every session
 - [hebcal-noaa ESM shim](hebcal-noaa-shim.md) — @hebcal/noaa ships pure ESM; use a pre-compiled CJS shim via Metro resolveRequest to fix production build failures
 - [Mobile metro @/ alias](mobile-metro-alias.md) — Expo SDK 54 getDefaultConfig() handles tsconfig @/* paths; do NOT add resolver.alias (breaks require.context)
