@@ -144,9 +144,9 @@ CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsubWVuYXNoLWVjYWxlbmRhLW5ldy0xLnJlcGxpdC5
 VITE_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsubWVuYXNoLWVjYWxlbmRhLW5ldy0xLnJlcGxpdC5hcHAk"
 PRIVATE_OBJECT_DIR = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434/private"
 PUBLIC_OBJECT_SEARCH_PATHS = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434/public"
+ALLOWED_ORIGINS = "https://menashecal.netlify.app"
 
 [userenv.production]
-ALLOWED_ORIGINS = "https://menashecal.netlify.app"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-5f840e92-c21b-4e43-9a6a-05f36c892953"
