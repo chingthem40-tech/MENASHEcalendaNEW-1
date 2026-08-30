@@ -40,3 +40,4 @@
 - [Durable web notification producers](durable-web-notification-producers.md) — persisted events and their web jobs must commit together; stable occurrence IDs alone do not prevent crash-window loss.
 - [Recurring web schedule renewal](recurring-web-schedule-renewal.md) — persist validated recurrence config and renew queued occurrences server-side before the horizon expires.
 - [Netlify-only Vite configuration](vite-netlify-build-scope.md) — gate Netlify URL validation on the Netlify environment, not generic production builds used by Replit artifacts.
+- [R3F optional peer isolation](r3f-optional-peer-isolation.md) — prevent web-only React Three/Fiber from inheriting Expo peers from another workspace artifact.

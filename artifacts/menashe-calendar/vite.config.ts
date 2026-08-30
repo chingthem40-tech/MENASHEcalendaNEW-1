@@ -152,6 +152,40 @@ function netlifyRedirectsPlugin(): Plugin {
   };
 }
 
+function assertBrowserReleaseGraphPlugin(): Plugin {
+  const forbiddenPackagePaths = [
+    "/node_modules/@expo/",
+    "/node_modules/expo/",
+    "/node_modules/expo-server-sdk/",
+    "/node_modules/react-native/",
+    "/node_modules/undici/",
+  ];
+
+  return {
+    name: "assert-browser-release-graph",
+    apply: "build",
+
+    generateBundle() {
+      const forbiddenModules = [...this.getModuleIds()]
+        .map((moduleId) => moduleId.replaceAll("\\", "/"))
+        .filter((moduleId) =>
+          forbiddenPackagePaths.some((packagePath) =>
+            moduleId.includes(packagePath),
+          ),
+        );
+
+      if (forbiddenModules.length > 0) {
+        this.error(
+          [
+            "The browser production bundle includes server/native build tooling:",
+            ...forbiddenModules.map((moduleId) => `- ${moduleId}`),
+          ].join("\n"),
+        );
+      }
+    },
+  };
+}
+
 /**
  * prefetchLazyChunksPlugin
  *
@@ -259,6 +293,7 @@ export default defineConfig({
     react(),
     tailwindcss({ optimize: false }),
     runtimeErrorOverlay(),
+    assertBrowserReleaseGraphPlugin(),
     netlifyRedirectsPlugin(),
     prefetchLazyChunksPlugin(),
     // Workbox PWA — injectManifest mode:

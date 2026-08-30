@@ -30,9 +30,11 @@
       "vite": "^7.3.5",
       "ws": "^8.21.0",
       "tar": "^7.5.19",
-      "razorpay>axios": "1.18.0",
+      "razorpay>axios": "1.20.0",
       "express-rate-limit>ip-address": "10.3.1",
-      "expo-server-sdk>undici": "7.29.0"
+      "expo-server-sdk>undici": "7.29.0",
+      "@uppy/core>nanoid": "5.1.16",
+      "@uppy/dashboard>nanoid": "5.1.16"
     }
   }
 }
