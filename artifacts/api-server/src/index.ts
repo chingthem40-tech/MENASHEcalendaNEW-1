@@ -10,14 +10,12 @@ import {
   startWeeklyYahrzeitDigestScheduler,
 } from "./routes/push";
 import { startAnnouncementScheduler } from "./routes/announcements";
-import { ensureRecurringWebScheduleSchema } from "./migrate";
 
-async function start() {
-  await ensureRecurringWebScheduleSchema();
+function start() {
   logger.info(
     { environment: config.nodeEnv },
     config.nodeEnv === "production"
-      ? "Production startup — recurring notification schema is ready"
+      ? "Production startup"
       : "Application startup — run pnpm db:bootstrap separately when schema changes are needed",
   );
 
