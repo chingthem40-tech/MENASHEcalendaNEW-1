@@ -137,7 +137,7 @@ packages = ["lv"]
 [userenv.shared]
 VAPID_PUBLIC_KEY = "BOqeOYdujQRpuveFsz_snrtPpkLZdyj1W4A21JHYPLRJ2hpAWeZwJi7AKCzzLdHvOmHVkmYDN3w0cIE2TFAoX5Q"
 VAPID_SUBJECT = "mailto:admin@menashecalendar.app"
-VITE_CLERK_PROXY_URL = ""
+VITE_CLERK_PROXY_URL = "/api/__clerk"
 ADMIN_USER_ID = "user_3FPrdIHD0jHZYORFdutfQ4aspal"
 VITE_VAPID_PUBLIC_KEY = "BOqeOYdujQRpuveFsz_snrtPpkLZdyj1W4A21JHYPLRJ2hpAWeZwJi7AKCzzLdHvOmHVkmYDN3w0cIE2TFAoX5Q"
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_YWR2YW5jZWQtbGxhbWEtNjIuY2xlcmsuYWNjb3VudHMuZGV2JA"
