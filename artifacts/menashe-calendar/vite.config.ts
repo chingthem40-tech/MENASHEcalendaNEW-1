@@ -439,6 +439,12 @@ export default defineConfig({
       strict: false,
     },
     proxy: {
+      "/__clerk": {
+        target: apiTarget,
+        changeOrigin: true,
+        // Preserve the public Preview origin for Clerk's proxy redirects.
+        xfwd: true,
+      },
       "/api": {
         target: apiTarget,
         changeOrigin: true,

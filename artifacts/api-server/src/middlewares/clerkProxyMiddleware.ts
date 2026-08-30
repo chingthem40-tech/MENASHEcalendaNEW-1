@@ -26,7 +26,9 @@ import type { RequestHandler } from "express";
 import type { IncomingHttpHeaders } from "http";
 
 const CLERK_FAPI = "https://frontend-api.clerk.dev";
-export const CLERK_PROXY_PATH = "/api/__clerk";
+// This path is provisioned and locked by Replit's Clerk provider domain.
+// Keep it aligned with the domain's proxy_url in Clerk.
+export const CLERK_PROXY_PATH = "/__clerk";
 
 /**
  * Returns the first effective public hostname for the given request,
