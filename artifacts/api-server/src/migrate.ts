@@ -947,6 +947,60 @@ export async function runMigrations(): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_family_timeline_greg_date ON family_timeline (user_id, gregorian_date DESC)
     `);
 
+    // Replit Auth — provider-neutral sessions and identity mapping.
+    // Existing Clerk-owned user IDs remain the account IDs when a verified
+    // Replit email matches exactly one legacy Clerk user.
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS auth_identities (
+        provider          TEXT NOT NULL,
+        provider_subject  TEXT NOT NULL,
+        account_id        TEXT NOT NULL,
+        email             TEXT,
+        display_name      TEXT NOT NULL DEFAULT '',
+        image_url         TEXT,
+        created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (provider, provider_subject)
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_auth_identities_account
+        ON auth_identities (account_id)
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS auth_sessions (
+        id                TEXT PRIMARY KEY,
+        account_id        TEXT NOT NULL,
+        provider          TEXT NOT NULL,
+        provider_subject  TEXT NOT NULL,
+        email             TEXT,
+        display_name      TEXT NOT NULL DEFAULT '',
+        image_url         TEXT,
+        is_admin          BOOLEAN NOT NULL DEFAULT false,
+        expires_at        TIMESTAMPTZ NOT NULL,
+        created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_seen_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_auth_sessions_expiry
+        ON auth_sessions (expires_at)
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS auth_login_flows (
+        id             TEXT PRIMARY KEY,
+        state          TEXT NOT NULL UNIQUE,
+        code_verifier  TEXT NOT NULL,
+        return_to      TEXT NOT NULL DEFAULT '/',
+        expires_at     TIMESTAMPTZ NOT NULL,
+        created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_auth_login_flows_expiry
+        ON auth_login_flows (expires_at)
+    `);
+
     logger.info("Schema ready");
 
     const { rows } = await client.query("SELECT COUNT(*) AS cnt FROM books");

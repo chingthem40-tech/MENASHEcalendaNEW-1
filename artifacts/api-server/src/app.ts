@@ -14,6 +14,7 @@ import {
   clerkProxyMiddleware,
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
+import { replitAuthMiddleware, replitAuthRouter } from "./lib/replitAuth";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { globalRateLimiter } from "./lib/rateLimiter";
@@ -142,11 +143,14 @@ if (process.env.CLERK_SECRET_KEY) {
   );
 }
 
+app.use(replitAuthMiddleware());
+
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use(globalRateLimiter);
 
 app.get("/api", (_req, res) => res.json({ status: "ok" }));
+app.use("/api", replitAuthRouter);
 app.use("/api", router);
 
 app.use("/api", (_req: Request, res: Response) => {

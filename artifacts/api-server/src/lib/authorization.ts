@@ -1,18 +1,40 @@
 import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { auditLog } from "./auditLog";
+import { getRequestAuth } from "./replitAuth";
 
 /**
  * safeGetAuth — wraps getAuth in a try-catch so it never throws when
  * clerkMiddleware is absent (e.g. CLERK_SECRET_KEY not set).
  * Always returns an object; userId is null when auth is unavailable.
  */
-export function safeGetAuth(req: Request): { userId: string | null } {
+export function safeGetAuth(req: Request): {
+  userId: string | null;
+  orgRole: string | null;
+  isAdmin: boolean;
+  provider: "replit" | "clerk" | null;
+} {
+  const managed = getRequestAuth(req);
+  if (managed) {
+    return {
+      userId: managed.userId,
+      orgRole: managed.isAdmin ? "org:admin" : null,
+      isAdmin: managed.isAdmin,
+      provider: "replit",
+    };
+  }
   try {
     const auth = getAuth(req);
-    return { userId: auth?.userId ?? null };
+    const userId = auth?.userId ?? null;
+    const orgRole = (auth as any)?.orgRole as string | null | undefined;
+    return {
+      userId,
+      orgRole: orgRole ?? null,
+      isAdmin: orgRole === "org:admin",
+      provider: userId ? "clerk" : null,
+    };
   } catch {
-    return { userId: null };
+    return { userId: null, orgRole: null, isAdmin: false, provider: null };
   }
 }
 
@@ -22,7 +44,7 @@ export function safeGetAuth(req: Request): { userId: string | null } {
  */
 export function isAdminUser(userId: string | null | undefined, orgRole?: string | null): boolean {
   if (!userId) return false;
-  return orgRole === "org:admin";
+  return orgRole === "org:admin" || userId === process.env.ADMIN_USER_ID;
 }
 
 /**
@@ -32,14 +54,7 @@ export function isAdminUser(userId: string | null | undefined, orgRole?: string 
  * both are present and orgRole === "org:admin".
  */
 export function safeIsAdmin(req: Request): boolean {
-  try {
-    const auth = getAuth(req);
-    const userId = auth?.userId ?? null;
-    const orgRole = (auth as any)?.orgRole as string | null | undefined;
-    return !!userId && orgRole === "org:admin";
-  } catch {
-    return false;
-  }
+  return safeGetAuth(req).isAdmin;
 }
 
 /**
@@ -63,16 +78,9 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
  * Sets req.userId.
  */
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  let orgRole: string | null | undefined;
-  let userId: string | null;
-  try {
-    const auth = getAuth(req);
-    userId = auth?.userId ?? null;
-    orgRole = (auth as any)?.orgRole as string | null | undefined;
-  } catch {
-    userId = null;
-    orgRole = null;
-  }
+  const auth = safeGetAuth(req);
+  const userId = auth.userId;
+  const orgRole = auth.orgRole;
 
   if (!userId) {
     auditLog.record({ event: "admin.permission_denied", actorId: "anonymous", metadata: { path: req.path } }).catch(() => {});
@@ -80,7 +88,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  if (orgRole !== "org:admin") {
+  if (!auth.isAdmin) {
     auditLog.record({ event: "admin.permission_denied", actorId: userId, metadata: { path: req.path, orgRole: orgRole ?? "none" } }).catch(() => {});
     res.status(403).json({ error: "Forbidden" });
     return;

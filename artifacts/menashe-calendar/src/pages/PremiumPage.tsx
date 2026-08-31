@@ -1,5 +1,6 @@
 import { useState, memo } from "react";
 import { GOLD, GOLD_GRAD } from "../lib/theme";
+import { useUser } from "../auth";
 
 interface PremiumPageProps {
   onUpgrade: () => void;
@@ -750,16 +751,16 @@ function RequestAccessButton() {
   const [status, setStatus] = useState<"idle" | "payment" | "form" | "submitting" | "done" | "pending" | "approved" | "denied">("idle");
   const [note, setNote] = useState("");
   const [paidViaUpi, setPaidViaUpi] = useState(false);
-  const userId: string = (window as any).Clerk?.user?.id ?? "";
+  const { user } = useUser();
+  const userId = user?.id ?? "";
 
   // Check if a request already exists on mount
   useState(() => {
     if (!userId) return;
     (async () => {
       try {
-        const token = await (window as any).Clerk?.session?.getToken();
         const res = await fetch("/api/premium/my-request", {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
         });
         if (res.ok) {
           const data = await res.json();
@@ -775,10 +776,10 @@ function RequestAccessButton() {
     if (!userId) return;
     setStatus("submitting");
     try {
-      const token = await (window as any).Clerk?.session?.getToken();
       const res = await fetch("/api/premium/request", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ note }),
       });
       if (res.ok) setStatus("done");

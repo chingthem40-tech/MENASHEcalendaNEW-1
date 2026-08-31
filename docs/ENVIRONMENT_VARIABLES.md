@@ -13,12 +13,18 @@
 |---|---|---|---|
 | `DATABASE_URL` | PostgreSQL connection string | — | **Server exits on startup if missing.** Format: `postgresql://user:pass@host:5432/db` |
 
-### Auth (Clerk)
+### Auth (Replit Auth)
 
 | Variable | Purpose | Required? | Default | Notes |
 |---|---|---|---|---|
-| `CLERK_SECRET_KEY` | Clerk server-side secret | Recommended | — | Auth middleware is silently disabled without it; all protected routes return 401 |
-| `CLERK_PUBLISHABLE_KEY` | Clerk publishable key (relayed to clients) | Recommended | — | Required alongside `CLERK_SECRET_KEY` for auth to function |
+| `SESSION_SECRET` | Session cookie signing secret | Required | — | Must be at least 32 characters; never commit the value |
+| `REPL_ID` | Managed Replit Auth client identifier | Required | — | Auto-injected by Replit |
+| `REPLIT_AUTH_CLIENT_ID` | Optional explicit Replit Auth client identifier | Optional | `REPL_ID` | Use only when the managed Auth setup provides a distinct client ID |
+| `ISSUER_URL` | Replit OIDC issuer | Optional | `https://replit.com/oidc` | Override only for a compatible OIDC issuer |
+
+Clerk variables may remain temporarily during the staged identity migration so existing
+Clerk users and organization-admin compatibility can be verified. They are not required
+for the new Replit Auth sign-in flow.
 
 ### AI Providers
 
@@ -72,15 +78,13 @@ These variables are consumed at **Vite build time** and embedded in the compiled
 
 | Variable | Purpose | Required? | Default | Platform |
 |---|---|---|---|---|
-| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key for the browser | Required | — | All |
-| `VITE_CLERK_PROXY_URL` | Clerk proxy URL override | Optional | — | Used when fronting Clerk through the API server |
 | `VITE_UPI_ID` | UPI payment ID (shown in payment UI) | Optional | — | India payments |
 | `API_URL` | Backend URL for Vite dev proxy | Dev only | `http://localhost:8080` | Development only; **not used in production builds** |
 | `BASE_PATH` | Vite `base` path override | Optional | `""` (root) | Set only when deploying to a subdirectory |
 | `PORT` | Vite dev server port | Dev only | `5000` | Development only |
 | `NODE_ENV` | Vite build environment | Optional | `development` | Set to `production` in CI |
 
-> **Netlify note:** Set `VITE_CLERK_PUBLISHABLE_KEY` in Netlify → Site Settings → Environment Variables. Do NOT use `CLERK_PUBLISHABLE_KEY` (without the `VITE_` prefix) — Vite will not expose it to the browser.
+> **Auth note:** The browser uses the same-origin `/api/auth/*` routes and an HttpOnly session cookie. No browser-exposed auth key is required.
 
 ---
 

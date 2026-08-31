@@ -7,7 +7,7 @@ import {
   useRef,
   useLayoutEffect,
 } from "react";
-import { useUser } from "@clerk/react";
+import { useUser } from "../auth";
 import { HebrewCalendar, flags } from "@hebcal/core";
 import {
   fetchTorahTrackerEntries,

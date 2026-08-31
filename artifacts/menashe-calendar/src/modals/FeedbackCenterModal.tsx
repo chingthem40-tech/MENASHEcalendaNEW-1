@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { useUser, useOrganization } from "@clerk/react";
+import { useUser, useOrganization } from "../auth";
 import { useLanguage } from "@/context/LanguageContext";
+import { getAuthToken } from "../lib/authToken";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const GOLD        = "#d4a843";
@@ -45,8 +46,7 @@ interface FeedbackItem {
 
 // ── Auth fetch helper ─────────────────────────────────────────────────────────
 async function authedFetch(path: string, options: RequestInit = {}) {
-  const token: string | null =
-    await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
   return fetch(`/api${path}`, {
     ...options,
     headers: {

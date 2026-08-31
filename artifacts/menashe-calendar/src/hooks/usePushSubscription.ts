@@ -9,6 +9,7 @@ import {
 import {
   isValidIanaTimeZone,
 } from "../lib/timezone";
+import { getAuthToken } from "../lib/authToken";
 
 const API_BASE = "/api";
 const SW_KEY = "menashe-push-subscribed";
@@ -34,7 +35,7 @@ async function getVapidPublicKey(): Promise<string | null> {
 }
 
 async function authHeaders(): Promise<Record<string, string>> {
-  const token = await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 

@@ -1,7 +1,9 @@
+import { getAuthToken } from "./authToken";
+
 const API_BASE = "/api";
 
 async function apiFetch(path: string, options: RequestInit = {}) {
-  const token: string | null = await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {

@@ -12,6 +12,7 @@ import type {
 } from "@workspace/shared-core/census";
 import { RELATION_LABELS, ALIYAH_LABELS } from "@workspace/shared-core/census";
 import { useUpload } from "@workspace/object-storage-web";
+import { getAuthToken } from "../lib/authToken";
 
 interface Props { onClose: () => void; isAdmin?: boolean; }
 
@@ -1955,11 +1956,11 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
   const synagogueInputRef = useRef<HTMLInputElement>(null);
   const [logoSaveError, setLogoSaveError] = useState<string | null>(null);
   const [synagogueSaveError, setSynagogueSaveError] = useState<string | null>(null);
-  const getClerkToken = () => (window as any).Clerk?.session?.getToken() ?? null;
+  const getSessionAuthToken = getAuthToken;
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB
 
   const { uploadFile: uploadLogo, isUploading: isLogoUploading, progress: logoProgress, error: logoUploadError } = useUpload({
-    getAuthToken: getClerkToken,
+    getAuthToken: getSessionAuthToken,
     maxSizeBytes: MAX_IMAGE_BYTES,
     acceptedTypes: ["image/"],
     onSuccess: async (response) => {
@@ -1980,7 +1981,7 @@ function BranchRegistryPanel({ cities, submission, onSubmit, memberSubmissions =
     },
   });
   const { uploadFile: uploadSynagogueImage, isUploading: isSynagogueUploading, progress: synagogueProgress, error: synagogueUploadError } = useUpload({
-    getAuthToken: getClerkToken,
+    getAuthToken: getSessionAuthToken,
     maxSizeBytes: MAX_IMAGE_BYTES,
     acceptedTypes: ["image/"],
     onSuccess: async (response) => {

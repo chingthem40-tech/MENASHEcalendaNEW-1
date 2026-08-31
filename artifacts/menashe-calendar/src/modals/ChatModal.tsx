@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useLanguage } from "../context/LanguageContext";
+import { getAuthToken } from "../lib/authToken";
 import { HDate } from "@hebcal/core";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -26,10 +27,6 @@ const PROVIDER_LABEL: Record<NonNullable<AiProvider>, string> = {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const API_BASE = "/api";
-
-async function getAuthToken(): Promise<string | null> {
-  return (await (window as any).Clerk?.session?.getToken()) ?? null;
-}
 
 function getHebrewDateStr(): string {
   try {

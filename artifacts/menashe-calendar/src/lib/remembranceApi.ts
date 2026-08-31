@@ -1,14 +1,11 @@
+import { getAuthToken } from "./authToken";
+
 /** Personal Remembrance Events — API client */
 
 const API_BASE = "/api";
 
 async function apiFetch(path: string, options: RequestInit = {}) {
-  const token: string | null =
-    (await (
-      window as unknown as {
-        Clerk?: { session?: { getToken: () => Promise<string> } };
-      }
-    ).Clerk?.session?.getToken()) ?? null;
+  const token = await getAuthToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {

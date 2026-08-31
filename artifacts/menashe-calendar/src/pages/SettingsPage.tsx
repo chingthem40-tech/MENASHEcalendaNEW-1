@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, memo } from "react";
-import { useUser, useOrganization } from "@clerk/react";
+import { useUser, useOrganization } from "../auth";
 import { HDate } from "@hebcal/core";
 import { Location } from "../lib/locations";
 import { NotificationPrefs, LeadTime, LEAD_TIME_OPTIONS } from "../hooks/useNotifications";
@@ -7,11 +7,12 @@ import { useLanguage } from "../context/LanguageContext";
 import { hebrewDayNumeral } from "../lib/hebrewCalendar";
 import { getYahrzeitEntries, getNextYahrzeit, YartzeitEntry } from "../lib/yahrzeit";
 import TranslationEditorModal from "../modals/TranslationEditorModal";
+import { getAuthToken } from "../lib/authToken";
 
 const BIRTHDAY_KEY = "menashe-my-birthday";
 
 async function adminFetch(path: string, options: RequestInit = {}) {
-  const token: string | null = await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
   const res = await fetch(`/api${path}`, {
     ...options,
     headers: {
@@ -32,7 +33,7 @@ function AdminAlertSetup() {
         <div style={{ fontSize: 12, fontWeight: 800, color: "#d4a843", letterSpacing: "0.06em" }}>ADMIN PUSH ALERTS</div>
       </div>
       <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10, lineHeight: 1.6 }}>
-        Admin access is managed via your Clerk Organization. Go to the Clerk dashboard → your Org → Members and set the role to <strong>Admin</strong> to grant admin access.
+        Admin access is managed by the Menashe application. Authorized administrators are assigned server-side and do not need a separate provider dashboard.
       </div>
     </div>
   );

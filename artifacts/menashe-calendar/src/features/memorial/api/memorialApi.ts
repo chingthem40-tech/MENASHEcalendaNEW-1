@@ -13,17 +13,17 @@ import type {
   SearchMemorialParams,
   PaginatedResponse,
 } from "../types";
+import { getAuthToken } from "../../../lib/authToken";
 
 // ── Transport ─────────────────────────────────────────────────────────────────
 // Mirrors the apiFetch pattern used throughout the app (userApi.ts).
-// Always attaches a Clerk Bearer token when a session is available.
+// Replit Auth is carried by the same-origin HttpOnly session cookie.
 
 async function apiFetch<T = unknown>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const token: string | null =
-    await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
 
   const isFormData = options.body instanceof FormData;
 

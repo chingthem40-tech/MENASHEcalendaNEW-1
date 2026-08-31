@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/react";
+import { useUser } from "../../../auth";
 
 interface UseHomeGreetingOptions {
   profileName?: string | null;

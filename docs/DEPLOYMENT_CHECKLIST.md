@@ -7,12 +7,12 @@ Use this checklist before every production deployment.
 ## 1. Required Secrets (Replit Secrets panel)
 
 ### Authentication (REQUIRED — app non-functional without)
-- [ ] `CLERK_SECRET_KEY` — Clerk backend secret key (starts with `sk_live_...`)
-- [ ] `CLERK_PUBLISHABLE_KEY` — Clerk frontend publishable key (starts with `pk_live_...`)
-- [ ] `SESSION_SECRET` — Random 64-char hex string for session signing
+- [ ] `SESSION_SECRET` — Random 64-char secret for Replit Auth session signing
+- [ ] `REPL_ID` — Managed Replit Auth client identifier (auto-injected)
 
-### Web Frontend (Replit Secrets — injected as VITE_ vars at build time)
-- [ ] `VITE_CLERK_PUBLISHABLE_KEY` — Same as `CLERK_PUBLISHABLE_KEY` (required for web Clerk init)
+### Legacy Auth Transition (temporary)
+- [ ] Keep Clerk secrets only while verifying existing users and organization-admin compatibility
+- [ ] Do not rotate or remove Clerk credentials until identity migration acceptance checks pass
 
 ### AI / Sacred Wisdom (OPTIONAL — degrades gracefully when absent)
 - [ ] `OPENAI_API_KEY` — OpenAI primary provider
@@ -37,7 +37,7 @@ Use this checklist before every production deployment.
 - [ ] `ALLOWED_ORIGINS` — Comma-separated list of allowed CORS origins (e.g. `https://app.yourdomain.com`)
 
 ### Admin
-- [ ] `ADMIN_USER_ID` — Clerk user ID of the admin notification recipient (for premium request alerts)
+- [ ] `ADMIN_USER_ID` — Application account ID of the admin notification recipient (for premium request alerts)
 
 ---
 
@@ -57,12 +57,12 @@ Use this checklist before every production deployment.
 
 ---
 
-## 4. Clerk Configuration
+## 4. Replit Auth Configuration
 
-- [ ] Production Clerk instance created (not development)
-- [ ] Allowed redirect URIs include your production domain
-- [ ] Organization support enabled (required for `org:admin` role gating)
-- [ ] At least one `org:admin` member added to the organization
+- [ ] Auth providers are enabled in the Replit Auth panel and saved
+- [ ] Production redirect URI is served at `/api/auth/callback` on the published domain
+- [ ] A real sign-in round trip succeeds through the published domain
+- [ ] Existing user identity mappings and application-owned admin roles are verified
 
 ---
 

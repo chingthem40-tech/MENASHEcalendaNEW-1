@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, memo } from "react";
-import { useUser } from "@clerk/react";
+import { useUser } from "../auth";
 import { HebrewCalendar, HDate, flags } from "@hebcal/core";
 import { getOmerDay, buildHebrewText } from "../modals/OmerModal";
 import RoshChodeshBanner from "../components/RoshChodeshBanner";

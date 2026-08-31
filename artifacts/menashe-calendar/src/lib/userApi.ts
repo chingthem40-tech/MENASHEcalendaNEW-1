@@ -8,11 +8,12 @@ import type {
   CensusSubmission as CensusSubmissionApi,
   CensusMemberSubmission as CensusMemberSubmissionApi,
 } from "@workspace/shared-core/census";
+import { getAuthToken } from "./authToken";
 
 const API_BASE = "/api";
 
 async function apiFetch(path: string, options: RequestInit = {}) {
-  const token: string | null = await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -233,7 +234,7 @@ export async function verifyRazorpayPayment(params: {
 export type { CensusBranchApi, CensusSubmissionApi, CensusMemberSubmissionApi };
 
 const censusConfig = {
-  getAuthToken: () => (window as any).Clerk?.session?.getToken() ?? null,
+  getAuthToken,
 };
 
 export async function fetchCensusBranch(): Promise<CensusBranchApi | null> {

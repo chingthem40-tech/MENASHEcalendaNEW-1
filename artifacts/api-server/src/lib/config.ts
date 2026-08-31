@@ -5,7 +5,7 @@
  *
  * Rules:
  *  - DATABASE_URL is required in every environment.
- *  - Production requires a valid, live Clerk key pair.
+ *  - Production requires the managed Replit Auth session configuration.
  *  - Optional services degrade gracefully with a logged warning.
  *  - Secret values are NEVER logged — only presence/absence.
  */
@@ -16,6 +16,8 @@ import { logger } from "./logger";
 
 const clerkSecretKey = process.env.CLERK_SECRET_KEY || null;
 const clerkPublishKey = process.env.CLERK_PUBLISHABLE_KEY || null;
+const sessionSecret = process.env.SESSION_SECRET || null;
+const replitAppId = process.env.REPLIT_AUTH_CLIENT_ID || process.env.REPL_ID || null;
 const openaiKey = process.env.OPENAI_API_KEY || null;
 const googleKey = process.env.GOOGLE_API_KEY || null;
 const grokKey = process.env.GROK_API_KEY || null;
@@ -79,24 +81,9 @@ const clerkSecretMetadata = clerkKeyMetadata(clerkSecretKey, "secret");
 const nodeEnv = process.env.NODE_ENV ?? "development";
 
 if (nodeEnv === "production") {
-  if (!clerkPublishMetadata.present || !clerkSecretMetadata.present) {
+  if (!sessionSecret || sessionSecret.length < 32 || !replitAppId) {
     throw new Error(
-      "Production Clerk configuration requires both publishable and secret keys",
-    );
-  }
-  if (!clerkPublishMetadata.shapeValid || !clerkSecretMetadata.shapeValid) {
-    throw new Error("Production Clerk configuration contains a malformed key");
-  }
-  if (
-    clerkPublishMetadata.environment !== "live" ||
-    clerkSecretMetadata.environment !== "live"
-  ) {
-    throw new Error("Production Clerk configuration must use live keys");
-  }
-  const webPublishableKey = process.env.VITE_CLERK_PUBLISHABLE_KEY?.trim();
-  if (webPublishableKey && webPublishableKey !== clerkPublishKey?.trim()) {
-    throw new Error(
-      "Production Clerk publishable key must match the web application key",
+      "Production Replit Auth configuration requires SESSION_SECRET and REPL_ID",
     );
   }
 }
@@ -112,7 +99,9 @@ export const config = {
   // Database
   databaseUrl,
 
-  // Auth — both keys required for Clerk to function
+  // Auth — Replit Auth is primary; Clerk remains available during migration
+  sessionSecret,
+  replitAppId,
   clerkSecretKey,
   clerkPublishableKey: clerkPublishKey,
 
@@ -135,7 +124,7 @@ export const config = {
 
   // Derived feature flags — safe to log (booleans only, no key material)
   features: {
-    auth: !!clerkSecretKey && !!clerkPublishKey,
+    auth: !!sessionSecret && !!replitAppId,
     openai: !!openaiKey,
     gemini: !!googleKey,
     grok: !!grokKey,
@@ -165,7 +154,8 @@ export function printConfigSummary(): void {
     "  Menashe API — Configuration Summary   ",
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     row("Database", "READY"), // already exited if missing
-    row("Clerk Auth", features.auth ? "READY" : "DISABLED"),
+    row("Replit Auth", features.auth ? "READY" : "DISABLED"),
+    row("Clerk Transition", clerkSecretKey && clerkPublishKey ? "READY" : "DISABLED"),
     row("OpenAI", features.openai ? "READY" : "NOT CONFIGURED"),
     row("Gemini", features.gemini ? "READY" : "NOT CONFIGURED"),
     row("Grok", features.grok ? "READY" : "NOT CONFIGURED"),
@@ -182,8 +172,8 @@ export function printConfigSummary(): void {
   // Emit individual warnings so operators know which services are degraded
   if (!features.auth) {
     logger.warn(
-      "Clerk Auth is DISABLED — CLERK_SECRET_KEY and/or CLERK_PUBLISHABLE_KEY " +
-        "are not set. All authenticated routes will return 401.",
+      "Replit Auth is DISABLED — SESSION_SECRET and REPL_ID are required. " +
+        "All Replit-authenticated routes will return 401.",
     );
   }
   if (!features.openai && !features.gemini && !features.grok) {

@@ -34,7 +34,7 @@ precacheAndRoute(self.__WB_MANIFEST ?? []);
 cleanupOutdatedCaches();
 
 /* ── Navigation: network-first with cached-shell fallback ──
-   Pass-through API and Clerk routes so we never cache auth calls. */
+   Pass-through API and auth routes so we never cache identity calls. */
 registerRoute(
   new NavigationRoute(
     new NetworkFirst({
@@ -45,7 +45,6 @@ registerRoute(
     {
       denylist: [
         /^\/api\//,
-        /clerk/,
         /accounts\.dev/,
         /\/@/,
         /\/node_modules\//,

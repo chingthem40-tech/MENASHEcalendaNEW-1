@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useUser, useOrganization } from "@clerk/react";
+import { useUser, useOrganization } from "../auth";
 import type { Book } from "../pages/SiddurPage";
 import { useUpload } from "@workspace/object-storage-web";
+import { getAuthToken } from "../lib/authToken";
 import {
   fetchAnnouncements,
   broadcastAnnouncement,
@@ -18,7 +19,7 @@ interface Props {
 const API_BASE = "/api";
 
 async function adminFetch(path: string, options: RequestInit = {}) {
-  const token: string | null = await (window as any).Clerk?.session?.getToken() ?? null;
+  const token = await getAuthToken();
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -233,10 +234,10 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
   const [annDeleteId, setAnnDeleteId] = useState<string | null>(null);
   const [annPinning, setAnnPinning] = useState<string | null>(null);
 
-  const getClerkToken = () => (window as any).Clerk?.session?.getToken() ?? null;
+  const getSessionAuthToken = getAuthToken;
 
   const { uploadFile, isUploading, progress, error: uploadFileError } = useUpload({
-    getAuthToken: getClerkToken,
+    getAuthToken: getSessionAuthToken,
     maxSizeBytes: 50 * 1024 * 1024,
     onSuccess: (response: { uploadURL: string; objectPath: string; metadata: { name: string; size: number; contentType: string } }) => {
       const servingUrl = `/api/storage${response.objectPath}`;
@@ -246,7 +247,7 @@ export default function AdminModal({ onClose, onRefresh }: Props) {
   });
 
   const { uploadFile: uploadCoverImage, isUploading: isCoverUploading, progress: coverProgress, error: coverUploadError } = useUpload({
-    getAuthToken: getClerkToken,
+    getAuthToken: getSessionAuthToken,
     maxSizeBytes: 5 * 1024 * 1024,
     acceptedTypes: ["image/"],
     onSuccess: (response: { uploadURL: string; objectPath: string; metadata: { name: string; size: number; contentType: string } }) => {

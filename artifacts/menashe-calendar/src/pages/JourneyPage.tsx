@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, memo, lazy, Suspense } from "react";
 
 const ChatModal = lazy(() => import("../modals/ChatModal"));
 const FamilyTimeline = lazy(() => import("../components/FamilyTimeline"));
-import { useUser } from "@clerk/react";
+import { useUser } from "../auth";
 import {
   fetchPublicProfile,
   fetchTorahTrackerEntries,

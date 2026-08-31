@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useUser } from "@clerk/react";
+import { useUser } from "../../../auth";
 import { resolvePermissions } from "../utils";
 import type {
   MemorialWithPerson,
@@ -11,8 +11,8 @@ import type {
 // ── useMemorialPermissions ────────────────────────────────────────────────────
 // Derives the current user's effective permission set for a memorial.
 // Role resolution order:
-//   administrator  — Clerk user metadata role === "admin"
-//   moderator      — Clerk user metadata role === "moderator"
+//   administrator  — application-authenticated admin identity
+//   moderator      — application-authenticated moderator identity
 //   family_admin   — familyMembers contains userId with role "admin"
 //   family_member  — familyMembers contains userId with any role
 //   authenticated  — signed in
@@ -35,7 +35,7 @@ export function useMemorialPermissions({
     const privacy = memorial.privacy;
     const userId = user?.id ?? null;
 
-    // Check platform-level roles from Clerk public metadata
+    // Check platform-level roles from the authenticated application identity
     const platformRole = (user?.publicMetadata as any)?.role as
       | string
       | undefined;

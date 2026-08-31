@@ -804,7 +804,7 @@ const FamilyTimeline = memo(function FamilyTimeline({ isSignedIn }: FamilyTimeli
           Authentication Required
         </div>
         <div style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.7, maxWidth: 280, margin: "0 auto" }}>
-          The Family Timeline needs a Clerk secret key to be configured on the server before it can load.
+          The Family Timeline needs authentication to be configured on the server before it can load.
           Once authentication is set up, your family history will appear here.
         </div>
       </div>

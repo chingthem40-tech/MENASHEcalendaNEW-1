@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "../../../context/LanguageContext";
+import { getAuthToken } from "../../../lib/authToken";
 import { AI_CHAT_HISTORY_KEY, AI_CHAT_MINIMIZED_KEY } from "../data";
 
 export interface AiMessage {
@@ -10,9 +11,7 @@ export interface AiMessage {
 
 export type AiProvider = "openai" | "gemini" | "grok" | null;
 
-async function getAiToken(): Promise<string | null> {
-  return (await (window as any).Clerk?.session?.getToken()) ?? null;
-}
+const getAiToken = getAuthToken;
 
 export function useHomeAI() {
   const { t } = useLanguage();

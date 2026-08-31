@@ -10,21 +10,20 @@ import {
 } from "react";
 import PageSkeleton from "./components/PageSkeleton";
 import {
-  ClerkProvider,
   SignIn,
   SignUp,
   Show,
   useClerk,
   useUser,
   useOrganization,
-} from "@clerk/react";
+  ReplitAuthProvider,
+} from "./auth";
 import {
   fetchUserProfile,
   saveUserProfile,
   fetchPublicProfile,
   type PublicProfile,
 } from "./lib/userApi";
-import { dark } from "@clerk/themes";
 import { Switch, Route, useLocation, Redirect } from "wouter";
 import { LanguageProvider } from "./context/LanguageContext";
 // Pages are lazily loaded — only the active page is needed on first paint
@@ -100,8 +99,6 @@ import { shortcutPageFromPath } from "./lib/appRoutes";
 import { LOCATIONS, Location } from "./lib/locations";
 import type { Book } from "./pages/SiddurPage";
 
-const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
-
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function stripBase(path: string): string {
@@ -109,138 +106,6 @@ function stripBase(path: string): string {
     ? path.slice(basePath.length) || "/"
     : path;
 }
-
-if (!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY) {
-  const root = document.getElementById("root")!;
-  root.innerHTML = `
-    <div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;background:#0F1829;font-family:Inter,sans-serif;padding:24px">
-      <div style="max-width:420px;width:100%;border:1px solid rgba(212,175,55,0.3);border-radius:16px;padding:32px;text-align:center;background:#0a1020">
-        <div style="font-size:40px;margin-bottom:16px">⚙️</div>
-        <h2 style="color:#D4AF37;font-size:18px;font-weight:700;margin:0 0 10px">Authentication Not Provisioned</h2>
-        <p style="color:#A89070;font-size:14px;line-height:1.6;margin:0 0 20px">
-          The Clerk authentication service hasn't been set up yet.<br/>
-          Please ask the Replit agent:<br/>
-          <strong style="color:#F5F0E8">"provision Clerk"</strong>
-        </p>
-        <p style="color:#A89070;font-size:12px;margin:0;opacity:0.6">Missing: VITE_CLERK_PUBLISHABLE_KEY</p>
-      </div>
-    </div>`;
-  throw new Error("Clerk not provisioned — set VITE_CLERK_PUBLISHABLE_KEY.");
-}
-
-const clerkAppearance = {
-  baseTheme: dark,
-  cssLayerName: "clerk",
-  options: {
-    logoPlacement: "inside" as const,
-    logoLinkUrl: basePath || "/",
-    logoImageUrl: `${window.location.origin}${basePath}/logo.png`,
-  },
-  variables: {
-    colorPrimary: "#D4AF37",
-    colorForeground: "#F5F0E8",
-    colorMutedForeground: "#A89070",
-    colorDanger: "#ef4444",
-    colorBackground: "#0F1829",
-    colorInput: "#1a2440",
-    colorInputForeground: "#F5F0E8",
-    colorNeutral: "#2a3a5c",
-    fontFamily: "'Inter', sans-serif",
-    borderRadius: "0.75rem",
-  },
-  elements: {
-    rootBox: "w-full flex justify-center",
-    cardBox:
-      "bg-[#0F1829] border border-[#D4AF37]/20 rounded-2xl w-[440px] max-w-full overflow-hidden shadow-xl shadow-black/40",
-    card: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "text-[#D4AF37] font-bold",
-    headerSubtitle: "text-[#A89070]",
-    socialButtonsBlockButtonText: "text-[#F5F0E8]",
-    formFieldLabel: "text-[#A89070]",
-    footerActionLink: "text-[#D4AF37] hover:text-[#F5F0E8]",
-    footerActionText: "text-[#A89070]",
-    dividerText: "text-[#A89070]",
-    identityPreviewEditButton: "text-[#D4AF37]",
-    formFieldSuccessText: "text-green-400",
-    alertText: "text-[#F5F0E8]",
-    logoBox: "flex justify-center mb-2",
-    logoImage: "h-10",
-    socialButtonsBlockButton:
-      "border-[#2a3a5c] bg-[#1a2440] text-[#F5F0E8] hover:bg-[#243050]",
-    formButtonPrimary:
-      "bg-[#D4AF37] text-[#0F1829] font-bold hover:bg-[#c9a430]",
-    formFieldInput: "bg-[#1a2440] border-[#2a3a5c] text-[#F5F0E8]",
-    footerAction: "bg-[#0a1020]",
-    dividerLine: "bg-[#2a3a5c]",
-    alert: "bg-[#1a2440] border-[#D4AF37]/30",
-    otpCodeFieldInput: "bg-[#1a2440] border-[#2a3a5c] text-[#F5F0E8]",
-    formFieldRow: "gap-2",
-    main: "gap-4",
-  },
-};
-
-const darkCardAppearance = {
-  cssLayerName: "clerk",
-  options: { logoPlacement: "none" as const },
-  variables: {
-    colorPrimary: "#D4AF37",
-    colorForeground: "#F0EDE4",
-    colorMutedForeground: "#9a9080",
-    colorDanger: "#ef4444",
-    colorBackground: "#111118",
-    colorInput: "#18181f",
-    colorInputForeground: "#F0EDE4",
-    colorNeutral: "#2a2a36",
-    fontFamily: "'Inter', -apple-system, sans-serif",
-    borderRadius: "0.65rem",
-    fontSize: "15px",
-  },
-  elements: {
-    rootBox: "w-full",
-    cardBox: "w-full !shadow-none !rounded-none !bg-[#111118]",
-    card: "!shadow-none !border-0 !bg-[#111118] !rounded-none !px-2",
-    footer: "!shadow-none !border-0 !bg-[#0e0e16] !rounded-none",
-    headerTitle: "!text-[#F5D982] !font-bold !text-[22px] !tracking-[-0.02em]",
-    headerSubtitle: "!text-[#807060] !text-[13px]",
-    socialButtonsBlockButton:
-      "!border !border-[#d8d8d8] !bg-white !text-[#3c4043] hover:!bg-[#f5f5f5] !shadow-[0_1px_3px_rgba(0,0,0,0.12),0_1px_2px_rgba(0,0,0,0.08)] !font-medium !transition-all",
-    socialButtonsBlockButtonText: "!text-[#3c4043] !font-medium",
-    formFieldLabel:
-      "!text-[#807060] !font-semibold !text-[11px] !tracking-[0.08em] !uppercase",
-    formFieldInput:
-      "!bg-[#18181f] !border-[#2a2a36] !text-[#F0EDE4] !rounded-[0.65rem] !text-[15px] focus:!border-[#D4AF37]/60 focus:!shadow-[0_0_0_3px_rgba(212,175,55,0.12)] !transition-all !h-[46px]",
-    formButtonPrimary: [
-      "!bg-[linear-gradient(180deg,#F0C840_0%,#C49A20_100%)]",
-      "!text-[#0a0800]",
-      "!font-bold",
-      "!text-[15px]",
-      "!tracking-[0.02em]",
-      "!h-[48px]",
-      "!shadow-[0_5px_0_rgba(100,70,5,0.85),0_8px_24px_rgba(212,175,55,0.25)]",
-      "hover:!shadow-[0_2px_0_rgba(100,70,5,0.85),0_4px_12px_rgba(212,175,55,0.2)]",
-      "hover:!translate-y-[3px]",
-      "active:!shadow-[0_0px_0_rgba(100,70,5,0.85)]",
-      "active:!translate-y-[5px]",
-      "!transition-all !duration-100",
-      "!rounded-[0.65rem]",
-    ].join(" "),
-    footerActionLink: "!text-[#D4AF37] hover:!text-[#f0c94a] !font-semibold",
-    footerActionText: "!text-[#706050]",
-    dividerText: "!text-[#706050] !text-[12px]",
-    dividerLine: "!bg-[#2a2a36]",
-    alert: "!bg-[#18181f] !border !border-[#D4AF37]/25",
-    alertText: "!text-[#F0EDE4]",
-    identityPreviewEditButton: "!text-[#D4AF37]",
-    formFieldSuccessText: "!text-emerald-400",
-    otpCodeFieldInput:
-      "!bg-[#18181f] !border-[#2a2a36] !text-[#F0EDE4] !h-[52px]",
-    footerAction: "!bg-[#0e0e16] !border-t !border-[#1e1e28]",
-    main: "!gap-5 !bg-[#111118]",
-    formFieldRow: "!gap-3",
-    formResendCodeLink: "!text-[#D4AF37]",
-  },
-};
 
 type Page =
   | "home"
@@ -529,12 +394,7 @@ function AuthCard({ children }: { children: React.ReactNode }) {
 function SignInPage() {
   return (
     <AuthCard>
-      <SignIn
-        routing="path"
-        path={`${basePath}/sign-in`}
-        signUpUrl={`${basePath}/sign-up`}
-        appearance={darkCardAppearance}
-      />
+      <SignIn />
     </AuthCard>
   );
 }
@@ -542,12 +402,7 @@ function SignInPage() {
 function SignUpPage() {
   return (
     <AuthCard>
-      <SignUp
-        routing="path"
-        path={`${basePath}/sign-up`}
-        signInUrl={`${basePath}/sign-in`}
-        appearance={darkCardAppearance}
-      />
+      <SignUp />
     </AuthCard>
   );
 }
@@ -1498,33 +1353,8 @@ function AppRoute() {
 }
 
 export default function App() {
-  const [, setLocation] = useLocation();
-
   return (
-    <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
-      afterSignOutUrl={`${basePath}/`}
-      {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
-      appearance={clerkAppearance}
-      signInUrl={`${basePath}/sign-in`}
-      signUpUrl={`${basePath}/sign-up`}
-      localization={{
-        signIn: {
-          start: {
-            title: "Welcome back",
-            subtitle: "Sign in to access the sacred calendar",
-          },
-        },
-        signUp: {
-          start: {
-            title: "Join Bnei Menashe",
-            subtitle: "Create your account to get started",
-          },
-        },
-      }}
-      routerPush={(to) => setLocation(stripBase(to))}
-      routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
-    >
+    <ReplitAuthProvider>
       <Switch>
         <Route path="/" component={HomeRoute} />
         <Route path="/app" component={AppRoute} />
@@ -1536,6 +1366,6 @@ export default function App() {
           <Redirect to="/" />
         </Route>
       </Switch>
-    </ClerkProvider>
+    </ReplitAuthProvider>
   );
 }

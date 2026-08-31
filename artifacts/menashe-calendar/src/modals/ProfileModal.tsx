@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useUser } from "@clerk/react";
+import { useUser } from "../auth";
 import {
   fetchPublicProfile,
   savePublicProfile,

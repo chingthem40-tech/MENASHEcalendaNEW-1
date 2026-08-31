@@ -13,8 +13,8 @@
  */
 
 import type { Request, Response, NextFunction } from "express";
-import { getAuth } from "@clerk/express";
 import { pool } from "@workspace/db";
+import { getRequestAuth } from "./replitAuth";
 
 export type BranchAdminRole = "local_admin" | "regional_admin" | "national_admin";
 
@@ -69,11 +69,18 @@ export const ACTION_MIN_ROLE: Record<BranchAction, BranchAdminRole> = {
 };
 
 function safeGetAuth(req: Request): { userId: string | null; orgRole: string | null } {
+  const managed = getRequestAuth(req);
+  if (managed) {
+    return {
+      userId: managed.userId,
+      orgRole: managed.isAdmin ? "org:admin" : null,
+    };
+  }
   try {
-    const auth = getAuth(req);
+    const auth = (req as any).auth;
     return {
       userId: auth?.userId ?? null,
-      orgRole: (auth as any)?.orgRole ?? null,
+      orgRole: auth?.orgRole ?? null,
     };
   } catch {
     return { userId: null, orgRole: null };

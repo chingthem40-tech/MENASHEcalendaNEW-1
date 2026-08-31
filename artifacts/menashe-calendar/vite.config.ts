@@ -20,21 +20,6 @@ const apiTarget = process.env.API_URL ?? "http://localhost:8080";
 const isNetlifyBuild =
   process.env.NETLIFY === "true" ||
   Boolean(process.env.NETLIFY_API_URL?.trim());
-const clerkPublishableKey =
-  process.env.VITE_CLERK_PUBLISHABLE_KEY ??
-  process.env.CLERK_PUBLISHABLE_KEY ??
-  "";
-
-function validateClerkPublishableKey(rawValue: string): string {
-  const value = rawValue.trim();
-  if (!value || (!value.startsWith("pk_live_") && !value.startsWith("pk_test_"))) {
-    throw new Error(
-      "VITE_CLERK_PUBLISHABLE_KEY must be a valid Clerk publishable key (pk_live_ or pk_test_).",
-    );
-  }
-  return value;
-}
-
 function validateNetlifyApiUrl(rawValue: string | undefined): string {
   const value = rawValue?.trim();
 
@@ -122,10 +107,6 @@ function netlifyRedirectsPlugin(): Plugin {
 
     configResolved(config) {
       outputDir = config.build.outDir;
-
-      if (config.command === "build") {
-        validateClerkPublishableKey(clerkPublishableKey);
-      }
 
       if (
         config.command === "build" &&
@@ -284,11 +265,6 @@ function prefetchLazyChunksPlugin(): Plugin {
 
 export default defineConfig({
   base: basePath,
-  define: {
-    "import.meta.env.VITE_CLERK_PUBLISHABLE_KEY": JSON.stringify(
-      clerkPublishableKey,
-    ),
-  },
   plugins: [
     react(),
     tailwindcss({ optimize: false }),
@@ -402,9 +378,6 @@ export default defineConfig({
             id.includes("/@react-spring/three")
           ) return "vendor-three";
 
-          // Clerk auth — large but needed before first paint on auth routes
-          if (id.includes("/@clerk/")) return "vendor-clerk";
-
           // Framer Motion — animation library
           if (id.includes("/framer-motion/")) return "vendor-motion";
 
@@ -439,16 +412,10 @@ export default defineConfig({
       strict: false,
     },
     proxy: {
-      "/__clerk": {
-        target: apiTarget,
-        changeOrigin: true,
-        // Preserve the public Preview origin for Clerk's proxy redirects.
-        xfwd: true,
-      },
       "/api": {
         target: apiTarget,
         changeOrigin: true,
-        // Preserve the public Preview origin for Clerk's proxy redirects.
+        // Preserve the public Preview origin for the managed auth callback.
         xfwd: true,
       },
     },

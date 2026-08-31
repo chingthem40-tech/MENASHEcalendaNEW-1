@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { uploadPhoto } from "../api/memorialApi";
 import type { MemorialPhoto, UploadPhotoInput, MemorialLoadingState } from "../types";
 import { photoStorageKey } from "../utils";
+import { getAuthToken } from "../../../lib/authToken";
 
 // ── useUploadPhoto ────────────────────────────────────────────────────────────
 // Manages photo upload to Replit Object Storage, then registers the URL with
@@ -46,8 +47,7 @@ export function useUploadPhoto(): UseUploadPhoto {
 
       try {
         // Step 1 — Get a presigned upload URL from the API
-        const token: string | null =
-          await (window as any).Clerk?.session?.getToken() ?? null;
+        const token = await getAuthToken();
 
         const storageKey = photoStorageKey(memorialId, file.name);
 
