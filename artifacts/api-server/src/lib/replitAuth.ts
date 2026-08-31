@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
+import { findLegacyClerkMatches } from "./authMigration";
 
 const ISSUER_URL = process.env.ISSUER_URL ?? "https://replit.com/oidc";
 const CLIENT_ID = process.env.REPLIT_AUTH_CLIENT_ID ?? process.env.REPL_ID;
@@ -66,7 +67,9 @@ function randomToken(bytes = 32): string {
 }
 
 function sign(value: string): string {
-  return base64Url(createHmac("sha256", sessionSecret()).update(value).digest());
+  return base64Url(
+    createHmac("sha256", sessionSecret()).update(value).digest(),
+  );
 }
 
 function signedValue(value: string): string {
@@ -159,74 +162,63 @@ async function oidcConfiguration(): Promise<OidcConfiguration> {
   return oidcConfigurationPromise;
 }
 
-async function clerkAccountIdForEmail(email: string): Promise<string | null> {
-  const clerkSecret = process.env.CLERK_SECRET_KEY?.trim();
-  if (!clerkSecret) return null;
-
-  try {
-    const response = await fetch(
-      `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(email)}`,
-      {
-        headers: {
-          Authorization: `Bearer ${clerkSecret}`,
-          Accept: "application/json",
-        },
-      },
-    );
-    if (!response.ok) {
-      logger.warn(
-        { status: response.status },
-        "Could not look up legacy Clerk identity during Replit sign-in",
-      );
-      return null;
-    }
-    const users = (await response.json()) as Array<{ id?: unknown }>;
-    return users.length === 1 && typeof users[0]?.id === "string"
-      ? users[0].id
-      : null;
-  } catch (error) {
-    logger.warn({ err: error }, "Legacy Clerk identity lookup failed");
-    return null;
-  }
-}
-
 async function resolveAccount(
   subject: string,
   email: string | null,
+  emailVerified: boolean,
   name: string,
   imageUrl: string | null,
 ): Promise<RequestAuth> {
   const existing = await pool.query<{
     account_id: string;
     email: string | null;
+    email_verified: boolean;
+    link_status: string;
     display_name: string;
     image_url: string | null;
     created_at: string;
   }>(
     `SELECT account_id, email, display_name, image_url
+            , email_verified, link_status
        FROM auth_identities
       WHERE provider = 'replit' AND provider_subject = $1`,
     [subject],
   );
 
-  let userId: string | null = existing.rows[0]?.account_id ?? null;
-  if (!userId && email) userId = await clerkAccountIdForEmail(email);
-  if (!userId) userId = `replit:${subject}`;
+  const existingIdentity = existing.rows[0];
+  let userId: string;
+  let linkStatus: string;
+  if (existingIdentity) {
+    userId = existingIdentity.account_id;
+    linkStatus = existingIdentity.link_status;
+  } else {
+    const matches =
+      email && emailVerified ? await findLegacyClerkMatches(email) : [];
+    userId = matches.length === 1 ? matches[0] : `replit:${subject}`;
+    linkStatus =
+      matches.length === 1
+        ? "auto_linked"
+        : matches.length > 1
+          ? "ambiguous"
+          : "unmatched";
+  }
 
   const identity = await pool.query<{ created_at: string }>(
     `INSERT INTO auth_identities
-       (provider, provider_subject, account_id, email, display_name, image_url, updated_at)
-     VALUES ('replit', $1, $2, $3, $4, $5, NOW())
+       (provider, provider_subject, account_id, email, email_verified, link_status,
+        display_name, image_url, updated_at)
+     VALUES ('replit', $1, $2, $3, $4, $5, $6, $7, NOW())
      ON CONFLICT (provider, provider_subject)
-     DO UPDATE SET account_id = EXCLUDED.account_id,
-                   email = EXCLUDED.email,
+     DO UPDATE SET email = EXCLUDED.email,
+                   email_verified = EXCLUDED.email_verified,
                    display_name = EXCLUDED.display_name,
                    image_url = EXCLUDED.image_url,
                     updated_at = NOW()
       RETURNING created_at`,
-    [subject, userId, email, name, imageUrl],
+    [subject, userId, email, emailVerified, linkStatus, name, imageUrl],
   );
 
+  const isAdmin = await applicationAdminForAccount(userId);
   return {
     provider: "replit",
     subject,
@@ -234,13 +226,24 @@ async function resolveAccount(
     email,
     name,
     imageUrl,
-    isAdmin: userId === process.env.ADMIN_USER_ID,
+    isAdmin,
     createdAt: String(
       identity.rows[0]?.created_at ??
         existing.rows[0]?.created_at ??
         new Date().toISOString(),
     ),
   };
+}
+
+async function applicationAdminForAccount(accountId: string): Promise<boolean> {
+  const { rows } = await pool.query(
+    `SELECT 1 FROM app_admin_assignments WHERE account_id = $1
+      UNION ALL
+      SELECT 1 WHERE $1 = $2
+      LIMIT 1`,
+    [accountId, process.env.ADMIN_USER_ID ?? ""],
+  );
+  return rows.length > 0;
 }
 
 async function createSession(auth: RequestAuth): Promise<string> {
@@ -274,8 +277,11 @@ async function loadSession(sessionId: string): Promise<RequestAuth | null> {
     is_admin: boolean;
     created_at: string;
   }>(
-    `SELECT account_id, provider, provider_subject, email, display_name, image_url, is_admin, created_at
-       FROM auth_sessions
+    `SELECT s.account_id, s.provider, s.provider_subject, s.email, s.display_name,
+            s.image_url, (s.is_admin OR a.account_id IS NOT NULL) AS is_admin,
+            s.created_at
+       FROM auth_sessions s
+       LEFT JOIN app_admin_assignments a ON a.account_id = s.account_id
       WHERE id = $1 AND expires_at > NOW()`,
     [sessionId],
   );
@@ -320,12 +326,10 @@ async function userInfoFromCode(
     throw new Error(`Replit Auth token exchange failed (${response.status})`);
   }
   const tokens = (await response.json()) as { access_token?: unknown };
-  if (typeof tokens.access_token !== "string") {
+  if (typeof tokens.access_token !== "string")
     throw new Error("Replit Auth token response did not include an access token");
-  }
-  if (!configuration.userinfo_endpoint) {
+  if (!configuration.userinfo_endpoint)
     throw new Error("Replit Auth discovery did not include a userinfo endpoint");
-  }
   const userResponse = await fetch(configuration.userinfo_endpoint, {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
@@ -338,17 +342,17 @@ async function userInfoFromCode(
 function normalizeUserInfo(info: OidcUserInfo): {
   subject: string;
   email: string | null;
+  emailVerified: boolean;
   name: string;
   imageUrl: string | null;
 } {
   const subject = typeof info.sub === "string" ? info.sub : "";
-  if (!subject) throw new Error("Replit Auth userinfo did not include a subject");
+  if (!subject)
+    throw new Error("Replit Auth userinfo did not include a subject");
   const emailVerified =
     info.email_verified === true || info.email_verified === "true";
   const email =
-    emailVerified &&
-    typeof info.email === "string" &&
-    info.email.includes("@")
+    emailVerified && typeof info.email === "string" && info.email.includes("@")
       ? info.email.trim().toLowerCase()
       : null;
   const name =
@@ -362,6 +366,7 @@ function normalizeUserInfo(info: OidcUserInfo): {
   return {
     subject,
     email,
+    emailVerified,
     name,
     imageUrl: typeof info.picture === "string" ? info.picture : null,
   };
@@ -427,11 +432,13 @@ replitAuthRouter.get("/auth/login", async (req, res) => {
 });
 
 replitAuthRouter.get("/auth/callback", async (req, res) => {
-  const flowId = verifySignedValue(
-    cookieValue(req, FLOW_COOKIE) ?? undefined,
-  );
+  const flowId = verifySignedValue(cookieValue(req, FLOW_COOKIE) ?? undefined);
   clearCookie(res, FLOW_COOKIE);
-  if (!flowId || typeof req.query.code !== "string" || typeof req.query.state !== "string") {
+  if (
+    !flowId ||
+    typeof req.query.code !== "string" ||
+    typeof req.query.state !== "string"
+  ) {
     res.status(400).send("Invalid Replit Auth callback");
     return;
   }
@@ -459,6 +466,7 @@ replitAuthRouter.get("/auth/callback", async (req, res) => {
     const auth = await resolveAccount(
       info.subject,
       info.email,
+      info.emailVerified,
       info.name,
       info.imageUrl,
     );

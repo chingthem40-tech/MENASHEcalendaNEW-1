@@ -33,6 +33,8 @@ export type AuditEventType =
   | "admin.yahrzeit.view"
   | "admin.yahrzeit.delete"
   | "admin.payment.view"
+  | "admin.auth.identity_link"
+  | "admin.auth.admin_assignment"
   | "branch.created"
   | "branch.submitted"
   | "branch.approved"

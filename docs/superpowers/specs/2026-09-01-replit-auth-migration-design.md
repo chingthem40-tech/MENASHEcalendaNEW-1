@@ -144,6 +144,30 @@ fields match.
 
 ## Verification plan
 
+### Migration acceptance API
+
+During the transition, administrators use the API server's application-owned
+auth controls:
+
+- `GET /api/admin/auth/inventory` returns the current Replit identity
+  inventory, verified-email Clerk matches, unmatched and ambiguous identities,
+  per-account counts for profiles, memorials, family memberships,
+  notifications, and premium records, plus administrator assignments.
+- `POST /api/admin/auth/identity-links` accepts a Replit provider subject,
+  stable account ID, and required human reason. It records an immutable link
+  event, marks the identity explicitly linked, invalidates its sessions, and
+  never rewrites user-owned rows.
+- `GET /api/admin/auth/admin-assignments`,
+  `POST /api/admin/auth/admin-assignments`, and
+  `DELETE /api/admin/auth/admin-assignments/:accountId` manage the
+  application-owned administrator source of truth. The configured legacy
+  administrator is seeded into this table idempotently.
+
+The inventory fails closed for ambiguity: a verified Replit email matching
+multiple Clerk users is kept on its isolated `replit:<subject>` account until
+an administrator explicitly links it. A missing or unverified email is also
+reported as unmatched rather than being guessed from a name.
+
 ### Automated
 
 - Unit-test provider-neutral session normalization.

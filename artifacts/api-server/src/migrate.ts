@@ -956,6 +956,10 @@ export async function runMigrations(): Promise<void> {
         provider_subject  TEXT NOT NULL,
         account_id        TEXT NOT NULL,
         email             TEXT,
+        email_verified    BOOLEAN NOT NULL DEFAULT false,
+        link_status       TEXT NOT NULL DEFAULT 'unmatched',
+        linked_at         TIMESTAMPTZ,
+        linked_by         TEXT,
         display_name      TEXT NOT NULL DEFAULT '',
         image_url         TEXT,
         created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -964,9 +968,55 @@ export async function runMigrations(): Promise<void> {
       )
     `);
     await client.query(`
+      ALTER TABLE auth_identities
+        ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false,
+        ADD COLUMN IF NOT EXISTS link_status TEXT NOT NULL DEFAULT 'unmatched',
+        ADD COLUMN IF NOT EXISTS linked_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS linked_by TEXT
+    `);
+    await client.query(`
       CREATE INDEX IF NOT EXISTS idx_auth_identities_account
         ON auth_identities (account_id)
     `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_auth_identities_link_status
+        ON auth_identities (link_status)
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS auth_identity_links (
+        id                TEXT PRIMARY KEY,
+        provider          TEXT NOT NULL,
+        provider_subject  TEXT NOT NULL,
+        from_account_id   TEXT NOT NULL,
+        to_account_id     TEXT NOT NULL,
+        actor_account_id  TEXT NOT NULL,
+        reason            TEXT NOT NULL,
+        created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_auth_identity_links_subject
+        ON auth_identity_links (provider, provider_subject, created_at DESC)
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS app_admin_assignments (
+        account_id   TEXT PRIMARY KEY,
+        assigned_by  TEXT NOT NULL,
+        assigned_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    // Preserve the configured legacy administrator as an application-owned
+    // assignment. This does not grant access to a Replit subject by itself;
+    // access is granted only after that subject resolves to this account ID.
+    await client.query(
+      `
+      INSERT INTO app_admin_assignments (account_id, assigned_by)
+      SELECT $1, 'system:configured-admin'
+       WHERE $1 <> ''
+      ON CONFLICT (account_id) DO NOTHING
+    `,
+      [process.env.ADMIN_USER_ID ?? ""],
+    );
     await client.query(`
       CREATE TABLE IF NOT EXISTS auth_sessions (
         id                TEXT PRIMARY KEY,

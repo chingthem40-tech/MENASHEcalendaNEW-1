@@ -20,6 +20,7 @@ import communityEventsRouter from "./communityEvents";
 import directoryRouter from "./directory";
 import remembranceRouter from "./remembrance";
 import familyTimelineRouter from "./familyTimeline";
+import authMigrationRouter from "./authMigration";
 
 const router: IRouter = Router();
 
@@ -44,5 +45,6 @@ router.use(communityEventsRouter);
 router.use(directoryRouter);
 router.use(remembranceRouter);
 router.use(familyTimelineRouter);
+router.use(authMigrationRouter);
 
 export default router;
