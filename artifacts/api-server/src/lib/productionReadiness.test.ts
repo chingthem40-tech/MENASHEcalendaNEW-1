@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildAllowedOrigins } from "../app";
+import { buildAllowedOrigins, isCorsOriginAllowed } from "../app";
 import { isAdminUser } from "./authorization";
 import { getWebPushReadiness } from "./webPush";
 
@@ -51,6 +51,36 @@ test("production CORS fails closed without configured origins", () => {
     () => {
       assert.equal(buildAllowedOrigins(), false);
     },
+  );
+});
+
+test("production CORS allows the forwarded public host as same-origin", () => {
+  assert.equal(
+    isCorsOriginAllowed(
+      "https://calendar.example",
+      false,
+      "https://calendar.example",
+    ),
+    true,
+  );
+  assert.equal(
+    isCorsOriginAllowed(
+      "https://attacker.example",
+      false,
+      "https://calendar.example",
+    ),
+    false,
+  );
+});
+
+test("production CORS still honors the explicit allowlist", () => {
+  assert.equal(
+    isCorsOriginAllowed(
+      "https://admin.example",
+      ["https://calendar.example", "https://admin.example"],
+      "https://calendar.example",
+    ),
+    true,
   );
 });
 

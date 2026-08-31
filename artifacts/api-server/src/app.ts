@@ -97,22 +97,49 @@ export function buildAllowedOrigins(): string[] | boolean {
 }
 const allowedOrigins = buildAllowedOrigins();
 
-app.use(
+function forwardedRequestOrigin(req: Request): string | null {
+  const forwardedHost = (req.get("x-forwarded-host") ?? req.get("host") ?? "")
+    .split(",")[0]
+    ?.trim();
+  if (!forwardedHost) return null;
+
+  const forwardedProto = req
+    .get("x-forwarded-proto")
+    ?.split(",")[0]
+    ?.trim()
+    .toLowerCase();
+  const protocol = forwardedProto === "http" ? "http" : "https";
+  return `${protocol}://${forwardedHost}`;
+}
+
+export function isCorsOriginAllowed(
+  origin: string | undefined,
+  origins: string[] | boolean,
+  requestOrigin?: string | null,
+): boolean {
+  if (!origin || origins === true) return true;
+  if (requestOrigin && origin === requestOrigin) return true;
+  return Array.isArray(origins) && origins.includes(origin);
+}
+
+app.use((req, res, next) => {
   cors({
     credentials: true,
     origin(origin, callback) {
-      if (!origin || allowedOrigins === true) {
-        callback(null, true);
-        return;
-      }
-      if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
+      if (
+        isCorsOriginAllowed(
+          origin,
+          allowedOrigins,
+          forwardedRequestOrigin(req),
+        )
+      ) {
         callback(null, true);
         return;
       }
       callback(new Error("Origin not allowed by CORS"));
     },
-  }),
-);
+  })(req, res, next);
+});
 
 app.use(
   helmet({
