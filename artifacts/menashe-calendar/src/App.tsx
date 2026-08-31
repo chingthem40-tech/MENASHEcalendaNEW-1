@@ -1454,7 +1454,8 @@ function AppShell() {
 
 const DEV_PREVIEW =
   import.meta.env.DEV &&
-  new URLSearchParams(window.location.search).get("preview") === "1";
+  (import.meta.env.VITE_DEV_PREVIEW === "true" ||
+    new URLSearchParams(window.location.search).get("preview") === "1");
 
 function HomeRoute() {
   if (DEV_PREVIEW) return <Redirect to="/app" />;

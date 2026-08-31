@@ -59,7 +59,8 @@ if (import.meta.env.DEV) {
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 const DEV_PREVIEW = import.meta.env.DEV &&
-  new URLSearchParams(window.location.search).get("preview") === "1";
+  (import.meta.env.VITE_DEV_PREVIEW === "true" ||
+    new URLSearchParams(window.location.search).get("preview") === "1");
 const DEV_ONBOARDING = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get("onboarding") === "1";
 

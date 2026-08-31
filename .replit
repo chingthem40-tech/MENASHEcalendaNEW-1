@@ -77,6 +77,7 @@ router = "path"
 PORT = "21636"
 BASE_PATH = "/"
 VITE_CLERK_PROXY_URL = "/__clerk"
+VITE_DEV_PREVIEW = "true"
 
 [[workflows.workflow]]
 name = "artifacts/api-server: API Server"
