@@ -45,3 +45,4 @@
 - [Netlify-only Vite configuration](vite-netlify-build-scope.md) — gate Netlify URL validation on the Netlify environment, not generic production builds used by Replit artifacts.
 - [R3F optional peer isolation](r3f-optional-peer-isolation.md) — prevent web-only React Three/Fiber from inheriting Expo peers from another workspace artifact.
 - [Replit Auth provisioning](replit-auth-provisioning.md) — enable managed Auth before migrating; do not guess the session or OIDC contract.
+- [Replit proxy CORS](replit-proxy-cors.md) — production API must treat the trusted forwarded public host as same-origin, alongside the explicit origin allowlist.
