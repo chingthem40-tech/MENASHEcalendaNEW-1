@@ -11,7 +11,7 @@
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:notifications": "tsx --test src/lib/webNotificationJobs.test.ts",
-    "test:security": "tsx --test src/lib/productionReadiness.test.ts"
+    "test:security": "tsx --test src/lib/productionReadiness.test.ts src/lib/replitAuth.test.ts"
   },
   "dependencies": {
     "@clerk/express": "^2.1.26",

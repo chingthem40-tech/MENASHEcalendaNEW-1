@@ -12,6 +12,7 @@
 - [Mobile metro @/ alias](mobile-metro-alias.md) — Expo SDK 54 getDefaultConfig() handles tsconfig @/* paths; do NOT add resolver.alias (breaks require.context)
 - [Mobile auth guard pattern](mobile-auth-guard.md) — never gate tabs on custom AsyncStorage keys; Clerk isSignedIn in _layout.tsx is the single auth gate
 - [Clerk web native stubs](clerk-web-native-stubs.md) — Metro resolveRequest must intercept by RESOLVED file path, not module name, when unstable_enablePackageExports is on
+- [Clerk test fixture](clerk-test-fixture.md) — Express getAuth tests need Clerk’s branded auth function and signed-in session shape
 - [r3f-perf crashes R3F canvas](r3f-perf-crash.md) — ScenePerf / r3f-perf Perf component breaks R3F reconciler every frame; never use it in MemorialValley3D
 - [Cartographer breaks R3F scene files](cartographer-r3f-fix.md) — cartographer injects data-component-name into all JSX; R3F 9.x treats hyphenated props as nested paths and throws; strip via enforce:post Vite transform
 - [Memorial Sanctuary modal architecture](memorial-sanctuary-modal.md) — all UI panels live in one large self-contained file; per-flower point lights must be removed (use emissive-only); AmbientNotification entries must use a ref to avoid stale closure; virtual flowers capped at MAX_VIRTUAL_FLOWERS=40 for FPS.
