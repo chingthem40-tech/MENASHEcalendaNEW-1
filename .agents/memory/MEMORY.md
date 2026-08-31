@@ -43,3 +43,4 @@
 - [Autoscale startup DDL](autoscale-startup-ddl.md) — never block artifact port startup on schema mutations; use dev bootstrap and Replit publish schema synchronization.
 - [Netlify-only Vite configuration](vite-netlify-build-scope.md) — gate Netlify URL validation on the Netlify environment, not generic production builds used by Replit artifacts.
 - [R3F optional peer isolation](r3f-optional-peer-isolation.md) — prevent web-only React Three/Fiber from inheriting Expo peers from another workspace artifact.
+- [Replit Auth provisioning](replit-auth-provisioning.md) — enable managed Auth before migrating; do not guess the session or OIDC contract.
