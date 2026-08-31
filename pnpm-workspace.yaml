@@ -48,6 +48,13 @@ minimumReleaseAgeExclude:
   - vite
   - ws
 
+auditConfig:
+  # These advisories are fixed by the immutable image-size PR commit pinned in
+  # package.json; upstream has not published a release with a new version yet.
+  ignoreGhsas:
+    - GHSA-5p2g-fcmc-qvqq
+    - GHSA-w3rx-r6r6-pgpr
+
 onlyBuiltDependencies:
   - '@swc/core'
   - esbuild

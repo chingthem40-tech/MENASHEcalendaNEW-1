@@ -1,0 +1,35 @@
+diff --git a/dist/types/icns.js b/dist/types/icns.js
+index 5fc68ff..3c75725 100644
+--- a/dist/types/icns.js
++++ b/dist/types/icns.js
+@@ -82,7 +82,7 @@ exports.ICNS = {
+         let imageOffset = SIZE_HEADER;
+         let imageHeader = readImageHeader(input, imageOffset);
+         let imageSize = getImageSize(imageHeader[0]);
+-        imageOffset += imageHeader[1];
++        imageOffset += imageHeader[1] > 0 ? imageHeader[1] : SIZE_HEADER;
+         if (imageOffset === fileLength)
+             return imageSize;
+         const result = {
+@@ -93,7 +93,7 @@ exports.ICNS = {
+         while (imageOffset < fileLength && imageOffset < inputLength) {
+             imageHeader = readImageHeader(input, imageOffset);
+             imageSize = getImageSize(imageHeader[0]);
+-            imageOffset += imageHeader[1];
++            imageOffset += imageHeader[1] > 0 ? imageHeader[1] : SIZE_HEADER;
+             result.images.push(imageSize);
+         }
+         return result;
+diff --git a/dist/types/jxl.js b/dist/types/jxl.js
+index 2eb14e8..2fb041c 100644
+--- a/dist/types/jxl.js
++++ b/dist/types/jxl.js
+@@ -24,7 +24,7 @@ function extractPartialStreams(input) {
+         if (!jxlpBox)
+             break;
+         partialStreams.push(input.slice(jxlpBox.offset + 12, jxlpBox.offset + jxlpBox.size));
+-        offset = jxlpBox.offset + jxlpBox.size;
++        offset = jxlpBox.offset + (jxlpBox.size > 0 ? jxlpBox.size : 8);
+     }
+     return partialStreams;
+ }
