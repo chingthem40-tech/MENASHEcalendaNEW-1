@@ -127,7 +127,7 @@ integrations = ["javascript_openai_ai_integrations:2.0.0", "javascript_gemini_ai
 
 [postMerge]
 path = "scripts/post-merge.sh"
-timeoutMs = 20000
+timeoutMs = 120000
 
 [nix]
 channel = "stable-25_05"
