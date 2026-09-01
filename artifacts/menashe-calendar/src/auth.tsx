@@ -245,7 +245,12 @@ const authCopy = {
   },
 } as const;
 
-type AuthCopy = (typeof authCopy)["en"];
+type AuthCopy = {
+  [Key in keyof (typeof authCopy)["en"]]: (typeof authCopy)["en"][Key] extends
+    readonly string[]
+    ? readonly string[]
+    : string;
+};
 
 type AuthErrorCode = keyof Pick<
   typeof authCopy.en,
@@ -288,6 +293,7 @@ function AuthButton({
   const [redirecting, setRedirecting] = useState(false);
   return (
     <a
+      className="auth-cta"
       href={`/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
       onClick={(event) => {
         if (redirecting) {

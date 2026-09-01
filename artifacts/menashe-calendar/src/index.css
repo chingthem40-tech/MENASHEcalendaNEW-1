@@ -1931,10 +1931,31 @@ select:focus {
 /* ── Button — tighter, more confident press feedback ── */
 .btn-primary:focus-visible,
 .btn-gold:focus-visible,
+.auth-cta:focus-visible,
 .btn-close-full:focus-visible,
 .modal-close-btn:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+.auth-cta:hover {
+  box-shadow: 0 10px 24px rgba(212, 175, 55, 0.2);
+  transform: translateY(-1px);
+}
+
+.auth-cta:active {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-cta {
+    transition: none !important;
+  }
+
+  .auth-cta:hover,
+  .auth-cta:active {
+    transform: none;
+  }
 }
 
 /* ── Popup card exit (add .popup-card-exit for close animations) ── */
