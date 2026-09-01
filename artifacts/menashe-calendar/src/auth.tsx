@@ -293,7 +293,7 @@ function AuthButton({
   const [redirecting, setRedirecting] = useState(false);
   return (
     <a
-      className="auth-cta"
+      className="auth-cta bg-[color:var(--text-secondary)]"
       href={`/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
       onClick={(event) => {
         if (redirecting) {
