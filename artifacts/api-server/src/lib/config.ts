@@ -5,7 +5,7 @@
  *
  * Rules:
  *  - DATABASE_URL is required in every environment.
- *  - Production requires the managed Replit Auth session configuration.
+ *  - Production requires Supabase Auth public configuration.
  *  - Optional services degrade gracefully with a logged warning.
  *  - Secret values are NEVER logged — only presence/absence.
  */
@@ -14,10 +14,9 @@ import { logger } from "./logger";
 
 // ── Resolve raw env values ────────────────────────────────────────────────────
 
-const clerkSecretKey = process.env.CLERK_SECRET_KEY || null;
-const clerkPublishKey = process.env.CLERK_PUBLISHABLE_KEY || null;
-const sessionSecret = process.env.SESSION_SECRET || null;
-const replitAppId = process.env.REPLIT_AUTH_CLIENT_ID || process.env.REPL_ID || null;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || null;
+const supabasePublishableKey =
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY || null;
 const openaiKey = process.env.OPENAI_API_KEY || null;
 const googleKey = process.env.GOOGLE_API_KEY || null;
 const grokKey = process.env.GROK_API_KEY || null;
@@ -47,43 +46,12 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
-type ClerkKeyKind = "publishable" | "secret";
-
-function clerkKeyMetadata(
-  value: string | null,
-  kind: ClerkKeyKind,
-): {
-  present: boolean;
-  environment: "live" | "test" | "unknown";
-  shapeValid: boolean;
-} {
-  if (!value) {
-    return { present: false, environment: "unknown", shapeValid: false };
-  }
-  const prefix = kind === "publishable" ? "pk" : "sk";
-  const match = value
-    .trim()
-    .match(new RegExp(`^${prefix}_(live|test)_[A-Za-z0-9_-]+$`));
-  return {
-    present: true,
-    environment:
-      match?.[1] === "live"
-        ? "live"
-        : match?.[1] === "test"
-          ? "test"
-          : "unknown",
-    shapeValid: !!match,
-  };
-}
-
-const clerkPublishMetadata = clerkKeyMetadata(clerkPublishKey, "publishable");
-const clerkSecretMetadata = clerkKeyMetadata(clerkSecretKey, "secret");
 const nodeEnv = process.env.NODE_ENV ?? "development";
 
 if (nodeEnv === "production") {
-  if (!sessionSecret || sessionSecret.length < 32 || !replitAppId) {
+  if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error(
-      "Production Replit Auth configuration requires SESSION_SECRET and REPL_ID",
+      "Production Supabase Auth configuration requires VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY",
     );
   }
 }
@@ -99,11 +67,9 @@ export const config = {
   // Database
   databaseUrl,
 
-  // Auth — Replit Auth is primary; Clerk remains available during migration
-  sessionSecret,
-  replitAppId,
-  clerkSecretKey,
-  clerkPublishableKey: clerkPublishKey,
+  // Auth
+  supabaseUrl,
+  supabasePublishableKey,
 
   // AI providers — gateway uses whichever keys are present
   openaiApiKey: openaiKey,
@@ -124,7 +90,7 @@ export const config = {
 
   // Derived feature flags — safe to log (booleans only, no key material)
   features: {
-    auth: !!sessionSecret && !!replitAppId,
+    auth: !!supabaseUrl && !!supabasePublishableKey,
     openai: !!openaiKey,
     gemini: !!googleKey,
     grok: !!grokKey,
@@ -154,8 +120,7 @@ export function printConfigSummary(): void {
     "  Menashe API — Configuration Summary   ",
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
     row("Database", "READY"), // already exited if missing
-    row("Replit Auth", features.auth ? "READY" : "DISABLED"),
-    row("Clerk Transition", clerkSecretKey && clerkPublishKey ? "READY" : "DISABLED"),
+    row("Supabase Auth", features.auth ? "READY" : "DISABLED"),
     row("OpenAI", features.openai ? "READY" : "NOT CONFIGURED"),
     row("Gemini", features.gemini ? "READY" : "NOT CONFIGURED"),
     row("Grok", features.grok ? "READY" : "NOT CONFIGURED"),
@@ -172,8 +137,8 @@ export function printConfigSummary(): void {
   // Emit individual warnings so operators know which services are degraded
   if (!features.auth) {
     logger.warn(
-      "Replit Auth is DISABLED — SESSION_SECRET and REPL_ID are required. " +
-        "All Replit-authenticated routes will return 401.",
+      "Supabase Auth is DISABLED — VITE_SUPABASE_URL and " +
+        "VITE_SUPABASE_PUBLISHABLE_KEY are required. Authenticated routes will return 401.",
     );
   }
   if (!features.openai && !features.gemini && !features.grok) {

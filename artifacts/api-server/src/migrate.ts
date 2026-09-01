@@ -947,9 +947,9 @@ export async function runMigrations(): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_family_timeline_greg_date ON family_timeline (user_id, gregorian_date DESC)
     `);
 
-    // Replit Auth — provider-neutral sessions and identity mapping.
-    // Existing Clerk-owned user IDs remain the account IDs when a verified
-    // Replit email matches exactly one legacy Clerk user.
+    // Provider-neutral identity mapping.
+    // Existing account IDs remain stable when a verified Supabase email
+    // matches exactly one previously linked identity.
     await client.query(`
       CREATE TABLE IF NOT EXISTS auth_identities (
         provider          TEXT NOT NULL,

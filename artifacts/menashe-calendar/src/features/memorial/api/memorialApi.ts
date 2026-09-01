@@ -17,7 +17,7 @@ import { getAuthToken } from "../../../lib/authToken";
 
 // ── Transport ─────────────────────────────────────────────────────────────────
 // Mirrors the apiFetch pattern used throughout the app (userApi.ts).
-// Replit Auth is carried by the same-origin HttpOnly session cookie.
+// Supabase Auth is attached to same-origin API requests by the global fetch guard.
 
 async function apiFetch<T = unknown>(
   path: string,

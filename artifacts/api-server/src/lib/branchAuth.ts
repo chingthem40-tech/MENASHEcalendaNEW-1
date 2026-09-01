@@ -2,7 +2,7 @@
  * Branch Authorization Helpers — DATA-702
  *
  * Role hierarchy (server-side only — never trust the frontend):
- *   national_admin  — Clerk org:admin OR branch_admin_roles.role = 'national_admin'
+ *   national_admin  — app admin assignment OR branch_admin_roles.role = 'national_admin'
  *   regional_admin  — branch_admin_roles.role = 'regional_admin' (or national)
  *   local_admin     — owns the branch (owner_user_id = userId)
  *
@@ -14,7 +14,7 @@
 
 import type { Request, Response, NextFunction } from "express";
 import { pool } from "@workspace/db";
-import { getRequestAuth } from "./replitAuth";
+import { getRequestAuth } from "./supabaseAuth";
 
 export type BranchAdminRole = "local_admin" | "regional_admin" | "national_admin";
 
@@ -105,13 +105,13 @@ export async function getDbAdminRole(userId: string): Promise<"regional_admin" |
 
 /**
  * Resolve the highest admin role for a user.
- * Checks Clerk org:admin (→ national_admin) then DB table.
+ * Checks the application admin assignment (→ national_admin) then the DB role table.
  */
 export async function resolveAdminRole(req: Request): Promise<{ userId: string; role: BranchAdminRole } | null> {
   const { userId, orgRole } = safeGetAuth(req);
   if (!userId) return null;
 
-  // Clerk org:admin = national admin
+  // Application admin assignment = national admin
   if (orgRole === "org:admin") return { userId, role: "national_admin" };
 
   // Check DB

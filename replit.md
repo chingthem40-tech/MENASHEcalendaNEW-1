@@ -1,15 +1,15 @@
 # Menashe Calendar
 
 
-## Setup Status (as of 2026-08-29)
+## Setup Status (as of 2026-09-01)
 
 Project imported from GitHub and set up on Replit:
 
 - **Dependencies**: `pnpm install` run at root — all 1728 packages resolved and hoisted to root `node_modules` via `shamefully-hoist=true` (.npmrc).
 - **Database**: Replit-managed PostgreSQL provisioned and reachable. Development API startup applies the idempotent bootstrap migrations. Production API startup never runs migrations or seeds; Replit Publish must initialize the production schema.
 - **Workflows**: Four managed workflows are configured for the web app, API, mobile app, and design sandbox.
-- **Authentication**: The web and API currently use matching Clerk Development credentials from `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, and `VITE_CLERK_PUBLISHABLE_KEY`. Admin authorization is server-side and requires Clerk's `org:admin` role; no browser PIN or static browser admin credential is supported.
-- **Clerk domains**: The web app uses Clerk's standard Development-instance frontend API directly. No custom Clerk domain or same-origin Clerk proxy is configured.
+- **Authentication**: The web and API use Supabase Auth with email/password sessions. The browser attaches Supabase bearer tokens to same-origin API calls; the API verifies each token and resolves it to a stable application account ID.
+- **Account continuity**: A new verified Supabase identity is linked automatically only when its email matches exactly one existing verified identity. Ambiguous matches remain isolated for explicit administrator review.
 - **Optional secrets not yet set**: `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `GROK_API_KEY` (AI chat), and `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` (payments) — the app runs without these but those features are disabled.
 
 A sacred Jewish calendar app for the Bnei Menashe community — featuring Hebrew/Jewish calendar, Zmanim (prayer times), Parasha, Daf Yomi, holidays, a Siddur library, 3D Memorial Sanctuary, community tools, and AI-powered sacred wisdom chat.
@@ -53,10 +53,9 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 | Key | Where | Notes |
 |-----|-------|-------|
 | `DATABASE_URL` | Runtime-managed | PostgreSQL attached by Replit — do not set manually |
-| `CLERK_PUBLISHABLE_KEY` | Shared environment | Publishable key for the same Clerk application as the secret key |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Shared environment | Same publishable value, injected into the Vite bundle |
+| `VITE_SUPABASE_URL` | Shared environment | Public Supabase project URL used by the web and API auth clients |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Shared environment | Public Supabase browser key; never substitute a service-role key |
 | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Shared environment | Mobile Clerk publishable key |
-| `CLERK_SECRET_KEY` | Replit Secrets | Secret for the same Clerk application |
 | `VAPID_PUBLIC_KEY` | `.replit` userenv.shared | Web push public key |
 | `VAPID_SUBJECT` | `.replit` userenv.shared | Web push contact email |
 | `VAPID_PRIVATE_KEY` | Replit Secrets | Web push private key; never expose it to the browser |
@@ -89,7 +88,7 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 - **Build**: esbuild (API), Vite 7 (frontend)
 - **Frontend**: React 19, Tailwind CSS, Wouter routing, Radix UI, Framer Motion
 - **3D**: Three.js, @react-three/fiber, @react-three/drei
-- **Auth**: Clerk (@clerk/react + @clerk/express)
+- **Web Auth**: Supabase Auth (`@supabase/supabase-js`)
 - **Mobile**: Expo SDK 54, React Native
 - **Jewish calendar**: @hebcal/core, suncalc
 
@@ -123,8 +122,8 @@ lib/
 - Bilingual: **English (EN) + Thadou Kuki (TK)**. All UI text goes through `LanguageContext` / `useLanguage()` — never hardcode English-only strings.
 - Hebrew calendar calculations done client-side with `@hebcal/core`.
 - Zmanim (prayer times) calculated client-side with `suncalc`.
-- Auth uses Clerk; API calls attach Bearer token via `window.Clerk?.session?.getToken()` (cookies alone don't work through Replit's proxy).
-- Admin access is enforced server-side by a valid Clerk session carrying the `org:admin` organization role.
+- Web auth uses Supabase email/password sessions; the browser attaches the current access token to same-origin `/api/*` requests.
+- Admin access is enforced server-side after a valid Supabase identity resolves to an account in `app_admin_assignments`.
 - 3D scene files strip Cartographer `data-component-name` props at build time (R3F 9.x throws on hyphenated props).
 
 ## User preferences
@@ -134,7 +133,7 @@ lib/
 
 ## Gotchas
 
-- `CLERK_SECRET_KEY` is stored as a Replit Secret (not tracked in git).
+- Never use a Supabase service-role key in browser code or a `VITE_*` variable.
 - AI features (Sacred Wisdom chat) silently degrade if no AI API keys are set — add `OPENAI_API_KEY` as a Replit Secret to enable.
 - Push notifications require `VAPID_PRIVATE_KEY` as a Replit Secret.
 - `@hebcal/noaa` ships pure ESM; a pre-compiled CJS shim is used via Metro `resolveRequest` for the mobile build.

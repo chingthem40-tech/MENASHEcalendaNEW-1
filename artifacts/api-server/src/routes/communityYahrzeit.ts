@@ -9,13 +9,13 @@ import { apiError } from "../lib/apiError";
 import { broadcastDedicationPush, enqueueDedicationWebPush } from "./push";
 
 /**
- * resolveUserId — returns the authenticated Clerk userId when available,
+ * resolveUserId — returns the authenticated application account ID when available,
  * otherwise returns a stable-per-IP-per-day anonymous identifier.
  *
  * Using IP+day gives each client a consistent identity within a calendar day
  * (so dedicate-cleanup DELETEs work correctly) while keeping different clients
- * isolated (no shared "guest" collision). When CLERK_SECRET_KEY is present
- * and the user is signed in, the real Clerk userId is always preferred.
+ * isolated (no shared "guest" collision). When a Supabase user is signed in,
+ * the resolved application account ID is always preferred.
  */
 function resolveUserId(req: Request): string {
   const authed = safeGetAuth(req).userId;

@@ -12,7 +12,7 @@ import { requireAdmin } from "../lib/requireAdmin";
 
 const router = Router();
 
-type ReplitIdentityRow = {
+type SupabaseIdentityRow = {
   provider_subject: string;
   account_id: string;
   email: string | null;
@@ -48,18 +48,18 @@ function dataCounts(
 }
 
 /**
- * Read-only acceptance inventory for the staged Clerk → Replit transition.
+ * Read-only acceptance inventory for the staged legacy → Supabase transition.
  * The endpoint intentionally reports ambiguity instead of guessing an owner.
  */
 router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
   try {
     const [identityResult, localClerkResult, adminResult, clerk] =
       await Promise.all([
-        pool.query<ReplitIdentityRow>(
+        pool.query<SupabaseIdentityRow>(
           `SELECT provider_subject, account_id, email, email_verified,
                 link_status, linked_at, linked_by, created_at, updated_at
            FROM auth_identities
-          WHERE provider = 'replit'
+          WHERE provider = 'supabase'
           ORDER BY created_at ASC`,
         ),
         pool.query<LocalClerkIdentityRow>(
@@ -81,6 +81,8 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
       ]);
 
     const identities = identityResult.rows;
+    const legacyDirectoryAvailable =
+      clerk.available || localClerkResult.rows.length > 0;
     const legacyClerkById = new Map(
       clerk.users.map((user) => [
         user.id,
@@ -118,7 +120,7 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
 
     const identityDetails = identities.map((identity) => {
       const matches =
-        clerk.available && identity.email_verified && identity.email
+        legacyDirectoryAvailable && identity.email_verified && identity.email
           ? (clerkByEmail.get(identity.email) ?? [])
           : [];
       const state =
@@ -128,7 +130,7 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
             ? "ambiguous"
             : matches.length === 1
               ? "auto_linked"
-              : !clerk.available && identity.email_verified
+              : !legacyDirectoryAvailable && identity.email_verified
                 ? "clerk_unavailable"
                 : "unmatched";
       return {
@@ -165,7 +167,7 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
       clerkUserId: user.id,
       displayName: user.displayName,
       verifiedEmails: user.verifiedEmails,
-      replitSubjects: linkedSubjectsByAccount.get(user.id) ?? [],
+      supabaseSubjects: linkedSubjectsByAccount.get(user.id) ?? [],
       matched: (linkedSubjectsByAccount.get(user.id) ?? []).length > 0,
       dataCounts: dataCounts(counts, user.id),
     }));
@@ -175,14 +177,14 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
     const ambiguousMatches = identityDetails.filter(
       (identity) => identity.evaluatedStatus === "ambiguous",
     );
-    const unmatchedReplitIdentities = identityDetails.filter((identity) =>
+    const unmatchedSupabaseIdentities = identityDetails.filter((identity) =>
       ["unmatched", "clerk_unavailable"].includes(identity.evaluatedStatus),
     );
     const adminAssignments = adminResult.rows.map((assignment) => ({
       accountId: assignment.account_id,
       assignedBy: assignment.assigned_by,
       assignedAt: assignment.assigned_at,
-      replitSubjects: linkedSubjectsByAccount.get(assignment.account_id) ?? [],
+      supabaseSubjects: linkedSubjectsByAccount.get(assignment.account_id) ?? [],
       dataCounts: dataCounts(counts, assignment.account_id),
     }));
 
@@ -194,29 +196,29 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
         userCount: legacyClerkIdentities.length,
       },
       summary: {
-        replitIdentities: identities.length,
+        supabaseIdentities: identities.length,
         autoLinked: identityDetails.filter(
           (identity) => identity.evaluatedStatus === "auto_linked",
         ).length,
         explicitlyLinked: identityDetails.filter(
           (identity) => identity.evaluatedStatus === "explicitly_linked",
         ).length,
-        unmatchedReplit: unmatchedReplitIdentities.length,
+        unmatchedSupabase: unmatchedSupabaseIdentities.length,
         ambiguous: ambiguousMatches.length,
         legacyClerkUsers: legacyClerkUsers.length,
         unmatchedLegacyClerk: unmatchedLegacyClerkUsers.length,
         adminAssignments: adminAssignments.length,
-        adminsWithoutReplit: adminAssignments.filter(
-          (assignment) => assignment.replitSubjects.length === 0,
+        adminsWithoutSupabase: adminAssignments.filter(
+          (assignment) => assignment.supabaseSubjects.length === 0,
         ).length,
       },
-      replitIdentities: identityDetails.map((identity) => ({
+      supabaseIdentities: identityDetails.map((identity) => ({
         ...identity,
         dataCounts: dataCounts(counts, identity.accountId),
       })),
       legacyClerkMatches: legacyClerkUsers.filter((user) => user.matched),
       unmatchedUsers: {
-        replit: unmatchedReplitIdentities.map((identity) => ({
+        supabase: unmatchedSupabaseIdentities.map((identity) => ({
           ...identity,
           dataCounts: dataCounts(counts, identity.accountId),
         })),
@@ -233,7 +235,7 @@ router.get("/admin/auth/inventory", requireAdmin, async (_req, res) => {
 
 /**
  * Explicit, administrator-approved link. It never rewrites user-owned rows;
- * future requests simply resolve this Replit subject to the selected account.
+ * future requests simply resolve this Supabase subject to the selected account.
  */
 router.post("/admin/auth/identity-links", requireAdmin, async (req, res) => {
   const provider = req.body?.provider;
@@ -241,7 +243,7 @@ router.post("/admin/auth/identity-links", requireAdmin, async (req, res) => {
   const accountId = req.body?.accountId;
   const reason = req.body?.reason;
   if (
-    provider !== "replit" ||
+    provider !== "supabase" ||
     typeof providerSubject !== "string" ||
     providerSubject.trim().length < 1 ||
     providerSubject.length > 500 ||
@@ -269,21 +271,21 @@ router.post("/admin/auth/identity-links", requireAdmin, async (req, res) => {
     }>(
       `SELECT account_id, email, email_verified
          FROM auth_identities
-        WHERE provider = 'replit' AND provider_subject = $1
+        WHERE provider = 'supabase' AND provider_subject = $1
         FOR UPDATE`,
       [providerSubject],
     );
     const current = identity.rows[0];
     if (!current) {
       await client.query("ROLLBACK");
-      return apiError.notFound(res, "Replit identity was not found");
+      return apiError.notFound(res, "Supabase identity was not found");
     }
 
     await client.query(
       `INSERT INTO auth_identity_links
          (id, provider, provider_subject, from_account_id, to_account_id,
           actor_account_id, reason)
-       VALUES ($1, 'replit', $2, $3, $4, $5, $6)`,
+        VALUES ($1, 'supabase', $2, $3, $4, $5, $6)`,
       [
         randomUUID(),
         providerSubject,
@@ -300,14 +302,14 @@ router.post("/admin/auth/identity-links", requireAdmin, async (req, res) => {
               linked_at = NOW(),
               linked_by = $2,
               updated_at = NOW()
-        WHERE provider = 'replit' AND provider_subject = $3
+        WHERE provider = 'supabase' AND provider_subject = $3
       RETURNING provider, provider_subject, account_id, email, email_verified,
                 link_status, linked_at, linked_by`,
       [accountId.trim(), actorAccountId, providerSubject],
     );
     await client.query(
       `DELETE FROM auth_sessions
-        WHERE provider = 'replit' AND provider_subject = $1`,
+        WHERE provider = 'supabase' AND provider_subject = $1`,
       [providerSubject],
     );
     await client.query("COMMIT");

@@ -84,7 +84,7 @@ test("production CORS still honors the explicit allowlist", () => {
   );
 });
 
-test("admin authorization accepts only authenticated Clerk organization admins", () => {
+test("admin authorization accepts only authenticated application admins", () => {
   assert.equal(isAdminUser(null, "org:admin"), false);
   assert.equal(isAdminUser("user-member", "org:member"), false);
   assert.equal(isAdminUser("user-without-role", null), false);

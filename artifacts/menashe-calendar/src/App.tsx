@@ -13,11 +13,11 @@ import {
   SignIn,
   SignUp,
   Show,
-  useClerk,
+  useAuthActions,
   useUser,
   useOrganization,
   useAuthState,
-  ReplitAuthProvider,
+  SupabaseAuthProvider,
 } from "./auth";
 import {
   fetchUserProfile,
@@ -281,7 +281,7 @@ function SignUpPage() {
 function AppShell() {
   const { user, isLoaded: userLoaded } = useUser();
   const { membership } = useOrganization();
-  const { signOut } = useClerk();
+  const { signOut } = useAuthActions();
   const profileSyncedRef = useRef(false);
   const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(
     null,
@@ -1235,7 +1235,7 @@ function AppRoute() {
 
 export default function App() {
   return (
-    <ReplitAuthProvider>
+    <SupabaseAuthProvider>
       <LanguageProvider>
         <Switch>
           <Route path="/" component={HomeRoute} />
@@ -1249,6 +1249,6 @@ export default function App() {
           </Route>
         </Switch>
       </LanguageProvider>
-    </ReplitAuthProvider>
+    </SupabaseAuthProvider>
   );
 }

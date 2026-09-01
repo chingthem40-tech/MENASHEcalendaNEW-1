@@ -47,3 +47,4 @@
 - [Replit Auth provisioning](replit-auth-provisioning.md) — enable managed Auth before migrating; do not guess the session or OIDC contract.
 - [Replit proxy CORS](replit-proxy-cors.md) — production API must treat the trusted forwarded public host as same-origin, alongside the explicit origin allowlist.
 - [Auth route presentation](auth-route-presentation.md) — auth routes must bypass the global splash/onboarding overlay so recovery states are immediately actionable.
+- [Supabase identity continuity](supabase-identity-continuity.md) — never persist a fallback account while the legacy identity directory is unavailable; defer and retry resolution.

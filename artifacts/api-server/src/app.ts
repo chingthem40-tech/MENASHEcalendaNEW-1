@@ -7,14 +7,7 @@ import express, {
 import cors from "cors";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
-import { clerkMiddleware } from "@clerk/express";
-import { publishableKeyFromHost } from "@clerk/shared/keys";
-import {
-  CLERK_PROXY_PATH,
-  clerkProxyMiddleware,
-  getClerkProxyHost,
-} from "./middlewares/clerkProxyMiddleware";
-import { replitAuthMiddleware, replitAuthRouter } from "./lib/replitAuth";
+import { supabaseAuthMiddleware, supabaseAuthRouter } from "./lib/supabaseAuth";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { globalRateLimiter } from "./lib/rateLimiter";
@@ -44,8 +37,6 @@ app.use(
     },
   }),
 );
-
-app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 // CORS: prefer ALLOWED_ORIGINS; fall back to REPLIT_DOMAINS in production
 // so the app works on first deploy without manual secret configuration.
@@ -154,30 +145,14 @@ app.use(
 app.use(express.json({ limit: "512kb" }));
 app.use(express.urlencoded({ extended: true, limit: "512kb" }));
 
-if (process.env.CLERK_SECRET_KEY) {
-  app.use(
-    clerkMiddleware((req) => ({
-      publishableKey: publishableKeyFromHost(
-        getClerkProxyHost(req) ?? "",
-        process.env.CLERK_PUBLISHABLE_KEY,
-      ),
-    })),
-  );
-} else {
-  logger.warn(
-    "CLERK_SECRET_KEY not set — Clerk authentication middleware disabled; " +
-      "authenticated routes will return 401 until the key is provided.",
-  );
-}
-
-app.use(replitAuthMiddleware());
+app.use(supabaseAuthMiddleware());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use(globalRateLimiter);
 
 app.get("/api", (_req, res) => res.json({ status: "ok" }));
-app.use("/api", replitAuthRouter);
+app.use("/api", supabaseAuthRouter);
 app.use("/api", router);
 
 app.use("/api", (_req: Request, res: Response) => {

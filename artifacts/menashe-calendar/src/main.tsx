@@ -8,6 +8,7 @@ import OnboardingFlow, { hasSeenOnboarding } from "./components/OnboardingFlow";
 import OfflineBanner from "./components/OfflineBanner";
 import PWAInstallBanner from "./components/PWAInstallBanner";
 import UpdateToast from "./components/UpdateToast";
+import { installAuthFetch } from "./lib/authToken";
 import "./index.css";
 
 /* ─── Suppress R3F v9 + React 19 Strict Mode transient error ────────────────
@@ -64,6 +65,8 @@ const DEV_PREVIEW = import.meta.env.DEV &&
 const DEV_ONBOARDING = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get("onboarding") === "1";
 const AUTH_ROUTE = /^\/sign-(in|up)(\/|$)/.test(window.location.pathname);
+
+installAuthFetch();
 
 /* Register service worker on startup so offline caching is active
    immediately — independent of whether push notifications are enabled. */
