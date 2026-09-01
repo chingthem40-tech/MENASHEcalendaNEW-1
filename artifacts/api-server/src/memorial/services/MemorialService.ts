@@ -1,7 +1,40 @@
 import { memorialRepository } from "../repositories/MemorialRepository";
 import { familyRepository } from "../repositories/FamilyRepository";
-import type { InsertMemorialPerson, InsertMemorial } from "@workspace/db";
+import type {
+  InsertMemorialPerson,
+  InsertMemorial,
+  MemorialWithPerson,
+} from "@workspace/db";
 import type { CollectionSort } from "../repositories/MemorialRepository";
+
+export type MemorialPrivacyLevel = "private" | "family" | "community" | "public";
+export type MemorialInteractionPermission =
+  | "nobody"
+  | "family"
+  | "community"
+  | "public";
+
+export function isMemorialVisibilityAllowed(
+  level: MemorialPrivacyLevel,
+  isAuthenticated: boolean,
+  isFamilyMember: boolean,
+): boolean {
+  if (level === "public") return true;
+  if (level === "community") return isAuthenticated;
+  return isAuthenticated && isFamilyMember;
+}
+
+export function isMemorialInteractionAllowed(
+  permission: MemorialInteractionPermission,
+  isAuthenticated: boolean,
+  isFamilyMember: boolean,
+  allowGuests = false,
+): boolean {
+  if (permission === "public") return true;
+  if (permission === "community") return isAuthenticated || allowGuests;
+  if (permission === "family") return isAuthenticated && isFamilyMember;
+  return false;
+}
 
 function slugify(name: string): string {
   return name
@@ -71,11 +104,7 @@ export class MemorialService {
     const memorial = await memorialRepository.findById(id);
     if (!memorial) return null;
 
-    const canView = await this._checkVisibility(
-      memorial.familyId,
-      memorial.privacy?.visibilityLevel ?? "family",
-      viewerUserId,
-    );
+    const canView = await this.canViewMemorial(memorial, viewerUserId);
 
     if (!canView) return null;
 
@@ -88,17 +117,53 @@ export class MemorialService {
     const memorial = await memorialRepository.findBySlug(slug);
     if (!memorial) return null;
 
-    const canView = await this._checkVisibility(
-      memorial.familyId,
-      memorial.privacy?.visibilityLevel ?? "family",
-      viewerUserId,
-    );
+    const canView = await this.canViewMemorial(memorial, viewerUserId);
 
     if (!canView) return null;
 
     await memorialRepository.incrementCounter(memorial.id, "viewCount");
 
     return memorial;
+  }
+
+  async findVisibleById(id: string, viewerUserId: string | null) {
+    const memorial = await memorialRepository.findById(id);
+    if (!memorial) return null;
+    return (await this.canViewMemorial(memorial, viewerUserId))
+      ? memorial
+      : null;
+  }
+
+  async canViewMemorial(
+    memorial: MemorialWithPerson,
+    viewerUserId: string | null,
+  ): Promise<boolean> {
+    const isFamilyMember = viewerUserId
+      ? await familyRepository.isMember(memorial.familyId, viewerUserId)
+      : false;
+    return isMemorialVisibilityAllowed(
+      (memorial.privacy?.visibilityLevel ?? "family") as MemorialPrivacyLevel,
+      Boolean(viewerUserId),
+      isFamilyMember,
+    );
+  }
+
+  async canUseMemorialPermission(
+    memorial: MemorialWithPerson,
+    permission: MemorialInteractionPermission,
+    viewerUserId: string | null,
+    allowGuests = false,
+  ): Promise<boolean> {
+    if (!(await this.canViewMemorial(memorial, viewerUserId))) return false;
+    const isFamilyMember = viewerUserId
+      ? await familyRepository.isMember(memorial.familyId, viewerUserId)
+      : false;
+    return isMemorialInteractionAllowed(
+      permission,
+      Boolean(viewerUserId),
+      isFamilyMember,
+      allowGuests,
+    );
   }
 
   async update(
@@ -140,19 +205,6 @@ export class MemorialService {
     };
   }
 
-  private async _checkVisibility(
-    familyId: string,
-    level: string,
-    viewerUserId: string | null,
-  ): Promise<boolean> {
-    if (level === "public") return true;
-    if (!viewerUserId) return false;
-    if (level === "community") return true;
-    if (level === "family" || level === "private") {
-      return familyRepository.isMember(familyId, viewerUserId);
-    }
-    return false;
-  }
 }
 
 export const memorialService = new MemorialService();

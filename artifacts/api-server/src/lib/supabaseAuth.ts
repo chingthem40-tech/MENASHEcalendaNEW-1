@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import { AuthClient, type User } from "@supabase/supabase-js";
 import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
 import { pool } from "@workspace/db";
@@ -39,7 +39,9 @@ declare global {
   }
 }
 
-let serverClient: SupabaseClient | null = null;
+type ServerAuthClient = InstanceType<typeof AuthClient>;
+
+let serverClient: ServerAuthClient | null = null;
 
 function config(): { url: string; publishableKey: string } | null {
   const url = process.env.VITE_SUPABASE_URL?.trim();
@@ -49,16 +51,19 @@ function config(): { url: string; publishableKey: string } | null {
   return { url, publishableKey };
 }
 
-function getServerClient(): SupabaseClient | null {
+function getServerClient(): ServerAuthClient | null {
   if (serverClient) return serverClient;
   const current = config();
   if (!current) return null;
-  serverClient = createClient(current.url, current.publishableKey, {
-    auth: {
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      persistSession: false,
+  serverClient = new AuthClient({
+    url: `${current.url.replace(/\/+$/, "")}/auth/v1`,
+    headers: {
+      apikey: current.publishableKey,
+      Authorization: `Bearer ${current.publishableKey}`,
     },
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+    persistSession: false,
   });
   return serverClient;
 }
@@ -284,7 +289,7 @@ export function supabaseAuthMiddleware(
     const verifyToken =
       options.verifyToken ??
       (async (value: string) => {
-        const { data, error } = await supabase!.auth.getUser(value);
+        const { data, error } = await supabase!.getUser(value);
         return error ? null : data.user;
       });
 

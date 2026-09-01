@@ -2,6 +2,10 @@ import { tributeRepository } from "../repositories/TributeRepository";
 import { memorialRepository } from "../repositories/MemorialRepository";
 import { familyRepository } from "../repositories/FamilyRepository";
 import type { InsertTribute } from "@workspace/db";
+import {
+  memorialService,
+  type MemorialInteractionPermission,
+} from "./MemorialService";
 
 export class TributeService {
   async submit(
@@ -18,24 +22,17 @@ export class TributeService {
     const permission = privacy?.canLeaveTributes ?? "family";
     const allowGuests = privacy?.allowGuestInteraction ?? false;
 
-    if (permission === "nobody") {
-      throw new Error("Tributes are not allowed on this memorial");
-    }
-
-    if (!userId && !allowGuests) {
-      throw new Error("You must be signed in to leave a tribute");
-    }
+    const canInteract = await memorialService.canUseMemorialPermission(
+      memorial,
+      permission as MemorialInteractionPermission,
+      userId,
+      allowGuests,
+    );
+    if (!canInteract)
+      throw new Error("You do not have permission to leave a tribute here");
 
     if (!userId && !input.guestName?.trim()) {
       throw new Error("Guest name is required when not signed in");
-    }
-
-    if (permission === "family" && userId) {
-      const isMember = await familyRepository.isMember(
-        memorial.familyId,
-        userId,
-      );
-      if (!isMember) throw new Error("Only family members can leave a tribute here");
     }
 
     const tribute = await tributeRepository.create(memorialId, input, userId);

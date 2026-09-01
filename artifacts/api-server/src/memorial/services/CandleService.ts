@@ -1,8 +1,11 @@
 import crypto from "node:crypto";
 import { candleRepository } from "../repositories/CandleRepository";
 import { memorialRepository } from "../repositories/MemorialRepository";
-import { familyRepository } from "../repositories/FamilyRepository";
 import type { InsertCandle } from "@workspace/db";
+import {
+  memorialService,
+  type MemorialInteractionPermission,
+} from "./MemorialService";
 
 export class CandleService {
   async lightCandle(
@@ -18,11 +21,11 @@ export class CandleService {
 
     const privacy = memorial.privacy;
 
-    const canInteract = await this._checkPermission(
-      privacy?.canLightCandles ?? "family",
-      privacy?.allowGuestInteraction ?? false,
-      memorial.familyId,
+    const canInteract = await memorialService.canUseMemorialPermission(
+      memorial,
+      (privacy?.canLightCandles ?? "family") as MemorialInteractionPermission,
       userId,
+      privacy?.allowGuestInteraction ?? false,
     );
 
     if (!canInteract) {
@@ -59,22 +62,6 @@ export class CandleService {
     await memorialRepository.incrementCounter(memorialId, "candleCount");
 
     return candle;
-  }
-
-  private async _checkPermission(
-    permission: string,
-    allowGuests: boolean,
-    familyId: string,
-    userId: string | null,
-  ): Promise<boolean> {
-    if (permission === "public") return true;
-    if (permission === "community" && userId) return true;
-    if (permission === "community" && allowGuests) return true;
-    if (permission === "family" && userId) {
-      return familyRepository.isMember(familyId, userId);
-    }
-    if (permission === "nobody") return false;
-    return false;
   }
 }
 

@@ -11,6 +11,7 @@ import { tributeRepository } from "../memorial/repositories/TributeRepository";
 import { photoRepository } from "../memorial/repositories/PhotoRepository";
 import { memorialRepository } from "../memorial/repositories/MemorialRepository";
 import { familyRepository } from "../memorial/repositories/FamilyRepository";
+import type { MemorialInteractionPermission } from "../memorial/services/MemorialService";
 import {
   insertCandleSchema,
   insertTributeSchema,
@@ -176,7 +177,11 @@ router.get("/memorials/:id/candles", async (req, res) => {
   }
 
   try {
-    const memorial = await memorialRepository.findById(memorialId);
+    const viewerUserId = safeGetAuth(req).userId;
+    const memorial = await memorialService.findVisibleById(
+      memorialId,
+      viewerUserId,
+    );
     if (!memorial) return apiError.notFound(res, "Memorial not found");
 
     const result = await candleRepository.findByMemorial(
@@ -243,7 +248,10 @@ router.get("/memorials/:id/tributes", async (req, res) => {
   }
 
   try {
-    const memorial = await memorialRepository.findById(memorialId);
+    const memorial = await memorialService.findVisibleById(
+      memorialId,
+      viewerUserId,
+    );
     if (!memorial) return apiError.notFound(res, "Memorial not found");
 
     const isFamilyMember = viewerUserId
@@ -341,8 +349,18 @@ router.get("/memorials/:id/photos", async (req, res) => {
   const viewerUserId = auth?.userId ?? null;
 
   try {
-    const memorial = await memorialRepository.findById(memorialId);
+    const memorial = await memorialService.findVisibleById(
+      memorialId,
+      viewerUserId,
+    );
     if (!memorial) return apiError.notFound(res, "Memorial not found");
+
+    const canViewPhotos = await memorialService.canUseMemorialPermission(
+      memorial,
+      (memorial.privacy?.canViewPhotos ?? "family") as MemorialInteractionPermission,
+      viewerUserId,
+    );
+    if (!canViewPhotos) return apiError.forbidden(res, "Photo access is not allowed");
 
     const isFamilyMember = viewerUserId
       ? await familyRepository.isMember(memorial.familyId, viewerUserId)
@@ -368,8 +386,15 @@ router.post("/memorials/:id/photos", requireAuth, async (req, res) => {
   }
 
   try {
-    const memorial = await memorialRepository.findById(memorialId);
+    const memorial = await memorialService.findVisibleById(memorialId, userId);
     if (!memorial) return apiError.notFound(res, "Memorial not found");
+
+    const canViewPhotos = await memorialService.canUseMemorialPermission(
+      memorial,
+      (memorial.privacy?.canViewPhotos ?? "family") as MemorialInteractionPermission,
+      userId,
+    );
+    if (!canViewPhotos) return apiError.forbidden(res, "Photo access is not allowed");
 
     const isFamilyMember = await familyRepository.isMember(
       memorial.familyId,

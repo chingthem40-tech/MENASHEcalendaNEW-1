@@ -1,23 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import type { Request } from "express";
 import { pool } from "@workspace/db";
-import { safeGetAuth } from "../lib/authorization";
+import { requireAuth } from "../lib/authorization";
 import type { ApiErrorBody } from "../lib/apiError";
-
-/** Same anon-fallback pattern used in communityYahrzeit routes */
-function resolveUserId(req: Request): string {
-  const authed = safeGetAuth(req).userId;
-  if (authed) return authed;
-  const raw = String(
-    req.headers["x-forwarded-for"] ?? req.socket?.remoteAddress ?? "",
-  );
-  const ip = (raw.split(",")[0]?.trim() || "unknown").replace(
-    /[^a-z0-9.:_-]/gi,
-    "_",
-  );
-  return `anon-${ip}`;
-}
 
 const router = Router();
 
@@ -73,8 +58,8 @@ function rowToEvent(r: Record<string, unknown>) {
 }
 
 /* ── GET /api/remembrance ─────────────────────────────────────────────────── */
-router.get("/remembrance", async (req, res) => {
-  const userId = resolveUserId(req as Request);
+router.get("/remembrance", requireAuth, async (req, res) => {
+  const userId = req.userId!;
   const client = await pool.connect();
   try {
     const { rows } = await client.query(
@@ -88,8 +73,8 @@ router.get("/remembrance", async (req, res) => {
 });
 
 /* ── POST /api/remembrance ────────────────────────────────────────────────── */
-router.post("/remembrance", async (req, res) => {
-  const userId = resolveUserId(req as Request);
+router.post("/remembrance", requireAuth, async (req, res) => {
+  const userId = req.userId!;
   const parsed = eventSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" } satisfies ApiErrorBody);
   const d = parsed.data;
@@ -132,8 +117,8 @@ router.post("/remembrance", async (req, res) => {
 });
 
 /* ── PUT /api/remembrance/:id ─────────────────────────────────────────────── */
-router.put("/remembrance/:id", async (req, res) => {
-  const userId = resolveUserId(req as Request);
+router.put("/remembrance/:id", requireAuth, async (req, res) => {
+  const userId = req.userId!;
   const id = String(req.params.id);
   const parsed = eventSchema.partial().safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Invalid input" } satisfies ApiErrorBody);
@@ -171,10 +156,13 @@ router.put("/remembrance/:id", async (req, res) => {
     if (!fields.length) return res.json({ ok: true });
     fields.push(`updated_at = NOW()`);
     vals.push(userId, id);
-    await client.query(
+    const result = await client.query(
       `UPDATE remembrance_events SET ${fields.join(", ")} WHERE user_id = $${n} AND id = $${n + 1}`,
       vals,
     );
+    if ((result.rowCount ?? 0) === 0) {
+      return res.status(404).json({ error: "Remembrance event not found" });
+    }
     return res.json({ ok: true });
   } finally {
     client.release();
@@ -182,15 +170,18 @@ router.put("/remembrance/:id", async (req, res) => {
 });
 
 /* ── DELETE /api/remembrance/:id ──────────────────────────────────────────── */
-router.delete("/remembrance/:id", async (req, res) => {
-  const userId = resolveUserId(req as Request);
+router.delete("/remembrance/:id", requireAuth, async (req, res) => {
+  const userId = req.userId!;
   const id = String(req.params.id);
   const client = await pool.connect();
   try {
-    await client.query(
+    const result = await client.query(
       `DELETE FROM remembrance_events WHERE user_id = $1 AND id = $2`,
       [userId, id],
     );
+    if ((result.rowCount ?? 0) === 0) {
+      return res.status(404).json({ error: "Remembrance event not found" });
+    }
     return res.json({ ok: true });
   } finally {
     client.release();

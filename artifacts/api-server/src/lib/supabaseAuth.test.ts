@@ -9,6 +9,8 @@ import {
   supabaseAuthMiddleware,
   supabaseAuthRouter,
 } from "./supabaseAuth";
+import { requireAdmin, requireAuth } from "./authorization";
+import remembranceRouter from "../routes/remembrance";
 
 let server: Server;
 let baseUrl = "";
@@ -127,6 +129,135 @@ describe("Supabase auth routes", () => {
       assert.equal(response.status, 200);
       const body = (await response.json()) as { user: { id: string } };
       assert.equal(body.user.id, "supabase:new-subject");
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        testServer.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
+  });
+
+  it("rejects invalid or expired bearer tokens after server-side verification", async () => {
+    const app = express();
+    app.use(
+      supabaseAuthMiddleware({
+        verifyToken: async () => null,
+      }),
+    );
+    app.use(supabaseAuthRouter);
+    const testServer = await new Promise<Server>((resolve) => {
+      const listening = app.listen(0, "127.0.0.1", () => resolve(listening));
+    });
+    try {
+      const address = testServer.address();
+      assert.ok(address && typeof address !== "string");
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/auth/user`,
+        { headers: { Authorization: "Bearer expired-or-invalid" } },
+      );
+      assert.equal(response.status, 401);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        testServer.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
+  });
+
+  it("fails closed when the Supabase verifier throws", async () => {
+    const app = express();
+    app.use(
+      supabaseAuthMiddleware({
+        verifyToken: async () => {
+          throw new Error("verification unavailable");
+        },
+      }),
+    );
+    app.use(supabaseAuthRouter);
+    const testServer = await new Promise<Server>((resolve) => {
+      const listening = app.listen(0, "127.0.0.1", () => resolve(listening));
+    });
+    try {
+      const address = testServer.address();
+      assert.ok(address && typeof address !== "string");
+      const response = await fetch(
+        `http://127.0.0.1:${address.port}/auth/user`,
+        { headers: { Authorization: "Bearer malformed" } },
+      );
+      assert.equal(response.status, 401);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        testServer.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
+  });
+});
+
+describe("Supabase authorization middleware", () => {
+  async function withRole(
+    isAdmin: boolean,
+    run: (url: string) => Promise<void>,
+  ): Promise<void> {
+    const app = express();
+    app.use((req, _res, next) => {
+      req.supabaseAuth = {
+        provider: "supabase",
+        subject: "subject-1",
+        userId: "account-1",
+        email: "member@example.com",
+        name: "Member",
+        imageUrl: null,
+        isAdmin,
+        createdAt: new Date().toISOString(),
+      };
+      next();
+    });
+    app.get("/protected", requireAuth, (_req, res) => res.json({ ok: true }));
+    app.get("/admin", requireAdmin, (_req, res) => res.json({ ok: true }));
+    const testServer = await new Promise<Server>((resolve) => {
+      const listening = app.listen(0, "127.0.0.1", () => resolve(listening));
+    });
+    try {
+      const address = testServer.address();
+      assert.ok(address && typeof address !== "string");
+      await run(`http://127.0.0.1:${address.port}`);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        testServer.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
+  }
+
+  it("allows ordinary authenticated users on protected routes but returns 403 for admin routes", async () => {
+    await withRole(false, async (url) => {
+      assert.equal((await fetch(`${url}/protected`)).status, 200);
+      assert.equal((await fetch(`${url}/admin`)).status, 403);
+    });
+  });
+
+  it("allows a server-resolved application admin on admin routes", async () => {
+    await withRole(true, async (url) => {
+      assert.equal((await fetch(`${url}/admin`)).status, 200);
+    });
+  });
+
+  it("requires authentication for every remembrance operation", async () => {
+    const app = express();
+    app.use(express.json());
+    app.use(remembranceRouter);
+    const testServer = await new Promise<Server>((resolve) => {
+      const listening = app.listen(0, "127.0.0.1", () => resolve(listening));
+    });
+    try {
+      const address = testServer.address();
+      assert.ok(address && typeof address !== "string");
+      const url = `http://127.0.0.1:${address.port}/remembrance`;
+      for (const request of [
+        fetch(url),
+        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }),
+        fetch(`${url}/event-1`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: "{}" }),
+        fetch(`${url}/event-1`, { method: "DELETE" }),
+      ]) {
+        assert.equal((await request).status, 401);
+      }
     } finally {
       await new Promise<void>((resolve, reject) => {
         testServer.close((error) => (error ? reject(error) : resolve()));
