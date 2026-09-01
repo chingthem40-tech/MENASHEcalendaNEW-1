@@ -198,6 +198,14 @@ const authCopy = {
     signInLink: "Sign in",
     back: "Back to calendar",
     secure: "Secure authentication · We never store your Replit password",
+    nextTitle: "What happens next",
+    nextSteps: [
+      "Continue to Replit’s secure sign-in",
+      "Allow MENASHE to access your account",
+      "Return here automatically",
+    ],
+    previewTitle: "Testing in Preview?",
+    previewBody: "For the most reliable sign-in test, open the development URL in an incognito or private window.",
     expired: "That sign-in link has expired. Start again.",
     invalid: "We couldn't verify that sign-in attempt. Please start again.",
     cancelled: "Sign-in was cancelled. You can try again whenever you're ready.",
@@ -221,6 +229,14 @@ const authCopy = {
     signInLink: "Giriň",
     back: "Senenama dolan",
     secure: "Howpsuz tassyklama · Replit parolyňyz bu ýerde saklanmaýar",
+    nextTitle: "Indi näme bolar",
+    nextSteps: [
+      "Replit-iň howpsuz girişine geçiň",
+      "MENASHE-e hasabyňyza girmäge rugsat beriň",
+      "Bu ýere awtomatiki dolanarsyňyz",
+    ],
+    previewTitle: "Preview-de synaýarsyňyzmy?",
+    previewBody: "Iň ygtybarly giriş synagy üçin development URL-ni gizlin ýa-da inkognito penjirede açyň.",
     expired: "Giriş baglanyşygyňyzyň möhleti gutardy. Täzeden başlaň.",
     invalid: "Giriş synanyşygyňyzy tassyklap bilmedik. Täzeden başlaň.",
     cancelled: "Giriş ýatyryldy. Taýýar bolanyňyzda täzeden synanyşyň.",
@@ -228,6 +244,8 @@ const authCopy = {
     unavailable: "Häzir giriş başlap bilmedik. Täzeden synanyşyň.",
   },
 } as const;
+
+type AuthCopy = (typeof authCopy)["en"];
 
 type AuthErrorCode = keyof Pick<
   typeof authCopy.en,
@@ -251,7 +269,11 @@ function useAuthPageContext() {
     rawError === "unavailable"
       ? rawError
       : null;
-  return { copy: authCopy[lang], returnTo, errorCode };
+  const preview =
+    import.meta.env.DEV &&
+    (import.meta.env.VITE_DEV_PREVIEW === "true" ||
+      query.get("preview") === "1");
+  return { copy: authCopy[lang], returnTo, errorCode, preview };
 }
 
 function AuthButton({
@@ -290,14 +312,126 @@ function AuthButton({
         opacity: redirecting ? 0.72 : 1,
       }}
     >
-      <span style={{ marginRight: 9, fontSize: 17 }}>↗</span>
+      <svg
+        aria-hidden="true"
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+        style={{ marginRight: 9 }}
+      >
+        <path
+          d="M4 12 12 4M6 4h6v6"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
       {redirecting ? busyLabel : label}
     </a>
   );
 }
 
+function AuthGuidance({
+  copy,
+  preview,
+}: {
+  copy: AuthCopy;
+  preview: boolean;
+}) {
+  return (
+    <div style={{ marginTop: 22, textAlign: "left" }}>
+      <div
+        style={{
+          padding: "14px 15px 13px",
+          borderRadius: 13,
+          border: "1px solid rgba(212,175,55,0.16)",
+          background: "rgba(255,255,255,0.025)",
+        }}
+      >
+        <div
+          style={{
+            color: "#D4AF37",
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+          }}
+        >
+          {copy.nextTitle}
+        </div>
+        <ol
+          style={{
+            display: "grid",
+            gap: 9,
+            margin: "12px 0 0",
+            padding: 0,
+            listStyle: "none",
+          }}
+        >
+          {copy.nextSteps.map((step, index) => (
+            <li
+              key={step}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                color: "#B8AA92",
+                fontSize: 12,
+                lineHeight: 1.35,
+              }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  flex: "0 0 20px",
+                  width: 20,
+                  height: 20,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "50%",
+                  color: "#D4AF37",
+                  background: "rgba(212,175,55,0.11)",
+                  border: "1px solid rgba(212,175,55,0.28)",
+                  fontSize: 10,
+                  fontWeight: 800,
+                }}
+              >
+                {index + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </div>
+      {preview && (
+        <div
+          role="note"
+          style={{
+            marginTop: 10,
+            padding: "11px 12px",
+            borderRadius: 11,
+            border: "1px solid rgba(92,156,218,0.32)",
+            background: "rgba(54,111,173,0.13)",
+            color: "#BBD5ED",
+            fontSize: 11,
+            lineHeight: 1.45,
+          }}
+        >
+          <div style={{ marginBottom: 3, color: "#D4E7FA", fontWeight: 800 }}>
+            {copy.previewTitle}
+          </div>
+          {copy.previewBody}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SignIn(_props?: Record<string, unknown>) {
-  const { copy, returnTo, errorCode } = useAuthPageContext();
+  const { copy, returnTo, errorCode, preview } = useAuthPageContext();
   return (
     <div style={{ padding: "28px 28px 24px" }}>
       <div style={{ textAlign: "center", color: "#A89070", fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", marginBottom: 10 }}>
@@ -316,6 +450,7 @@ export function SignIn(_props?: Record<string, unknown>) {
       )}
       <AuthButton label={copy.signInButton} busyLabel={copy.signInBusy} returnTo={returnTo} />
       <div style={{ marginTop: 14, color: "#7f755f", textAlign: "center", fontSize: 11 }}>{copy.secure}</div>
+      <AuthGuidance copy={copy} preview={preview} />
       <div style={{ marginTop: 23, paddingTop: 17, borderTop: "1px solid rgba(212,175,55,0.14)", color: "#A89070", textAlign: "center", fontSize: 12 }}>
         {copy.newMember}{" "}
         <a href={`/sign-up?returnTo=${encodeURIComponent(returnTo)}`} style={{ color: "#D4AF37", fontWeight: 700, textDecoration: "none" }}>{copy.createAccount}</a>
@@ -326,7 +461,7 @@ export function SignIn(_props?: Record<string, unknown>) {
 }
 
 export function SignUp(_props?: Record<string, unknown>) {
-  const { copy, returnTo, errorCode } = useAuthPageContext();
+  const { copy, returnTo, errorCode, preview } = useAuthPageContext();
   return (
     <div style={{ padding: "28px 28px 24px" }}>
       <div style={{ textAlign: "center", color: "#A89070", fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", marginBottom: 10 }}>
@@ -345,6 +480,7 @@ export function SignUp(_props?: Record<string, unknown>) {
       )}
       <AuthButton label={copy.signUpButton} busyLabel={copy.signUpBusy} returnTo={returnTo} />
       <div style={{ marginTop: 14, color: "#7f755f", textAlign: "center", fontSize: 11 }}>{copy.secure}</div>
+      <AuthGuidance copy={copy} preview={preview} />
       <div style={{ marginTop: 23, paddingTop: 17, borderTop: "1px solid rgba(212,175,55,0.14)", color: "#A89070", textAlign: "center", fontSize: 12 }}>
         {copy.existingMember}{" "}
         <a href={`/sign-in?returnTo=${encodeURIComponent(returnTo)}`} style={{ color: "#D4AF37", fontWeight: 700, textDecoration: "none" }}>{copy.signInLink}</a>
