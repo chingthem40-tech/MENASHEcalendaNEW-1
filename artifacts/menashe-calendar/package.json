@@ -25,7 +25,8 @@
     "postprocessing": "^6.39.1",
     "r3f-perf": "^7.2.3",
     "suncalc": "^1.9.0",
-    "three": "^0.184.0"
+    "three": "^0.184.0",
+    "@workspace/menashe-ds": "workspace:*"
   },
   "devDependencies": {
     "@hookform/resolvers": "^3.10.0",

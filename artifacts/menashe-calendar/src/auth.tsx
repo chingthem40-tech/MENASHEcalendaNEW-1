@@ -293,7 +293,7 @@ function AuthButton({
   const [redirecting, setRedirecting] = useState(false);
   return (
     <a
-      className="auth-cta bg-[color:var(--text-secondary)]"
+      className="mds-btn-gold auth-cta"
       href={`/api/auth/login?returnTo=${encodeURIComponent(returnTo)}`}
       onClick={(event) => {
         if (redirecting) {
@@ -303,20 +303,7 @@ function AuthButton({
         setRedirecting(true);
       }}
       aria-busy={redirecting}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: "100%",
-        minHeight: 48,
-        borderRadius: 12,
-        background: "#D4AF37",
-        color: "#0F1829",
-        fontWeight: 700,
-        textDecoration: "none",
-        transition: "transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease",
-        opacity: redirecting ? 0.72 : 1,
-      }}
+      style={{ opacity: redirecting ? 0.72 : 1 }}
     >
       <svg
         aria-hidden="true"
@@ -348,63 +335,12 @@ function AuthGuidance({
 }) {
   return (
     <div style={{ marginTop: 22, textAlign: "left" }}>
-      <div
-        style={{
-          padding: "14px 15px 13px",
-          borderRadius: 13,
-          border: "1px solid rgba(212,175,55,0.16)",
-          background: "rgba(255,255,255,0.025)",
-        }}
-      >
-        <div
-          style={{
-            color: "#D4AF37",
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: "0.05em",
-            textTransform: "uppercase",
-          }}
-        >
-          {copy.nextTitle}
-        </div>
-        <ol
-          style={{
-            display: "grid",
-            gap: 9,
-            margin: "12px 0 0",
-            padding: 0,
-            listStyle: "none",
-          }}
-        >
+      <div className="mds-card-secondary auth-guidance">
+        <div className="auth-guidance-title">{copy.nextTitle}</div>
+        <ol className="auth-guidance-list">
           {copy.nextSteps.map((step, index) => (
-            <li
-              key={step}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                color: "#B8AA92",
-                fontSize: 12,
-                lineHeight: 1.35,
-              }}
-            >
-              <span
-                aria-hidden="true"
-                style={{
-                  flex: "0 0 20px",
-                  width: 20,
-                  height: 20,
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "50%",
-                  color: "#D4AF37",
-                  background: "rgba(212,175,55,0.11)",
-                  border: "1px solid rgba(212,175,55,0.28)",
-                  fontSize: 10,
-                  fontWeight: 800,
-                }}
-              >
+            <li key={step} className="auth-guidance-step">
+              <span aria-hidden="true" className="auth-guidance-number">
                 {index + 1}
               </span>
               {step}
@@ -413,22 +349,8 @@ function AuthGuidance({
         </ol>
       </div>
       {preview && (
-        <div
-          role="note"
-          style={{
-            marginTop: 10,
-            padding: "11px 12px",
-            borderRadius: 11,
-            border: "1px solid rgba(92,156,218,0.32)",
-            background: "rgba(54,111,173,0.13)",
-            color: "#BBD5ED",
-            fontSize: 11,
-            lineHeight: 1.45,
-          }}
-        >
-          <div style={{ marginBottom: 3, color: "#D4E7FA", fontWeight: 800 }}>
-            {copy.previewTitle}
-          </div>
+        <div role="note" className="auth-preview-note">
+          <strong>{copy.previewTitle}</strong>
           {copy.previewBody}
         </div>
       )}
@@ -439,29 +361,23 @@ function AuthGuidance({
 export function SignIn(_props?: Record<string, unknown>) {
   const { copy, returnTo, errorCode, preview } = useAuthPageContext();
   return (
-    <div style={{ padding: "28px 28px 24px" }}>
-      <div style={{ textAlign: "center", color: "#A89070", fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", marginBottom: 10 }}>
-        {copy.signInEyebrow}
-      </div>
-      <h2 style={{ margin: "0 0 9px", color: "#D4AF37", textAlign: "center", fontSize: 26, letterSpacing: "-0.02em" }}>
-        {copy.signInTitle}
-      </h2>
-      <p style={{ margin: "0 auto 22px", maxWidth: 290, color: "#A89070", textAlign: "center", lineHeight: 1.55, fontSize: 13 }}>
-        {copy.signInBody}
-      </p>
+    <div className="auth-form-content">
+      <div className="auth-eyebrow">{copy.signInEyebrow}</div>
+      <h2 className="auth-title">{copy.signInTitle}</h2>
+      <p className="auth-description">{copy.signInBody}</p>
       {errorCode && (
-        <div role="alert" style={{ marginBottom: 16, padding: "10px 12px", borderRadius: 10, color: "#f1c6bd", background: "rgba(164, 57, 45, 0.18)", border: "1px solid rgba(219, 104, 87, 0.35)", fontSize: 12, lineHeight: 1.45 }}>
+        <div role="alert" className="auth-error">
           {copy[errorCode]}
         </div>
       )}
       <AuthButton label={copy.signInButton} busyLabel={copy.signInBusy} returnTo={returnTo} />
-      <div style={{ marginTop: 14, color: "#7f755f", textAlign: "center", fontSize: 11 }}>{copy.secure}</div>
+      <div className="auth-secure">{copy.secure}</div>
       <AuthGuidance copy={copy} preview={preview} />
-      <div style={{ marginTop: 23, paddingTop: 17, borderTop: "1px solid rgba(212,175,55,0.14)", color: "#A89070", textAlign: "center", fontSize: 12 }}>
+      <div className="auth-switch">
         {copy.newMember}{" "}
-        <a href={`/sign-up?returnTo=${encodeURIComponent(returnTo)}`} style={{ color: "#D4AF37", fontWeight: 700, textDecoration: "none" }}>{copy.createAccount}</a>
+        <a href={`/sign-up?returnTo=${encodeURIComponent(returnTo)}`}>{copy.createAccount}</a>
       </div>
-      <a href="/" style={{ display: "block", marginTop: 17, color: "#7f755f", textAlign: "center", fontSize: 12, textDecoration: "none" }}>{copy.back}</a>
+      <a href="/" className="auth-back">{copy.back}</a>
     </div>
   );
 }
@@ -469,29 +385,23 @@ export function SignIn(_props?: Record<string, unknown>) {
 export function SignUp(_props?: Record<string, unknown>) {
   const { copy, returnTo, errorCode, preview } = useAuthPageContext();
   return (
-    <div style={{ padding: "28px 28px 24px" }}>
-      <div style={{ textAlign: "center", color: "#A89070", fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", marginBottom: 10 }}>
-        {copy.signUpEyebrow}
-      </div>
-      <h2 style={{ margin: "0 0 9px", color: "#D4AF37", textAlign: "center", fontSize: 26, letterSpacing: "-0.02em" }}>
-        {copy.signUpTitle}
-      </h2>
-      <p style={{ margin: "0 auto 22px", maxWidth: 300, color: "#A89070", textAlign: "center", lineHeight: 1.55, fontSize: 13 }}>
-        {copy.signUpBody}
-      </p>
+    <div className="auth-form-content">
+      <div className="auth-eyebrow">{copy.signUpEyebrow}</div>
+      <h2 className="auth-title">{copy.signUpTitle}</h2>
+      <p className="auth-description">{copy.signUpBody}</p>
       {errorCode && (
-        <div role="alert" style={{ marginBottom: 16, padding: "10px 12px", borderRadius: 10, color: "#f1c6bd", background: "rgba(164, 57, 45, 0.18)", border: "1px solid rgba(219, 104, 87, 0.35)", fontSize: 12, lineHeight: 1.45 }}>
+        <div role="alert" className="auth-error">
           {copy[errorCode]}
         </div>
       )}
       <AuthButton label={copy.signUpButton} busyLabel={copy.signUpBusy} returnTo={returnTo} />
-      <div style={{ marginTop: 14, color: "#7f755f", textAlign: "center", fontSize: 11 }}>{copy.secure}</div>
+      <div className="auth-secure">{copy.secure}</div>
       <AuthGuidance copy={copy} preview={preview} />
-      <div style={{ marginTop: 23, paddingTop: 17, borderTop: "1px solid rgba(212,175,55,0.14)", color: "#A89070", textAlign: "center", fontSize: 12 }}>
+      <div className="auth-switch">
         {copy.existingMember}{" "}
-        <a href={`/sign-in?returnTo=${encodeURIComponent(returnTo)}`} style={{ color: "#D4AF37", fontWeight: 700, textDecoration: "none" }}>{copy.signInLink}</a>
+        <a href={`/sign-in?returnTo=${encodeURIComponent(returnTo)}`}>{copy.signInLink}</a>
       </div>
-      <a href="/" style={{ display: "block", marginTop: 17, color: "#7f755f", textAlign: "center", fontSize: 12, textDecoration: "none" }}>{copy.back}</a>
+      <a href="/" className="auth-back">{copy.back}</a>
     </div>
   );
 }

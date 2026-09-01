@@ -14,3 +14,9 @@ The Replit consent screen is provider-controlled, so MENASHE branding and instru
 **Why:** Provider consent UI cannot be restyled safely; app-owned guidance is the reliable place to explain the redirect, permissions, cancellation, and Preview testing behavior.
 
 **How to apply:** Keep provider-specific instructions compact and contextual, showing Preview/incognito guidance only in development Preview mode rather than to regular members.
+
+Full-screen auth cards with recovery or Preview guidance must use overflow-safe vertical centering; ordinary centered flex alignment can clip the top of a card taller than the viewport.
+
+**Why:** Auth variants have different heights, and losing the brand header or recovery context makes the page appear broken on shorter screens.
+
+**How to apply:** Let the overlay scroll, use a column layout, and center the card with auto block margins so it centers when space exists and starts at the padded top when it does not.
