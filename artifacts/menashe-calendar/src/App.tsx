@@ -16,6 +16,7 @@ import {
   useClerk,
   useUser,
   useOrganization,
+  useAuthState,
   ReplitAuthProvider,
 } from "./auth";
 import {
@@ -25,7 +26,7 @@ import {
   type PublicProfile,
 } from "./lib/userApi";
 import { Switch, Route, useLocation, Redirect } from "wouter";
-import { LanguageProvider } from "./context/LanguageContext";
+import { LanguageProvider, useLanguage } from "./context/LanguageContext";
 // Pages are lazily loaded — only the active page is needed on first paint
 const Landing = lazy(() => import("./pages/Landing"));
 const Home = lazy(() => import("./pages/Home"));
@@ -391,7 +392,88 @@ function AuthCard({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AuthSystemState({
+  status,
+  onRetry,
+}: {
+  status: "loading" | "unavailable";
+  onRetry: () => Promise<void>;
+}) {
+  const { lang } = useLanguage();
+  const copy =
+    lang === "tk"
+      ? {
+          loadingTitle: "Sessiýa barlanýar",
+          loadingBody: "Howpsuz ýagdaýyňyz ýüklenýär…",
+          unavailableTitle: "Giriş hyzmaty elýeterli däl",
+          unavailableBody: "Sessiýaňyzy häzir barlap bilmedik. Täzeden synanyşyň ýa-da biraz soňrak geliň.",
+          retry: "Täzeden synanyş",
+          back: "Senenama dolan",
+        }
+      : {
+          loadingTitle: "Checking your session",
+          loadingBody: "Loading your secure account status…",
+          unavailableTitle: "Sign-in is temporarily unavailable",
+          unavailableBody: "We couldn’t check your session right now. Try again or come back in a moment.",
+          retry: "Try again",
+          back: "Back to calendar",
+        };
+
+  return (
+    <AuthCard>
+      <div
+        role={status === "unavailable" ? "alert" : "status"}
+        aria-live="polite"
+        style={{ padding: "34px 28px 30px", textAlign: "center" }}
+      >
+        <div
+          aria-hidden
+          style={{
+            width: 44,
+            height: 44,
+            margin: "0 auto 18px",
+            borderRadius: "50%",
+            border: "1px solid rgba(212,175,55,0.35)",
+            background: "rgba(212,175,55,0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#D4AF37",
+            fontSize: 21,
+          }}
+        >
+          {status === "loading" ? "…" : "!"}
+        </div>
+        <h2 style={{ margin: "0 0 9px", color: "#D4AF37", fontSize: 22 }}>
+          {status === "loading" ? copy.loadingTitle : copy.unavailableTitle}
+        </h2>
+        <p style={{ margin: "0 auto", maxWidth: 290, color: "#A89070", fontSize: 13, lineHeight: 1.55 }}>
+          {status === "loading" ? copy.loadingBody : copy.unavailableBody}
+        </p>
+        {status === "unavailable" && (
+          <button
+            type="button"
+            onClick={() => void onRetry()}
+            className="btn-gold"
+            style={{ width: "100%", marginTop: 24, padding: 13, fontWeight: 700 }}
+          >
+            {copy.retry}
+          </button>
+        )}
+        <a
+          href="/"
+          style={{ display: "block", marginTop: 18, color: "#7f755f", fontSize: 12, textDecoration: "none" }}
+        >
+          {copy.back}
+        </a>
+      </div>
+    </AuthCard>
+  );
+}
+
 function SignInPage() {
+  const { user } = useUser();
+  if (user) return <Redirect to="/app" />;
   return (
     <AuthCard>
       <SignIn />
@@ -400,6 +482,8 @@ function SignInPage() {
 }
 
 function SignUpPage() {
+  const { user } = useUser();
+  if (user) return <Redirect to="/app" />;
   return (
     <AuthCard>
       <SignUp />
@@ -1313,7 +1397,12 @@ const DEV_PREVIEW =
     new URLSearchParams(window.location.search).get("preview") === "1");
 
 function HomeRoute() {
+  const { user } = useUser();
+  const { status, retry } = useAuthState();
   if (DEV_PREVIEW) return <Redirect to="/app" />;
+  if (!user && (status === "loading" || status === "unavailable")) {
+    return <AuthSystemState status={status} onRetry={retry} />;
+  }
   return (
     <>
       <Show when="signed-in">
@@ -1339,7 +1428,12 @@ function HomeRoute() {
 }
 
 function AppRoute() {
+  const { user } = useUser();
+  const { status, retry } = useAuthState();
   if (DEV_PREVIEW) return <AppShell />;
+  if (!user && (status === "loading" || status === "unavailable")) {
+    return <AuthSystemState status={status} onRetry={retry} />;
+  }
   return (
     <>
       <Show when="signed-in">
@@ -1355,17 +1449,19 @@ function AppRoute() {
 export default function App() {
   return (
     <ReplitAuthProvider>
-      <Switch>
-        <Route path="/" component={HomeRoute} />
-        <Route path="/app" component={AppRoute} />
-        <Route path="/calendar" component={AppRoute} />
-        <Route path="/zmanim" component={AppRoute} />
-        <Route path="/sign-in/*?" component={SignInPage} />
-        <Route path="/sign-up/*?" component={SignUpPage} />
-        <Route>
-          <Redirect to="/" />
-        </Route>
-      </Switch>
+      <LanguageProvider>
+        <Switch>
+          <Route path="/" component={HomeRoute} />
+          <Route path="/app" component={AppRoute} />
+          <Route path="/calendar" component={AppRoute} />
+          <Route path="/zmanim" component={AppRoute} />
+          <Route path="/sign-in/*?" component={SignInPage} />
+          <Route path="/sign-up/*?" component={SignUpPage} />
+          <Route>
+            <Redirect to="/" />
+          </Route>
+        </Switch>
+      </LanguageProvider>
     </ReplitAuthProvider>
   );
 }

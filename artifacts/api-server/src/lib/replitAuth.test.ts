@@ -209,6 +209,7 @@ function request(
   server: Server,
   path: string,
   headers: Record<string, string> = {},
+  method = "GET",
 ): Promise<HttpResponse> {
   const address = server.address();
   assert.ok(address && typeof address !== "string");
@@ -218,6 +219,7 @@ function request(
         hostname: "127.0.0.1",
         port: address.port,
         path,
+        method,
         headers,
       },
       (res) => {
@@ -481,8 +483,11 @@ test("invalid and expired callback state is rejected before token exchange", asy
                 "x-forwarded-proto": "https",
               },
             );
-            assert.equal(callback.statusCode, 400, scenario);
-            assert.match(callback.body, /Expired or invalid/);
+            assert.equal(callback.statusCode, 302, scenario);
+            assert.equal(
+              callback.headers.location,
+              "/sign-in?authError=expired",
+            );
             assert.equal(tokenCalls, 0);
           } finally {
             await closeServer(server);
@@ -525,8 +530,11 @@ test("PKCE verifier mismatch fails the callback and creates no session", async (
             },
           );
 
-          assert.equal(callback.statusCode, 502);
-          assert.match(callback.body, /sign-in failed/);
+          assert.equal(callback.statusCode, 302);
+          assert.equal(
+            callback.headers.location,
+            "/sign-in?authError=provider&returnTo=%2Fcalendar",
+          );
           assert.equal(
             tokenRequests[0].get("code_verifier"),
             "tampered-verifier",
@@ -624,11 +632,14 @@ test("expired sessions are rejected and logout deletes the active session", asyn
           assert.equal(authenticated.statusCode, 200);
           assert.match(authenticated.body, /session@example\.test/);
 
-          const logout = await request(server, "/auth/logout", {
-            cookie: sessionCookie,
-          });
-          assert.equal(logout.statusCode, 302);
-          assert.equal(logout.headers.location, "/");
+          const logout = await request(
+            server,
+            "/auth/logout",
+            { cookie: sessionCookie },
+            "POST",
+          );
+          assert.equal(logout.statusCode, 200);
+          assert.equal(logout.body, '{"ok":true}');
           assert.match(
             (logout.headers["set-cookie"] as string[]).find((value) =>
               value.startsWith("menashe_session="),
@@ -659,11 +670,32 @@ test("expired sessions are rejected and logout deletes the active session", asyn
             cookie: expiredCookie,
           });
           assert.equal(expired.statusCode, 401);
+
+          const browserLogout = await request(server, "/auth/logout");
+          assert.equal(browserLogout.statusCode, 302);
+          assert.equal(browserLogout.headers.location, "/");
         } finally {
           await closeServer(server);
         }
       }),
   );
+});
+
+test("provider cancellation returns to the sign-in screen", async () => {
+  const database = new FakeAuthDatabase();
+  await withDatabase(database, async () => {
+    const server = await openServer();
+    try {
+      const cancelled = await request(
+        server,
+        "/auth/callback?error=access_denied&error_description=User%20cancelled",
+      );
+      assert.equal(cancelled.statusCode, 302);
+      assert.equal(cancelled.headers.location, "/sign-in?authError=cancelled");
+    } finally {
+      await closeServer(server);
+    }
+  });
 });
 
 test("provider-neutral authorization rejects signed-out Clerk requests and gates admin routes", async () => {

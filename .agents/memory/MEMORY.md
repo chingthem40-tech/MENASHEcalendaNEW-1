@@ -46,3 +46,4 @@
 - [R3F optional peer isolation](r3f-optional-peer-isolation.md) — prevent web-only React Three/Fiber from inheriting Expo peers from another workspace artifact.
 - [Replit Auth provisioning](replit-auth-provisioning.md) — enable managed Auth before migrating; do not guess the session or OIDC contract.
 - [Replit proxy CORS](replit-proxy-cors.md) — production API must treat the trusted forwarded public host as same-origin, alongside the explicit origin allowlist.
+- [Auth route presentation](auth-route-presentation.md) — auth routes must bypass the global splash/onboarding overlay so recovery states are immediately actionable.

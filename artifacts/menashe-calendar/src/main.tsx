@@ -63,6 +63,7 @@ const DEV_PREVIEW = import.meta.env.DEV &&
     new URLSearchParams(window.location.search).get("preview") === "1");
 const DEV_ONBOARDING = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get("onboarding") === "1";
+const AUTH_ROUTE = /^\/sign-(in|up)(\/|$)/.test(window.location.pathname);
 
 /* Register service worker on startup so offline caching is active
    immediately — independent of whether push notifications are enabled. */
@@ -75,8 +76,8 @@ if ("serviceWorker" in navigator) {
 }
 
 function Root() {
-  const [splashDone, setSplashDone] = useState(() => DEV_PREVIEW || DEV_ONBOARDING);
-  const [onboardingDone, setOnboardingDone] = useState(() => DEV_PREVIEW || (!DEV_ONBOARDING && hasSeenOnboarding()));
+  const [splashDone, setSplashDone] = useState(() => DEV_PREVIEW || DEV_ONBOARDING || AUTH_ROUTE);
+  const [onboardingDone, setOnboardingDone] = useState(() => DEV_PREVIEW || AUTH_ROUTE || (!DEV_ONBOARDING && hasSeenOnboarding()));
 
   const onSplashFinished = useCallback(() => setSplashDone(true), []);
   const onOnboardingFinished = useCallback(() => setOnboardingDone(true), []);

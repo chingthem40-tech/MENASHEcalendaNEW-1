@@ -124,6 +124,15 @@ function safeReturnTo(raw: unknown): string {
   return raw;
 }
 
+type AuthErrorCode = "invalid" | "expired" | "cancelled" | "provider" | "unavailable";
+
+function authErrorPath(error: AuthErrorCode, returnTo = "/"): string {
+  const params = new URLSearchParams({ authError: error });
+  const safePath = safeReturnTo(returnTo);
+  if (safePath !== "/") params.set("returnTo", safePath);
+  return `/sign-in?${params.toString()}`;
+}
+
 function callbackOrigin(req: Request): string {
   const forwardedHost = req.get("x-forwarded-host") ?? req.get("host");
   if (!forwardedHost) throw new Error("Unable to determine callback host");
@@ -398,6 +407,7 @@ export const replitAuthMiddleware = () => {
 export const replitAuthRouter = Router();
 
 replitAuthRouter.get("/auth/login", async (req, res) => {
+  const returnTo = safeReturnTo(req.query.returnTo);
   try {
     if (!CLIENT_ID) throw new Error("REPL_ID is required for Replit Auth");
     const configuration = await oidcConfiguration();
@@ -407,7 +417,6 @@ replitAuthRouter.get("/auth/login", async (req, res) => {
       createHash("sha256").update(codeVerifier).digest(),
     );
     const flowId = randomToken(32);
-    const returnTo = safeReturnTo(req.query.returnTo);
     await pool.query(
       `INSERT INTO auth_login_flows (id, state, code_verifier, return_to, expires_at)
        VALUES ($1, $2, $3, $4, NOW() + INTERVAL '10 minutes')`,
@@ -427,22 +436,27 @@ replitAuthRouter.get("/auth/login", async (req, res) => {
     res.redirect(authUrl.toString());
   } catch (error) {
     logger.error({ err: error }, "Could not start Replit Auth login");
-    res.status(503).json({ error: "Replit Auth is not ready" });
+    res.redirect(authErrorPath("unavailable", returnTo));
   }
 });
 
 replitAuthRouter.get("/auth/callback", async (req, res) => {
   const flowId = verifySignedValue(cookieValue(req, FLOW_COOKIE) ?? undefined);
   clearCookie(res, FLOW_COOKIE);
+  if (typeof req.query.error === "string") {
+    res.redirect(authErrorPath("cancelled"));
+    return;
+  }
   if (
     !flowId ||
     typeof req.query.code !== "string" ||
     typeof req.query.state !== "string"
   ) {
-    res.status(400).send("Invalid Replit Auth callback");
+    res.redirect(authErrorPath("invalid"));
     return;
   }
 
+  let returnTo = "/";
   try {
     const flow = await pool.query<{
       state: string;
@@ -456,9 +470,10 @@ replitAuthRouter.get("/auth/callback", async (req, res) => {
     );
     const stored = flow.rows[0];
     if (!stored) {
-      res.status(400).send("Expired or invalid Replit Auth callback");
+      res.redirect(authErrorPath("expired"));
       return;
     }
+    returnTo = safeReturnTo(stored.return_to);
 
     const info = normalizeUserInfo(
       await userInfoFromCode(req.query.code, stored.code_verifier, req),
@@ -475,7 +490,7 @@ replitAuthRouter.get("/auth/callback", async (req, res) => {
     res.redirect(safeReturnTo(stored.return_to));
   } catch (error) {
     logger.error({ err: error }, "Replit Auth callback failed");
-    res.status(502).send("Replit Auth sign-in failed");
+    res.redirect(authErrorPath("provider", returnTo));
   }
 });
 
@@ -498,7 +513,7 @@ replitAuthRouter.get("/auth/user", (req, res) => {
   });
 });
 
-replitAuthRouter.get("/auth/logout", async (req, res) => {
+async function deleteSession(req: Request, res: Response): Promise<void> {
   const sessionId = verifySignedValue(
     cookieValue(req, SESSION_COOKIE) ?? undefined,
   );
@@ -506,6 +521,15 @@ replitAuthRouter.get("/auth/logout", async (req, res) => {
     await pool.query("DELETE FROM auth_sessions WHERE id = $1", [sessionId]);
   }
   clearCookie(res, SESSION_COOKIE);
+}
+
+replitAuthRouter.post("/auth/logout", async (req, res) => {
+  await deleteSession(req, res);
+  res.json({ ok: true });
+});
+
+replitAuthRouter.get("/auth/logout", async (req, res) => {
+  await deleteSession(req, res);
   res.redirect("/");
 });
 
