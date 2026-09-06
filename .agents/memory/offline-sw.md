@@ -12,7 +12,9 @@ The SW lives as a static `artifacts/menashe-calendar/public/sw.js` and is commit
 
 **Pass-throughs (never intercepted):** `/api/*`, Clerk hostnames (`*.clerk.com`, `*.accounts.dev`), Vite dev internals (`/@*`, `/node_modules/`, `/__*`), cross-origin requests.
 
-**SW registration:** Done in `main.tsx` on startup (not only when push notifications are enabled in `usePushSubscription.ts`). Both call the same `${import.meta.env.BASE_URL}sw.js` — duplicate register calls are no-ops.
+**SW registration:** Done in `main.tsx` on startup only in production (not only when push notifications are enabled in `usePushSubscription.ts`). Development unregisters stale workers and clears Menashe caches so Vite module changes cannot leave the preview blank. Both production and push paths call the same `${import.meta.env.BASE_URL}sw.js` — duplicate register calls are no-ops.
+
+**Why:** Service-worker caching of mutable Vite development modules can produce a blank Replit preview after a rebuild even when the fresh app renders correctly.
 
 **Offline banner:** `src/components/OfflineBanner.tsx` + `src/hooks/useOnlineStatus.ts`. Banner is mounted in Root component in `main.tsx`, positioned fixed at top, z-index 9999.
 

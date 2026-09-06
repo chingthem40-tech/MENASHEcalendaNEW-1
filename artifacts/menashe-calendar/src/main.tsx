@@ -63,14 +63,36 @@ const DEV_PREVIEW = import.meta.env.DEV &&
 const DEV_ONBOARDING = import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get("onboarding") === "1";
 
-/* Register service worker on startup so offline caching is active
-   immediately — independent of whether push notifications are enabled. */
+/* Register the service worker only in production.
+   Vite development modules are mutable and must never be served from the
+   offline cache, otherwise an existing preview can become a blank page after
+   a rebuild. Remove any worker/cache left by an earlier dev session. */
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register(`${import.meta.env.BASE_URL}sw.js`, {
-      scope: import.meta.env.BASE_URL,
-    })
-    .catch(() => {});
+  if (import.meta.env.DEV) {
+    Promise.all([
+      navigator.serviceWorker.getRegistrations(),
+      "caches" in window ? caches.keys() : Promise.resolve([]),
+    ])
+      .then(([registrations, cacheNames]) =>
+        Promise.all([
+          ...registrations
+            .filter((registration) =>
+              registration.scope.startsWith(window.location.origin),
+            )
+            .map((registration) => registration.unregister()),
+          ...cacheNames
+            .filter((name) => name.startsWith("menashe-"))
+            .map((name) => caches.delete(name)),
+        ]),
+      )
+      .catch(() => {});
+  } else {
+    navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}sw.js`, {
+        scope: import.meta.env.BASE_URL,
+      })
+      .catch(() => {});
+  }
 }
 
 function Root() {
