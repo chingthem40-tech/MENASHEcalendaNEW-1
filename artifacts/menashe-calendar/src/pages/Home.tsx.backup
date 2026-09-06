@@ -71,7 +71,6 @@ import {
   QuickActionsSection,
   CommunitySection,
 } from "./home/sections";
-import AdSense from "../components/AdSense";
 
 interface HolidayInsight {
   overview: string;
@@ -4830,20 +4829,6 @@ const Home = memo(function Home({
 
             </CalendarSection>
           </div>
-
-          {/* Google AdSense — responsive ad between Calendar and Learning */}
-          <div
-            style={{
-              width: "100%",
-              margin: "16px 0",
-              minHeight: 90,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <AdSense slot="2958007223" />
-          </div>
-
           <div className="home-col home-col-secondary">
             {/* ── Learning Section: parasha, omer, daily wisdom ── */}
             <LearningSection
