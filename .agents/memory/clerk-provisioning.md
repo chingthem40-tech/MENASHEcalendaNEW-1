@@ -14,6 +14,8 @@ description: Clerk must be provisioned via setupClerkWhitelabelAuth() before the
 2. Then restart both the API server and the web workflows so new secrets are baked in.
 3. The `post-merge.sh` guard will also fail loudly (`exit 1`) if `VITE_CLERK_PUBLISHABLE_KEY` is unset after a merge, preventing silent failures.
 
+**Integration note:** Connecting the Clerk connector does not configure `@clerk/express` middleware. Apps using server-side Clerk middleware still need `CLERK_SECRET_KEY` configured separately; otherwise every protected API route returns 401.
+
 **Re-import note (2026-07-12):** on a fresh GitHub re-import, `checkClerkManagementStatus()` returned `"external"` (not `not_configured`) because `.replit` userenv.shared already had the publishable keys baked in from before.
 
 **Cross-instance key mismatch symptom:** if EVERY authenticated route returns 401 (not just one feature) even though the user is visibly signed in, suspect the publishable key and secret key belong to different Clerk applications — this happens when a project is re-imported/forked and the new owner doesn't have dashboard access to the original Clerk app the publishable key points to. Diagnose without ever printing the secret value: fetch `https://api.clerk.com/v1/jwks` with `Authorization: Bearer <secret>` and compare its `kid` against `https://<slug-from-decoded-pk>.clerk.accounts.dev/.well-known/jwks.json` — if the `kid`s differ, the keys are from different instances.
