@@ -164,7 +164,7 @@ if (process.env.NODE_ENV === "production") {
       }),
     );
     // SPA fallback — all non-API routes return index.html
-    app.get("*", (_req, res) => {
+    app.get("/{*splat}", (_req, res) => {
       res.sendFile(path.join(frontendDir, "index.html"));
     });
   } else {

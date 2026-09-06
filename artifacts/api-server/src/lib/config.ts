@@ -43,6 +43,13 @@ if (!databaseUrl) {
   process.exit(1);
 }
 
+// Development keeps the existing self-initializing workflow. Production must
+// opt in explicitly so a server restart cannot silently mutate the database
+// schema or seed data.
+const runMigrationsOnStartup =
+  process.env.NODE_ENV !== "production" ||
+  process.env.RUN_MIGRATIONS_ON_STARTUP === "true";
+
 // ── Exported config (read-only, no secret values) ────────────────────────────
 
 export const config = {
@@ -53,6 +60,7 @@ export const config = {
 
   // Database
   databaseUrl,
+  runMigrationsOnStartup,
 
   // Auth — both keys required for Clerk to function
   clerkSecretKey,

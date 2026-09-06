@@ -146,6 +146,7 @@ CLERK_PUBLISHABLE_KEY = "pk_test_YWR2YW5jZWQtbGxhbWEtNjIuY2xlcmsuYWNjb3VudHMuZGV
 VITE_CLERK_PUBLISHABLE_KEY = "pk_test_YWR2YW5jZWQtbGxhbWEtNjIuY2xlcmsuYWNjb3VudHMuZGV2JA"
 PRIVATE_OBJECT_DIR = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434/private"
 PUBLIC_OBJECT_SEARCH_PATHS = "/replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434/public"
+ALLOWED_ORIGINS = "https://menashecal.netlify.app,https://menash-ecalenda-new-1.replit.app"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-cdeb61c2-fad6-42a6-9d1e-3735d30f4434"

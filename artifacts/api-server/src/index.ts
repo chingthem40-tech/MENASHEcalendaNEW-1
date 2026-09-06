@@ -12,11 +12,17 @@ import {
 } from "./routes/push";
 
 async function start() {
-  try {
-    await runMigrations();
-  } catch (err) {
-    logger.error({ err }, "Migration failed — aborting startup");
-    process.exit(1);
+  if (config.runMigrationsOnStartup) {
+    try {
+      await runMigrations();
+    } catch (err) {
+      logger.error({ err }, "Migration failed — aborting startup");
+      process.exit(1);
+    }
+  } else {
+    logger.info(
+      "Skipping startup migrations in production; set RUN_MIGRATIONS_ON_STARTUP=true for an explicit migration run.",
+    );
   }
 
   // Print a configuration summary so operators can confirm readiness at a
