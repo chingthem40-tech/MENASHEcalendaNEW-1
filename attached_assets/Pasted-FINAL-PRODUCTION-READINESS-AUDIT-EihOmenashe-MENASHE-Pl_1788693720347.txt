@@ -1,0 +1,552 @@
+FINAL PRODUCTION READINESS AUDIT — EihOmenashe / MENASHE Platform
+
+ROLE:
+Act as the Chief Architect, Senior Software Engineer, Security Engineer, and Release Engineer for the existing MENASHE Platform.
+
+OBJECTIVE:
+Perform a FINAL READ-ONLY production readiness audit of the current web/API application.
+
+This is an AUDIT ONLY.
+
+DO NOT:
+- change application source code
+- change UI
+- change database schema or production data
+- change Supabase configuration
+- change authentication architecture
+- change API architecture
+- change notification architecture
+- modify mobile/Expo
+- modify deployment configuration
+- modify Netlify/Replit hosting configuration
+- rotate or replace credentials
+- create a new authentication provider
+- remove features
+- redesign anything
+- commit
+- push
+- publish
+- deploy
+- force-push
+- delete files
+- create unrelated fixes
+
+If a problem is discovered, REPORT IT FIRST.
+Do not automatically fix it during this audit.
+
+==================================================
+CURRENT AUTHORITATIVE ARCHITECTURE
+==================================================
+
+Product:
+EihOmenashe / MENASHE Platform
+
+Current platform model:
+ONE product
+ONE backend
+ONE account system
+Web + Mobile experiences
+
+Current web:
+React + Vite
+
+Current API:
+Express + TypeScript
+
+Current authentication:
+Supabase Authentication
+
+Current browser configuration:
+VITE_SUPABASE_URL
+VITE_SUPABASE_PUBLISHABLE_KEY
+
+Current server authentication:
+Supabase bearer-token verification
+
+Legacy Clerk authentication has been removed from web/API runtime.
+
+Current database:
+Supabase-backed application database.
+
+Current mobile:
+Expo / React Native
+MOBILE MUST REMAIN UNTOUCHED.
+
+Current web/API production relationship:
+Web frontend calls the Express API.
+Production API authentication is server-side.
+Production CORS is restricted to the approved Netlify origin.
+
+Current production web origin:
+https://menashecal.netlify.app
+
+Current Replit API origin:
+https://menash-ecalenda-new-1.replit.app
+
+The existing production implementation previously passed:
+- Supabase authentication
+- authorization
+- notification ownership
+- push ownership
+- production builds
+- service-worker checks
+- security tests
+- browser secret scans
+- API health
+- unauthenticated protected-route checks
+
+==================================================
+CURRENT KNOWN VALIDATION HISTORY
+==================================================
+
+Previously confirmed:
+
+Authentication/security:
+- 27/27 security and authorization tests passed
+- 19 auth/security tests passed during Supabase migration
+- missing/invalid bearer tokens return 401
+- normal authenticated users receive 403 from admin middleware
+- intended server-resolved administrators pass admin middleware
+- push ownership conflict protection remains active
+- browser bundle contains no secret/service-role credential
+- Clerk/Replit Auth runtime imports/packages were removed from web/API
+
+Notification:
+- 17/17 API notification/push tests passed
+- 5/5 web notification/service-worker tests passed
+
+Build:
+- web production build passed
+- API production build passed
+- web TypeScript check previously passed in the final authorization review
+- API TypeScript check passed
+- git diff --check passed
+
+Production:
+- API starts successfully with Production Supabase authentication
+- /health returns HTTP 200
+- protected API returns HTTP 401 when unauthenticated
+- Netlify origin is allowed through CORS
+- unapproved origins are rejected
+- service worker and production assets validated
+- no development-host leakage was found
+- no Clerk secret/private-key exposure was found
+
+Supabase migration:
+- legacy account continuity logic was implemented
+- unsafe fallback identity persistence was removed
+- temporary legacy lookup failures defer safely
+- cutover mode permits verified Supabase users when legacy authentication is intentionally unavailable
+- mobile was not modified
+
+==================================================
+AUDIT SCOPE
+==================================================
+
+Audit these areas comprehensively.
+
+1. AUTHENTICATION
+
+Verify:
+- Supabase Auth is the only active web/API authentication provider.
+- Browser uses only VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.
+- No service-role key reaches browser code.
+- Session restoration works.
+- Login works.
+- Signup works.
+- Logout works.
+- Bearer tokens are attached correctly to protected API requests.
+- Invalid tokens return 401.
+- Missing tokens return 401.
+- Expired/invalid sessions fail safely.
+- No insecure authentication fallback exists.
+
+Do not expose credentials in your report.
+
+2. AUTHORIZATION
+
+Verify:
+- protected routes require authentication
+- admin routes require server-side admin authorization
+- ordinary users cannot reach admin endpoints
+- frontend state cannot grant admin privileges
+- memorial access is properly authorized
+- notification/push resources are user-owned
+- ownership checks exist server-side
+- authorization cannot be bypassed by manipulating client requests
+
+3. LEGACY ACCOUNT CONTINUITY
+
+Verify:
+- existing legacy users can map to their existing application identity
+- first Supabase login cannot accidentally create a duplicate identity
+- unresolved legacy identity does not permanently attach to an incorrect account
+- temporary lookup failures remain retriable
+- cutover mode correctly allows new users
+- existing administrators remain protected
+- no ownership record can be silently reassigned
+
+4. SUPABASE SECURITY
+
+Search for:
+- service-role keys
+- SUPABASE_SERVICE_ROLE_KEY
+- database passwords
+- JWT secrets
+- secret API keys
+- private keys
+
+Allowed in browser:
+- Supabase URL
+- Supabase publishable/anon-style public key
+
+Report only:
+FOUND / NOT FOUND
+
+Never print secret values.
+
+5. REDIRECT SECURITY
+
+Audit all returnTo / redirect / next / callback URL handling.
+
+Verify rejection of:
+- external URLs
+- javascript: URLs
+- protocol-relative URLs
+- backslash-normalized external URLs
+- encoded bypasses
+- hostname tricks
+- mixed slash/backslash attacks
+
+Verify only safe same-origin destinations are allowed.
+
+6. API SECURITY
+
+Verify:
+- CORS is fail-closed
+- approved production origin works
+- unapproved origins are rejected
+- authorization headers are handled safely
+- sensitive endpoints are protected
+- admin endpoints are protected
+- error messages do not leak secrets
+- rate-limiting/security controls remain intact
+- no accidental unauthenticated write endpoints exist
+
+7. DATABASE SAFETY
+
+READ ONLY.
+
+Do not modify the schema.
+
+Verify:
+- existing database access patterns are consistent
+- memorial ownership remains enforced
+- notification ownership remains enforced
+- no destructive migration runs during production startup
+- production startup does not seed development data
+- no unexpected schema mutation occurs during application boot
+
+Do not invent missing tables or columns.
+
+8. PRODUCTION STARTUP
+
+Verify:
+- NODE_ENV=production behavior is correct
+- API starts with production configuration
+- startup does not run development migrations/seeds
+- API binds correctly
+- health endpoint works
+- protected API returns 401 without authentication
+- no development credentials are accepted as production credentials
+
+9. WEB BUILD
+
+Run the real production web build.
+
+Verify:
+- build succeeds
+- generated index.html exists
+- manifest exists
+- service worker exists
+- service-worker registration exists
+- all production assets resolve
+- SPA fallback works
+- no development API origin is embedded
+- no localhost/dev host leakage exists
+
+10. API BUILD
+
+Run the real production API build.
+
+Verify:
+- build succeeds
+- generated production entry exists
+- bundle is syntactically valid
+- production start succeeds
+
+11. SERVICE WORKER / PWA
+
+Verify:
+- service worker syntax
+- registration
+- push handling
+- notification-click handling
+- runtime caching
+- manifest
+- icons
+- production asset references
+
+12. NOTIFICATIONS / PUSH
+
+Verify:
+- notification queue behavior
+- concurrency
+- leasing
+- retry behavior
+- idempotency
+- cancellation
+- recovery
+- subscription ownership
+- duplicate subscription prevention
+- invalid subscription handling
+
+Do not redesign notification architecture.
+
+13. DEPENDENCY SECURITY
+
+Run the current dependency audit.
+
+Report:
+- critical
+- high
+- moderate
+- low
+
+Distinguish:
+A. web/API production runtime findings
+B. build tooling findings
+C. Expo/mobile/developer tooling findings
+
+Do NOT upgrade dependencies during this audit.
+
+Do NOT reduce severity artificially.
+
+14. SECRET EXPOSURE
+
+Scan:
+- tracked repository
+- source code
+- production browser bundles
+- generated assets
+
+Search for:
+- sk_live_
+- sk_test_
+- service-role keys
+- Supabase secrets
+- private keys
+- database passwords
+- API tokens
+- VAPID private keys
+- old Clerk secret values
+
+Report only whether forbidden material is present.
+
+15. CLERK REMOVAL
+
+Confirm there is no remaining runtime Clerk dependency in web/API.
+
+Do not delete historical documentation merely because Clerk was previously used.
+
+Only report:
+PASS / FAIL
+
+16. CONFIGURATION CONSISTENCY
+
+Verify that:
+- web auth configuration is Supabase-based
+- API auth configuration is Supabase-based
+- production origin configuration is consistent
+- Netlify origin is correct
+- CORS matches the intended production frontend
+- no development values override production values
+- mobile configuration remains untouched
+
+17. PERFORMANCE
+
+Check for obvious confirmed production risks:
+- oversized browser bundle
+- unnecessary duplicate API calls
+- expensive repeated renders
+- runaway loops
+- unnecessary realtime connections
+- large payloads
+- blocking startup behavior
+
+Do not optimize during this audit.
+
+Known:
+The large Three.js/vendor chunk warning is historical and should not be treated as a blocker unless new evidence shows it breaks production.
+
+18. DEPLOYMENT READINESS
+
+Verify current deployment artifacts and configuration only.
+
+Confirm:
+- production web artifact exists
+- production API artifact exists
+- required environment variable names are documented/configured
+- production build succeeds
+- deployment does not rely on development-only values
+- web/API architecture is compatible with current Replit + Netlify arrangement
+
+Do not publish or deploy.
+
+19. MOBILE PROTECTION
+
+Confirm explicitly:
+
+MOBILE/EXPO:
+UNTOUCHED
+
+Do not modify or restart mobile.
+
+20. GIT STATE
+
+Report:
+- current branch
+- current HEAD
+- working tree status
+- uncommitted changes
+- whether local branch differs from origin
+- whether the current repository points to the intended GitHub repository
+
+DO NOT commit.
+DO NOT push.
+
+==================================================
+FINAL VALIDATION COMMANDS
+==================================================
+
+Run the relevant existing checks, including:
+
+- Web TypeScript check
+- API TypeScript check
+- Web production build
+- API production build
+- Auth/security tests
+- Authorization tests
+- Notification/push tests
+- Service-worker tests
+- Production artifact validation
+- Browser secret scan
+- Development-host leakage scan
+- dependency audit
+- git diff --check
+
+Do not modify code merely to make a test pass.
+
+==================================================
+FINAL REPORT FORMAT
+==================================================
+
+# FINAL PRODUCTION READINESS AUDIT
+
+OVERALL:
+READY TO PUBLISH
+OR
+NOT READY — BLOCKED
+
+AUTHENTICATION: PASS/FAIL
+AUTHORIZATION: PASS/FAIL
+LEGACY CONTINUITY: PASS/FAIL
+SUPABASE SECURITY: PASS/FAIL
+REDIRECT SECURITY: PASS/FAIL
+API SECURITY: PASS/FAIL
+DATABASE SAFETY: PASS/FAIL
+WEB BUILD: PASS/FAIL
+API BUILD: PASS/FAIL
+PWA/SERVICE WORKER: PASS/FAIL
+NOTIFICATIONS/PUSH: PASS/FAIL
+SECRET EXPOSURE: PASS/FAIL
+CLERK RUNTIME REMOVAL: PASS/FAIL
+CORS/PRODUCTION CONFIG: PASS/FAIL
+PERFORMANCE: PASS/FAIL
+DEPLOYMENT READINESS: PASS/FAIL
+MOBILE/EXPO: UNTOUCHED
+
+TEST TOTALS:
+Provide exact totals such as:
+- X/X security
+- X/X authorization
+- X/X notification
+- etc.
+
+PRODUCTION ARTIFACTS:
+List verified artifacts.
+
+DEPENDENCY AUDIT:
+Critical:
+High:
+Moderate:
+Low:
+
+IMPORTANT KNOWN WARNINGS:
+List only real warnings.
+Distinguish non-blocking warnings from blockers.
+
+GIT STATE:
+Report branch, HEAD, working-tree state, and remote status.
+Do not change Git state.
+
+FILES CHANGED DURING THIS AUDIT:
+MUST BE NONE
+
+REMAINING BLOCKERS:
+List only confirmed blockers.
+
+UNKNOWN:
+List anything that could not be verified without making unsafe changes or requiring credentials.
+
+FINAL RECOMMENDATION:
+
+If all required production checks pass, write exactly:
+
+"READY FOR COMMIT, GIT PUSH, AND PUBLISH. NO CODE OR CONFIGURATION CHANGES WERE MADE DURING THIS AUDIT."
+
+If any required check fails, write:
+
+"NOT READY FOR PUBLISH."
+
+Then explain the blocker precisely.
+
+==================================================
+FINAL SAFETY RULE
+==================================================
+
+This is a verification task.
+
+Preserve the current MENASHE Platform.
+
+Do not redesign.
+
+Do not rewrite.
+
+Do not migrate technologies.
+
+Do not change Supabase.
+
+Do not change the database.
+
+Do not touch mobile.
+
+Do not publish.
+
+Do not deploy.
+
+Do not commit.
+
+Do not push.
+
+Diagnose and report only.
