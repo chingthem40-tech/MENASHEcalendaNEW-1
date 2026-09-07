@@ -131,7 +131,7 @@ html, body, #root {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 16px;
+  padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px));
   scrollbar-width: none;
   -ms-overflow-style: none;
   scroll-behavior: smooth;
@@ -224,8 +224,8 @@ svg {
 
 .bottom-nav {
   flex-shrink: 0;
-  height: 70px;
-  min-height: 60px;
+  height: calc(70px + env(safe-area-inset-bottom, 0px));
+  min-height: calc(60px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: #0d1627;
   border-top: 1px solid var(--border);
@@ -233,7 +233,11 @@ svg {
   align-items: flex-start;
   justify-content: space-around;
   z-index: 50;
-  width: 100%;
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  width: min(100%, 430px);
+  transform: translateX(-50%);
   transition: background 0.4s ease, border-color 0.4s ease;
 }
 
@@ -1496,12 +1500,15 @@ body {
     align-items: stretch;
     justify-content: flex-start;
     position: relative;
+    left: auto;
+    bottom: auto;
     width: 248px;
     height: 100%;
     padding: 20px 14px calc(env(safe-area-inset-bottom, 0px) + 16px);
     gap: 4px;
     border-top: none;
     border-right: 1px solid var(--border);
+    transform: none;
     overflow-y: auto;
     transition: width 0.2s ease;
   }
