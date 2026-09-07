@@ -362,7 +362,7 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
                   className={isSelected && !day.isToday ? "cal-cell-selected" : ""}
                   style={{
                     minHeight: 66,
-                    padding: "5px 5px 4px",
+                     padding: `${isFriCol ? 20 : 5}px 5px 4px`,
                     borderRight: !isLastInRow ? "1px solid #e2e8f0" : "none",
                     borderBottom: "1px solid #e2e8f0",
                     background: cellBg,
@@ -378,12 +378,17 @@ const CalendarPage = memo(function CalendarPage({ location, onNavigate, onDayCli
                   {isFriCol && (
                     <div style={{
                       position: "absolute", top: 3, right: 3,
-                      display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 1,
+                       display: "flex", flexDirection: "column", alignItems: "center", gap: 1,
+                       padding: "2px 3px",
+                       borderRadius: 5,
+                       background: "rgba(255,251,235,0.92)",
+                       border: "1px solid rgba(184,134,11,0.24)",
+                       boxShadow: "0 1px 3px rgba(120,85,10,0.12)",
                     }}>
-                      <span style={{ fontSize: 10, lineHeight: 1 }}>🕯️</span>
+                      <span style={{ fontSize: 8, lineHeight: 1 }}>🕯️</span>
                       {candleLightingMap[day.gregorianDay] && (
                         <span style={{
-                          fontSize: 7, lineHeight: 1.2,
+                          fontSize: 6.5, lineHeight: 1.1,
                           color: "#b8860b", fontWeight: 700, whiteSpace: "nowrap",
                         }}>
                           {candleLightingMap[day.gregorianDay]}
