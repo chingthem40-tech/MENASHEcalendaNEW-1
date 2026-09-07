@@ -1422,6 +1422,41 @@ body {
   max-width: 100vw;
 }
 
+/* Installed PWAs scroll more reliably at the document level on mobile.
+   Keep the bottom bar fixed, but let the page itself grow and scroll instead
+   of depending on a nested overflow container inside an overflow-hidden shell. */
+@media (max-width: 767px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .app-container {
+    height: auto;
+    min-height: 100dvh;
+    align-items: stretch;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+
+  .screen {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* ── Row utility ── */
 .row {
   display: flex;
