@@ -1992,6 +1992,23 @@ select:focus {
   margin-top: 8px;
 }
 
+/* Keep monetization inside the calendar column. A blocked or unfilled
+   responsive ad must not create a large blank section on mobile. */
+.home-ad-slot {
+  width: 100%;
+  min-height: 90px;
+  margin: 16px 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .home-ad-slot {
+    display: none;
+  }
+}
+
 /* ── Quick action — slightly more breathing room ── */
 .quick-action {
   padding: 14px 8px 12px;

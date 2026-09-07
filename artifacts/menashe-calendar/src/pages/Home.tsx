@@ -4829,19 +4829,12 @@ const Home = memo(function Home({
               <NextHolidayCard holidays={holidays} />
 
             </CalendarSection>
-          </div>
 
-          {/* Google AdSense — responsive ad between Calendar and Learning */}
-          <div
-            style={{
-              width: "100%",
-              margin: "16px 0",
-              minHeight: 90,
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <AdSense slot="2958007223" />
+            {/* Google AdSense stays inside the primary column so an unfilled
+                responsive slot cannot create a phantom grid row or gap. */}
+            <div className="home-ad-slot" aria-label="Advertisement">
+              <AdSense slot="2958007223" />
+            </div>
           </div>
 
           <div className="home-col home-col-secondary">
