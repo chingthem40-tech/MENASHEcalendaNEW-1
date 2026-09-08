@@ -16,6 +16,12 @@ description: Clerk must be provisioned via setupClerkWhitelabelAuth() before the
 
 **Integration note:** Connecting the Clerk connector does not configure `@clerk/express` middleware. Apps using server-side Clerk middleware still need `CLERK_SECRET_KEY` configured separately; otherwise every protected API route returns 401.
 
+**Replit config guard:** `.replit` cannot be edited directly; create a temporary full replacement and pass it through `verifyAndReplaceDotReplit({ tempFilePath })`.
+
+**Why:** Direct edits are rejected by the workspace, and bypassing the validator risks breaking workflow, port, or environment configuration.
+
+**How to apply:** Preserve the full file, make the smallest temporary edit, validate/replace it, then restart every workflow that consumes the changed environment.
+
 **Re-import note (2026-07-12):** on a fresh GitHub re-import, `checkClerkManagementStatus()` returned `"external"` (not `not_configured`) because `.replit` userenv.shared already had the publishable keys baked in from before.
 
 **Cross-instance key mismatch symptom:** if EVERY authenticated route returns 401 (not just one feature) even though the user is visibly signed in, suspect the publishable key and secret key belong to different Clerk applications — this happens when a project is re-imported/forked and the new owner doesn't have dashboard access to the original Clerk app the publishable key points to. Diagnose without ever printing the secret value: fetch `https://api.clerk.com/v1/jwks` with `Authorization: Bearer <secret>` and compare its `kid` against `https://<slug-from-decoded-pk>.clerk.accounts.dev/.well-known/jwks.json` — if the `kid`s differ, the keys are from different instances.

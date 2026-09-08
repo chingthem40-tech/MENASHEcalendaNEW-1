@@ -11,7 +11,7 @@ Project imported from GitHub and set up on Replit:
   - `artifacts/api-server: API Server` — Express on port 8080, migrations applied ✓
   - `artifacts/menashe-mobile: expo` — Metro bundler on port 25726 ✓
   - `artifacts/mockup-sandbox: Component Preview Server` — Vite on port 8081 ✓
-- **Secrets pending**: `CLERK_SECRET_KEY` is **not yet set** — authentication middleware is disabled and all protected routes return 401 until this is added as a Replit Secret. All public env vars (`CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`, `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT`, `ADMIN_PIN`, `ADMIN_USER_ID`) are already configured in shared environment.
+- **Authentication**: Clerk is configured through Replit Secrets (`CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY`). The web and mobile workflows read the publishable key from the shared secret-backed environment, and the API reports Clerk Auth as ready.
 - **Optional secrets not yet set**: `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `GROK_API_KEY` (AI chat), `VAPID_PRIVATE_KEY` (push notifications), `RAZORPAY_KEY_ID`/`RAZORPAY_KEY_SECRET` (payments) — app runs without these but those features are disabled.
 
 A sacred Jewish calendar app for the Bnei Menashe community — featuring Hebrew/Jewish calendar, Zmanim (prayer times), Parasha, Daf Yomi, holidays, a Siddur library, 3D Memorial Sanctuary, community tools, and AI-powered sacred wisdom chat.
@@ -46,10 +46,8 @@ Note: `scripts/start-dev.sh` (old combined frontend+API launcher) is superseded 
 | Key | Where | Notes |
 |-----|-------|-------|
 | `DATABASE_URL` | Runtime-managed | PostgreSQL attached by Replit — do not set manually |
-| `CLERK_PUBLISHABLE_KEY` | `.replit` userenv.shared | Clerk dev instance (public key — safe in repo) |
-| `VITE_CLERK_PUBLISHABLE_KEY` | `.replit` userenv.shared | Same value, injected into Vite bundle |
-| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | `.replit` userenv.shared | Same value, injected into Expo bundle |
-| `CLERK_SECRET_KEY` | Replit Secrets | — |
+| `CLERK_PUBLISHABLE_KEY` | Replit Secrets | Clerk publishable key; consumed by web and mobile workflows |
+| `CLERK_SECRET_KEY` | Replit Secrets | Server-side Clerk validation key |
 | `VAPID_PUBLIC_KEY` | `.replit` userenv.shared | Web push public key |
 | `VAPID_SUBJECT` | `.replit` userenv.shared | Web push contact email |
 | `ADMIN_PIN` | `.replit` userenv.shared | Admin access PIN (also `VITE_ADMIN_PIN`) |
