@@ -64,8 +64,7 @@ function rowToEvent(r: Record<string, unknown>) {
 
 // GET /api/family-timeline
 router.get("/family-timeline", requireAuth, async (req, res) => {
-  const auth = (req as any).auth as { userId: string };
-  const userId = auth.userId;
+  const userId = String((req as any).userId);
 
   const filter  = typeof req.query.filter  === "string" ? req.query.filter  : "all";
   const search  = typeof req.query.search  === "string" ? req.query.search  : "";
@@ -132,8 +131,7 @@ router.get("/family-timeline", requireAuth, async (req, res) => {
 
 // POST /api/family-timeline
 router.post("/family-timeline", requireAuth, async (req, res) => {
-  const auth = (req as any).auth as { userId: string };
-  const userId = auth.userId;
+  const userId = String((req as any).userId);
 
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -171,8 +169,7 @@ router.post("/family-timeline", requireAuth, async (req, res) => {
 
 // PATCH /api/family-timeline/:id
 router.patch("/family-timeline/:id", requireAuth, async (req, res) => {
-  const auth = (req as any).auth as { userId: string };
-  const userId = auth.userId;
+  const userId = String((req as any).userId);
   const id = String(req.params.id);
 
   const parsed = createSchema.partial().safeParse(req.body);
@@ -233,8 +230,7 @@ router.patch("/family-timeline/:id", requireAuth, async (req, res) => {
 
 // DELETE /api/family-timeline/:id
 router.delete("/family-timeline/:id", requireAuth, async (req, res) => {
-  const auth = (req as any).auth as { userId: string };
-  const userId = auth.userId;
+  const userId = String((req as any).userId);
   const id = String(req.params.id);
 
   try {
